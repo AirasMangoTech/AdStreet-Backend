@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+  <!-- BootStrap Icons -->
+  <script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
+
+  <title>Order Details</title>
+  <style>
+  tbody > tr > td > div {
+    text-align: right;
+    padding-right: 20px;
+  }
+
+    @media screen and (max-width: 600px) {
+      table {
+        width: 90vw;
+      }
+      }
+    
+</style>
+  {{conditionalStyle}}
+
+</head>
+
+<body bgcolor="#eeeeee"
+  style="font-family: 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji'; font-size: 16px; margin: 0; color: #000000;">
+  <div style="overflow-x: auto">
+    <table class="main" width="100%" border="0" cellspacing="0" cellpadding="0" style="
+          background-color: #fbfbfb;
+          padding-top: 20px;
+          padding-bottom: 50px;
+        " align="center" bgcolor="#eeeeee">
+      <tr>
+        <td>
+          <table class="table-responsive" width="" border="0" cellspacing="0" cellpadding="0"
+            style="border-collapse: collapse; max-width: 500px" align="center">
+            <tr>
+              <td>
+                <table width="" border="0" cellspacing="0" cellpadding="0" style="background-color: #eeeeee"
+                  align="center" bgcolor="#ffffff">
+                  <tr>
+                    <td height="30" style="height: 30px"></td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <table style="width: 100vw" border="0" cellspacing="0" cellpadding="0">
+                        <tr>
+                          <td width="30" style="width: 30px"></td>
+                          <td align="center">
+                            <img
+                              src="https://cocoprimecleaning.ae/wp-content/uploads/2023/12/WhatsApp_Image_2023-12-02_at_2.19.53_PM-removebg-preview.png"
+                              width="200" alt="" style="display: block; border: 0" />
+                          </td>
+                          <td width="30" style="width: 30px"></td>
+                        </tr>
+                        <tr>
+                          <td colspan="3" height="20" style="height: 20px"></td>
+                        </tr>
+                        <tr>
+                          <td width="30" style="width: 30px"></td>
+                          <td>
+                            <p style="
+                                  font-family: 'Segoe UI', Roboto,
+                                    'Helvetica Neue', Arial, 'Noto Sans',
+                                    sans-serif, 'Apple Color Emoji',
+                                    'Segoe UI Emoji', 'Segoe UI Symbol',
+                                    'Noto Color Emoji';
+                                  font-size: 24px;
+                                  font-weight: bold;
+                                  margin: 0;
+                                  margin-bottom: 20px;
+                                  color: #000000;
+                                  text-align: center;
+                                ">
+                              New Order Confirmed for <br>
+                               {{serviceName}}
+                            </p>
+
+                            <table cellpadding="0" cellspacing="0"
+                              style="background-color: #ffffff; margin-bottom: 20px;   margin-left: auto;
+                              margin-right: auto;
+                              max-width: 400px;
+                              width: 90vw;">
+                              <!-- Table for each section -->
+                              <tr style="padding-top: 10px">
+                                <td style="padding-left: 10px; padding-top: 10px;">
+                                  <i class="bi bi-envelope-fill" style="color: #2cc6c6"></i>
+                                  <span><small style="color: #2cc6c6;">Name:</small></span>
+                                </td>
+                                <td>
+                                  <div><small>{{clientName}}</small></div>
+                                </td>
+                              </tr>
+
+                              <tr>
+                                <td style="padding-left: 10px; padding-top: 5px">
+                                  <i class="bi bi-envelope-fill" style="color: #2cc6c6"></i>
+                                  <span><small style="color: #2cc6c6;">Email Address:</small></span>
+                                </td>
+                                <td>
+                                  <div><small>{{clientEmail}}</small></div>
+                                </td>
+                              </tr>
+
+                              <tr>
+                                <td style="padding-left: 10px; padding-top: 5px">
+                                  <i class="bi bi-envelope-fill" style="color: #2cc6c6"></i>
+                                  <span><small style="color: #2cc6c6;">Phone Number:</small></span>
+                                </td>
+                                <td>
+                                  <div><small>{{clientPhone}}</small></div>
+                                </td>
+                              </tr>
+
+                              <tr>
+                                <td style="padding-left: 10px; padding-top: 5px">
+                                  <i class="bi bi-envelope-fill" style="color: #2cc6c6"></i>
+                                  <span><small style="color: #2cc6c6;">Building/Street/Area:                                  </small></span>
+                                </td>
+                                <td>
+                                  <div><small>{{clientBuilding}}</small></div>
+                                </td>
+                              </tr>
+
+                              <tr>
+                                <td style="padding-left: 10px; padding-top: 5px">
+                                  <i class="bi bi-envelope-fill" style="color: #2cc6c6"></i>
+                                  <span><small style="color: #2cc6c6;">Flat:</small></span>
+                                </td>
+                                <td>
+                                  <div><small>{{clientFlat}}</small></div>
+                                </td>
+                              </tr>
+
+                              <tr>
+                                <td style="padding-left: 10px; padding-top: 5px">
+                                  <i class="bi bi-envelope-fill" style="color: #2cc6c6"></i>
+                                  <span><small style="color: #2cc6c6;">Address:</small></span>
+                                </td>
+                                <td>
+                                  <div><small>{{clientAddress}}</small></div>
+                                </td>
+                              </tr>
+
+                         
+
+                           
+                              <tr>
+                                <td
+                                  style="width: 95%; height: 40%; margin-top:10px; margin-bottom: 20px; padding: 2% 4% 0% 3%; display: flex; justify-content: space-between; position: relative;">
+                                  <div>
+                                    <!-- <span> </span> -->
+                                    <a href="https://www.google.com/maps/search/?api=1&query={{clientLatitude}},{{clientLongitude}}"
+                                      style="
+                                color: #6cbe1e;
+                                text-decoration: none;
+                                margin-top: 5%;
+                              ">
+                                      View Location 🔗
+                                      <i class="bi bi-send-fill"></i>
+                                    </a>
+                                  </div>
+                                </td>
+                              </tr>
+
+                            </table>
+                          
+                          </td>
+                          <td width="30" style="width: 30px"></td>
+                        </tr>
+                        <tr>
+                          <td width="30" style="width: 30px"></td>
+                          <td>
+                            <p style="
+                                  font-family: 'Segoe UI', Roboto,
+                                    'Helvetica Neue', Arial, 'Noto Sans',
+                                    sans-serif, 'Apple Color Emoji',
+                                    'Segoe UI Emoji', 'Segoe UI Symbol',
+                                    'Noto Color Emoji';
+                                  font-size: 24px;
+                                  font-weight: bold;
+                                  margin: 0;
+                                  margin-bottom: 20px;
+                                  color: #000000;
+                                  text-align: center;
+                                ">
+                              Payment Details
+                            </p>
+
+                               <table cellpadding="0" cellspacing="0"
+                              style="background-color: #ffffff; margin-bottom: 20px;  margin-left: auto;
+                              margin-right: auto;
+                              max-width: 400px;
+                              width: 85vw;">
+                              <!-- Table for each section -->
+                              <tr style="padding-top: 10px">
+                                <td style="padding-left: 10px; padding-top: 10px;">
+                                  <i class="bi bi-envelope-fill" style="color: #2cc6c6"></i>
+                                  <span><small style="color: #2cc6c6;">Price:</small></span>
+                                </td>
+                                <td>
+                                  <div><small>AED {{price}}</small></div>
+                                </td>
+                              </tr>
+
+                              <tr class="hidden">
+                                <td style="padding-left: 10px; padding-top: 5px">
+                                  <i class="bi bi-envelope-fill" style="color: #2cc6c6"></i>
+                                  <span><small style="color: #2cc6c6;">Supplies Price:</small></span>
+                                </td>
+                                <td>
+                                  <div><small>AED {{materialPrice}}</small></div>
+                                </td>
+                              </tr>
+
+                              <tr>
+                                <td style="padding-left: 10px; padding-top: 5px">
+                                  <i class="bi bi-envelope-fill" style="color: #2cc6c6"></i>
+                                  <span><small style="color: #2cc6c6;">Taxable:</small></span>
+                                </td>
+                                <td>
+                                  <div><small>AED {{taxable}}</small></div>
+                                </td>
+                              </tr>
+
+                              <tr>
+                                <td style="padding-left: 10px; padding-top: 5px">
+                                  <i class="bi bi-envelope-fill" style="color: #2cc6c6"></i>
+                                  <span><small style="color: #2cc6c6;">VAT 5%:                                  </small></span>
+                                </td>
+                                <td>
+                                  <div><small>AED {{vat}}</small></div>
+                                </td>
+                              </tr>
+
+                              <tr>
+                                <td style="padding-left: 10px; padding-top: 5px">
+                                  <i class="bi bi-envelope-fill" style="color: #2cc6c6"></i>
+                                  <span><small style="color: #2cc6c6;">Payment Method:</small></span>
+                                </td>
+                                <td>
+                                  <div><small>{{paymentMethod}}</small></div>
+                                </td>
+                              </tr>
+
+                              <tr>
+                                <td style="padding-left: 10px; padding-top: 10px">
+                                  <i class="bi bi-envelope-fill" style="color: #2cc6c6"></i>
+                                  <span><strong style="color: #2cc6c6;">TOTAL:</small></span>
+                                </td>
+                                <td style=" padding-top: 10px; padding-bottom: 20px;"> 
+                                  <div>                                  <span><strong style="color: #2cc6c6;">AED {{total}}:</small></span>
+                                  </div>
+                                </td>
+                              </tr>
+
+                         
+
+                           
+         
+
+                            </table>
+
+                            <table cellpadding="0" cellspacing="0"
+                            style="background-color: #ffffff; margin-bottom: 20px;     margin-left: auto;
+                            margin-right: auto;
+                            max-width: 400px;
+                            width: 85vw;">
+                            <!-- Table for each section -->
+                            <tr style="padding-top: 10px">
+                              <td style="padding-left: 10px; padding-top: 10px; padding-bottom: 15px;">
+                                <i class="bi bi-envelope-fill" style="color: #2cc6c6"></i>
+                                <span><strong style="color: #2cc6c6;">Additional Notes:</strong></span>
+                                  <br>
+                                  <small style="margin-bottom: 15px;">{{notes}}</small>
+
+                              
+                                </td>
+                            </tr>
+
+                       
+
+                         
+       
+
+                          </table>
+
+                            <div style="
+                                  font-family: 'Segoe UI', Roboto,
+                                    'Helvetica Neue', Arial, 'Noto Sans',
+                                    sans-serif, 'Apple Color Emoji',
+                                    'Segoe UI Emoji', 'Segoe UI Symbol',
+                                    'Noto Color Emoji';
+                                  font-size: 16px;
+                                  margin: 0;
+                                  margin-bottom: 20px;
+                                  color: #000000;
+                                 
+                                ">
+                             <div>
+                              <div style="text-align: center; margin-top: 20px;">
+                                <a href="https://booking.cocoprimecleaning.ae/order-details/{{id}}" style="display: inline-block;
+                                         padding: 10px 15px;
+                                         border-radius: 50px;
+                                         background-color: #6cbe1e;
+                                         color: #fff;
+                                         text-decoration: none;
+                                         font-weight: bold;">
+                                  View Complete Details <i style="margin-left: 5px;"></i>
+                                </a>
+                              </div>
+                            </div>
+                              
+                             
+
+                          </td>
+                          <td width="30" style="width: 30px"></td>
+                        </tr>
+                      </table>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td height="20" style="height: 20px"></td>
+                  </tr>
+                  <tr>
+                    <td></td>
+                  </tr>
+                  <tr>
+                    <td>
+                      
+                      <table width="100%" border="0" cellspacing="0" cellpadding="0"
+                        style="background-color: #ffffff; border: 0" align="center" bgcolor="#ffffff">
+                        <tr>
+                          <td>
+                            <table width="100%" border="0" cellspacing="0" cellpadding="0">
+                              <tr bgcolor="#0185BA">
+                                <td align="center" height="70" style="width: 120px">
+                                  <p style="
+                                        font-size: 14px;
+                                        margin: 27px;
+                                        margin-right: 0;
+                                        font-family: 'Segoe UI', Roboto,
+                                          'Helvetica Neue', Arial, 'Noto Sans',
+                                          sans-serif, 'Apple Color Emoji',
+                                          'Segoe UI Emoji', 'Segoe UI Symbol',
+                                          'Noto Color Emoji';
+                                        font-size: 14px;
+                                        color: #fff;
+                                      ">
+                                    © 2024 CocoPrime. All rights reserved.
+                                  </p>
+                                </td>
+                              </tr>
+                            </table>
+                          </td>
+                        </tr>
+                      </table>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </div>
+  <script>
+    feather.replace();
+  </script>
+</body>
+
+</html>

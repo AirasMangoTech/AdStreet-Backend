@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ABC Cleaning Service</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.css">
+    <style>
+        /* General Styles */
+        body {
+            font-family: Arial, sans-serif;
+            color: #333;
+        }
+        
+
+        .header {
+            background-color: #f8f8f8;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .logo {
+            width: 150px;
+            height: auto;
+        }
+
+        .container {
+            max-width:600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f8f8f8;
+            border: 1px solid #ddd;
+        }
+
+        .column-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            padding: 0 20px;
+            margin-bottom: 20px;
+        }
+
+        .column {
+            width: calc(50% - 10px);
+            margin-bottom: 20px;
+        }
+
+        .footer {
+            background-color: #f8f8f8;
+            padding: 20px;
+            text-align: center;
+        }
+
+        /* Table Styles */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+
+        th,
+        td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f8f8f8;
+        }
+
+        /* List Styles */
+        ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        ul li {
+            margin-bottom: 5px;
+        }
+
+        /* Icon Styles */
+        .icon {
+            margin-right: 5px;
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            vertical-align: middle;
+        }
+
+        @media screen and (max-width: 600px) {
+            .container {
+                width: 95%;
+            }
+
+            .column {
+                width: 100%;
+            }
+        }
+    </style>
+    {{conditionalStyle}}
+</head>
+
+<body>
+    <div class="header">
+        <img src="https://cocoprimecleaning.ae/wp-content/uploads/2023/12/WhatsApp_Image_2023-12-02_at_2.19.53_PM-removebg-preview.png"
+            alt="COCO Prime Cleaning Service" class="logo">
+    </div>
+
+    <div class="container">
+        <h2>COCO Prime Cleaning Service</h2>
+        <p>Dear {{clientName}},</p>
+        <p>Thank you for choosing COCO Prime Cleaning Service. Please find your order details below:</p>
+
+        <!-- Summary, Frequency, and Payment Details in separate rows with columns -->
+        <table>
+            <tr>
+
+                <td class="column-container">
+                    <div class="column">
+                        <p style="font-size: 16px; font-weight: 600">Client Information:</p>
+                        <ul>
+                            <li><strong>Name:</strong> {{clientName}}</li>
+                            <li><strong>Email:</strong> {{clientEmail}}</li>
+                            <li><strong>Phone:</strong> +971 {{clientPhone}}</li>
+                            <li><strong>Address: </strong> {{clientAddress}}
+                            <li><strong>Building/Area: </strong> {{clientBuilding}}
+                            <li><strong>Flat: </strong> {{clientFlat}}
+                            <li><strong>City: </strong> {{clientCity}}</li>
+                            <li><strong><a href="https://www.google.com/maps/search/?api=1&query={{clientLatitude}},{{clientLongitude}}">Open Location in MAP </a> </strong></li>
+                        </ul>
+                    </div>
+                    <!-- Summary Details -->
+                    <div class="column">
+                        <p style="font-size: 16px; font-weight: 600">Summary Details:</p>
+                        <ul>
+                            <li><strong>Service Name:</strong> {{serviceName}}</li>
+                            <li  class="hidden hiddenMax"><strong>Number of Hours:</strong> {{hours}}</li>
+                            <li class="hidden2 hiddenMax"><strong>SqFt:</strong> {{sqft}}</li>
+                            <li class="hidden hiddenMax"><strong>Number of Maids:</strong> {{maids}}</li>
+                            <li class="hidden hiddenMax"><strong>Cleaning Material:</strong> {{cleaningMaterial}}</li>
+
+                        </ul>
+                    </div>
+
+                    <!-- Frequency Details -->
+
+                </td>
+            </tr>
+            <tr class="hiddenMax">
+                <td class="column-container">
+                    <div class="column">
+                        <p style="font-size: 16px; font-weight: 600">Frequency Details:</p>
+                        <ul>
+                            <li><strong>Dates:</strong> {{dates}}</li>
+                            <li><strong>Frequency:</strong> {{frequency}}</li>
+                            <li><strong>Days:</strong> {{days}}</li>
+                            <li><strong>Time Slot:</strong> {{timeSlot}}</li>
+                            <li><strong>Months:</strong> {{months}}</li>
+                            <li><strong>Weeks:</strong> {{weeks}}</li>
+                        </ul>
+                    </div>
+                    <!-- Payment Details -->
+                    <div class="column">
+                        <p style="font-size: 16px; font-weight: 600">Payment Details:</p>
+                        <ul>
+                            <li><strong>Price:</strong> {{price}}</li>
+                            <li class="hidden"><strong>Material Price:</strong> {{materialPrice}}</li>
+                            <li><strong>Taxable:</strong> {{taxable}}</li>
+                            <li><strong>VAT 5%:</strong> {{vat}}</li>
+                            <li><strong>Payment Method:</strong> {{paymentMethod}}</li>
+                            <li><strong>Total:</strong> {{total}}</li>
+                        </ul>
+                    </div>
+                </td>
+            </tr>
+            <tr>
+                <td class="column-container">
+                    <div class="column">
+                        <p style="font-size: 16px; font-weight: 600">Notes:</p>
+                        <ul>
+                            <li>{{notes}}</li>
+                        </ul>
+                    </div>
+                
+                </td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="footer">
+        <p>&copy; 2024 CocoPrime Cleaning Service. All rights reserved.</p>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
+    <script>
+        feather.replace();
+    </script>
+</body>
+
+</html>
