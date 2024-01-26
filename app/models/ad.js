@@ -1,0 +1,41 @@
+const mongoose = require('mongoose');
+const { ObjectId } = require("mongodb");
+
+const adSchema = new mongoose.Schema({
+  title: {
+    type: String,
+    required: true,
+    trim: true
+  },
+  category: {
+    type: String,
+    required: true
+  },
+  image: [{
+    type: String
+  }],
+  description: {
+    type: String,
+    required: true
+  },
+  budget: {
+    type: Number,
+    required: true
+  },
+  jobDuration: {
+    type: String,
+    required: true
+  },
+  postedBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now
+  }
+});
+
+const Ad = mongoose.model('Ad', adSchema);
+module.exports = Ad;

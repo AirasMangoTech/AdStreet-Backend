@@ -1,4 +1,5 @@
 const User = require("../models/users");
+const ROLE_IDS = require("../utils/utility");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
 const response = require("../utils/responseHelpers");
@@ -7,7 +8,7 @@ require("dotenv").config();
 
 const signup = async (req, res) => {
   try {
-    let { email, password, confirmPassword, phoneNumber } = req.body;
+    let { email, password, confirmPassword, phoneNumber, roles } = req.body;
 
     // Validate and process inputs
     if (!email || !password || !confirmPassword || !phoneNumber) {
@@ -30,20 +31,38 @@ const signup = async (req, res) => {
       $or: [{ email: email }, { phone_Number: phoneNumber }],
     });
     if (existingUser) {
-      return response.conflict(
+      return response.badRequest(
         res,
         "User with given email or phone number already exists"
       );
     }
+    let roleId;
+    switch (roles) {
+      case "Brand Company":
+        roleId = ROLE_IDS.BRAND_COMPANY;
+        break;
+      case "Agency":
+        roleId = ROLE_IDS.AGENCY;
+        break;
+      case "Individual":
+        roleId = ROLE_IDS.INDIVIDUAL;
+        break;
+      case "Admin":
+          roleId = ROLE_IDS.INDIVIDUAL;
+          break;
+      default:
+        return response.badRequest(res, "Invalid role name");
+    }
 
-    // Encrypt the password
-    const salt = await bcrypt.genSalt(10);
-    const encryptedPassword = await bcrypt.hash(password, salt);
-
-    // Create new user
+    // Encrypt the password and create new user
+    const encryptedPassword = await bcrypt.hash(
+      password,
+      await bcrypt.genSalt(10)
+    );
     const newUser = new User({
-      email: email,
+      email,
       password: encryptedPassword,
+      roles: roleId, // Save the role ID
       phone_Number: phoneNumber,
     });
 
@@ -51,7 +70,7 @@ const signup = async (req, res) => {
 
     // Generate JWT token
     const token = jwt.sign(
-      { email: newUser.email, id: newUser._id },
+      { email: newUser.email, id: newUser._id, role_id: roleId },
       process.env.SECRET_KEY,
       { expiresIn: "1d" }
     );
@@ -77,22 +96,24 @@ const login = async (req, res) => {
 
     // Find the user by phone number
     const user = await User.findOne({ phone_Number: phoneNumber });
-    console.log(user)
-    console.log(phoneNumber)
+    console.log(user);
+    console.log(phoneNumber);
 
     if (!user) return response.notFound(res, "Invalid Credentials");
 
     // Compare the provided password with the stored hashed password
     if (await bcrypt.compare(password, user.password)) {
       // User found and password is correct, create a JWT token
-      const token = jwt.sign(
-        { name: user.name, phoneNumber: user.phoneNumber, id: user._id },
-        process.env.SECRET_KEY,
+      const token = jwt.sign({ 
+        name: user.name, 
+        phoneNumber: user.phoneNumber, 
+        id: user._id
+      },process.env.SECRET_KEY,
         {
           expiresIn: "1d",
         }
       );
-
+      res.json({ token });
       // Create object to send as response
       const obj = {
         name: user.name,
@@ -113,7 +134,41 @@ const login = async (req, res) => {
     return response.serverError(res, "Something bad happened! Try Again Later");
   }
 };
+
+const retrieveDataForRole = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id); 
+
+    let data;
+    switch (user.role) {
+      case ROLE_IDS.BRAND_COMPANY:
+        data = await BrandCompany.findOne({ _id: user.companyId });
+        data = await getBrandCompanyData(user);
+        console.log(BRAND_COMPANY);
+        break;
+      case ROLE_IDS.AGENCY:
+        // Fetch data specific to agencies
+        data = await getAgencyData(user);
+        console.log(AGENCY);
+        break;
+      case ROLE_IDS.INDIVIDUAL:
+        // Fetch data specific to individuals
+        data = await getIndividualData(user);
+        console.log(INDIVIDUAL);
+        break;
+      default:
+        throw new Error("Unknown role");
+    }
+
+    res.json(data);
+  } catch (error) {
+    console.error(`Error retrieving data for role: ${error}`);
+    res.status(500).json({ message: "Error retrieving data" });
+  }
+};
+
 module.exports = {
   signup,
   login,
+  retrieveDataForRole,
 };

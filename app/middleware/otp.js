@@ -1,44 +1,73 @@
 const OTPCode = require("../models/otp");
+//const SMS = require("../utils/sendSms");
+const generator = require('generate-password');
+const moment = require('moment')
+
+
+const GenerateOTP = (length) => {
+  let OTP = generator.generate({
+    length: length,
+    numbers: true,
+    lowercase: false,
+    uppercase: false,
+  });
+
+  return OTP;
+};
+
+
 const verifyOTP = async (req, res, next) => {
   try {
-    const { device_id, code } = req.body;
+    const device_id = req.headers.deviceid;
+    const api_name = req.url; // or req.baseUrl + req.path to get the endpoint
 
-    if (!device_id || !code) {
+    if (!device_id) {
       return res
         .status(400)
-        .json({ message: "Device ID and OTP code are required." });
+        .json({ message: "Device ID required." });
     }
 
-    const otp = await OTPCode.findOne({ device_id: device_id });
+    // Find the OTP for the device ID and API endpoint that hasn't expired or been verified
+    const otp = await OTPCode.findOne({
+      device_id: device_id,
+      api_name: api_name,
+      is_verified: false,
+      expired_at: { $gte: new Date() },
+    });
 
-    if (!otp || otp.is_verified) {
+    if (!otp) {
+      // If no valid OTP is found, generate and send a new one
+      const newOtpCode = GenerateOTP(4);
+      const newOtp = new OTPCode({
+        device_id: device_id,
+        code: newOtpCode,
+        api_name: api_name,
+        is_verified: false,
+        expired_at: new Date(new Date().getTime() + 5 * 60000), 
+      });
+      await newOtp.save();
+      console.log(newOtpCode);
+      // Send the OTP to the user's phone
+      //SMS.sendSMS(`Your OTP is: ${newOtpCode}`, phoneNumber);
+
       return res
-        .status(404)
-        .json({ message: "OTP is invalid or already used." });
+        .status(200)
+        .json({ message: "A new OTP has been sent to your phone." });
     }
 
-    if (otp.code === code) {
+    if (otp.code === req.body.code) {
       otp.is_verified = true;
       await otp.save();
-      next();
+      next(); // Proceed to next middleware
     } else {
       return res.status(401).json({ message: "Invalid OTP code." });
     }
   } catch (error) {
     console.error("Error verifying OTP:", error);
-    res.status(500).json({ message: "An error occurred while verifying OTP." });
+    return res.status(500).json({ message: "An error occurred while verifying OTP." });
   }
 };
 
-function generateOTP() {
-  // Generates a 4-digit random number
-  const otp = Math.floor(1000 + Math.random() * 9000);
-  return otp.toString();
-}
-
-module.exports = generateOTP;
-
-const otp = generateOTP();
-console.log(otp); // Outputs a 4-digit OTP
-
-module.exports = verifyOTP;
+module.exports = {
+  verifyOTP, GenerateOTP
+};

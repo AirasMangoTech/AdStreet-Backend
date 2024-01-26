@@ -1,24 +1,39 @@
 const mongoose = require("mongoose");
 
-const otpCodeSchema = new mongoose.Schema({
-  device_id: {
-    type: String,
-    required: true,
+const OTPSchema = new mongoose.Schema(
+  {
+    device_id: {
+      type: String,
+    },
+    api_name: {
+      type: String,
+    },
+    code: {
+      type: String,
+    },
+    phoneNumber: {
+      type: String,
+    },
+    email: {
+      type: String,
+    },
+    is_verified: {
+      type: Boolean,
+      default: false,
+    },
+    expired_at:{
+        type : Date ,
+    },
+    created_at: {
+      type: Date,
+      default: Date.now,
+      index: { expires: "5m" },
+    },
   },
-  code: {
-    type: String,
-    required: true,
-  },
-  is_verified: {
-    type: Boolean,
-    default: false,
-  },
-  created_at: {
-    type: Date,
-    default: Date.now,
-    index: { expires: "5m" }, // OTP expires after 5 minutes
-  },
-});
-
-const OTPCode = mongoose.model("OTPCode", otpCodeSchema);
+  {
+    timestamps: false,
+    versionKey: false,
+  }
+);
+const OTPCode = mongoose.model("OTPCode", OTPSchema);
 module.exports = OTPCode;

@@ -1,17 +1,17 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 const { ObjectId } = require("mongodb");
 
 const roleSchema = new mongoose.Schema({
-  dec: {
+  name: {
+    type: String,
+    enum: ['Brand Company', 'Agency', 'Individual'], 
+    required: true
+  },
+  roleId: {
     type: String,
     required: true,
-    trim: true,
-    unique: true,
-    lowercase: true, // e.g., 'admin', 'company', 'individual'
-  },
-  id: {
-    userId: { type: mongoose.Types.ObjectId, ref: "Users" },
-  }, // Optional: a brief description of the role
+    enum: ['role_1', 'role_2', 'role_3'], 
+  }
 });
 
 const Role = mongoose.model("roles", roleSchema);

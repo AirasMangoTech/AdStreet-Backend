@@ -13,8 +13,8 @@ app.use(express.json());
 // parse requests of content-type - application/x-www-form-urlencoded
 app.use(express.urlencoded({ extended: true }));
 
-app.use("/media", express.static(path.join(__dirname, "public")));
-
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+//app.use('/uploads', express.static('uploads'));
 // app.use(cors({
 //     origin: ['http://localhost:3000','https://booking.cocoprimecleaning.ae', 'https://cocoprime.surge.sh']
 // }));
