@@ -1,21 +1,24 @@
 const Category = require("../models/categories");
 const response = require("../utils/responseHelpers");
-//const { admin_role_id } = require("../utils/utility");
-
+const { ROLE_IDS } = require("../utils/utility");
 
 const createCategory = async (req, res) => {
+  if (req.user.role_id !== ROLE_IDS.ADMIN)
+    return response.forbidden(
+      res,
+      "You don't have permission to perform this action"
+    );
   try {
+    console.log(req.user);
     const { name } = req.body;
     const category = new Category({ name });
     await category.save();
-    return response.success(res, "Category created successfully", category);
+    return response.success(res, "Category created successfully", { category });
   } catch (error) {
-
     res.status(500).json({ message: error.message });
-    return response.forbidden(res, "Only admin can access")
+    return response.forbidden(res, "Only admin can access");
   }
 };
-
 
 const getAllCategories = async (req, res) => {
   try {

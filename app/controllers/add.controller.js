@@ -6,29 +6,29 @@ const postAd = async (req, res) => {
     return response.forbidden(res, "User not authenticated", user);
   }
   try {
-    const { title, category, description, budget, jobDuration } = req.body;
+    const { title, category, description, budget, jobDuration, imageUrl } =
+      req.body;
     //const image = req.file.path; // Assuming file paths are sent from the frontend and you're using a middleware like multer for file handling
-    
+
     const newAd = new Ad({
       title,
       category,
-     // image,
+      image: imageUrl,
       description,
       budget,
       jobDuration,
-      postedBy: req.user.id, 
+      postedBy: req.user.id,
     });
 
     await newAd.save();
 
-    return response.success(res, "Ad posted successfully", newAd);
+    return response.success(res, "Ad posted successfully", {newAd});
   } catch (error) {
     console.error(`Error posting ad: ${error}`);
     return response.serverError(res, "Error posting ad");
   }
- 
 };
-console.log()
+console.log();
 module.exports = {
   postAd,
 };

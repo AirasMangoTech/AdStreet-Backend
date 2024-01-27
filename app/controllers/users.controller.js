@@ -1,5 +1,5 @@
 const User = require("../models/users");
-const ROLE_IDS = require("../utils/utility");
+const {ROLE_IDS} = require("../utils/utility");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
 const response = require("../utils/responseHelpers");
@@ -11,7 +11,7 @@ const signup = async (req, res) => {
     let { email, password, confirmPassword, phoneNumber, roles } = req.body;
 
     // Validate and process inputs
-    if (!email || !password || !confirmPassword || !phoneNumber) {
+    if (!email || !password || !confirmPassword || !phoneNumber || !roles) {
       return response.badRequest(
         res,
         "Email, Password, Confirm Password, and Phone Number are required"
@@ -36,20 +36,22 @@ const signup = async (req, res) => {
         "User with given email or phone number already exists"
       );
     }
-    let roleId;
+    var roleId;
+    console.log(roles);
     switch (roles) {
       case "Brand Company":
         roleId = ROLE_IDS.BRAND_COMPANY;
         break;
       case "Agency":
         roleId = ROLE_IDS.AGENCY;
+        console.log("i am woking");
         break;
       case "Individual":
         roleId = ROLE_IDS.INDIVIDUAL;
         break;
       case "Admin":
-          roleId = ROLE_IDS.INDIVIDUAL;
-          break;
+        roleId = ROLE_IDS.ADMIN;
+        break;
       default:
         return response.badRequest(res, "Invalid role name");
     }
@@ -59,6 +61,7 @@ const signup = async (req, res) => {
       password,
       await bcrypt.genSalt(10)
     );
+    console.log(roleId);
     const newUser = new User({
       email,
       password: encryptedPassword,
@@ -75,15 +78,15 @@ const signup = async (req, res) => {
       { expiresIn: "1d" }
     );
 
-    let obj = {
+    const obj = {
       email: newUser.email,
       phone_Number: newUser.phone_Number,
       token: token,
     };
-
+    
     return response.success(res, "Signup Successful", obj);
   } catch (error) {
-    console.log(error);
+    console.log(error.message);
     logger.error(`ip: ${req.ip}, url: ${req.url}, error: ${error.stack}`);
     return response.serverError(res, "Something bad happened! Try Again Later");
   }
@@ -96,9 +99,7 @@ const login = async (req, res) => {
 
     // Find the user by phone number
     const user = await User.findOne({ phone_Number: phoneNumber });
-    console.log(user);
-    console.log(phoneNumber);
-
+    
     if (!user) return response.notFound(res, "Invalid Credentials");
 
     // Compare the provided password with the stored hashed password
@@ -107,7 +108,8 @@ const login = async (req, res) => {
       const token = jwt.sign({ 
         name: user.name, 
         phoneNumber: user.phoneNumber, 
-        id: user._id
+        id: user._id,
+        role_id: user.roles
       },process.env.SECRET_KEY,
         {
           expiresIn: "1d",
@@ -118,6 +120,7 @@ const login = async (req, res) => {
       const obj = {
         name: user.name,
         phoneNumber: user.phoneNumber,
+        role_id: user.role_id,
         token: token,
       };
 

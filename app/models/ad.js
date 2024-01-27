@@ -8,7 +8,7 @@ const adSchema = new mongoose.Schema({
     trim: true
   },
   category: {
-    type: String,
+    type: [String],
     required: true
   },
   image: [{

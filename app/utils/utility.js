@@ -1,5 +1,3 @@
-
-
 const ROLE_IDS = {
   BRAND_COMPANY: "role_1",
   AGENCY: "role_2",
