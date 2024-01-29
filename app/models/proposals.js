@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const { ObjectId } = require("mongodb");
 
 const proposalSchema = new mongoose.Schema({
   content: {
@@ -15,8 +16,8 @@ const proposalSchema = new mongoose.Schema({
   },
   submittedBy: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "User",
-  }, // Assuming you have a User model
+    ref: "users",
+  }, 
   createdAt: {
     type: Date,
     default: Date.now,

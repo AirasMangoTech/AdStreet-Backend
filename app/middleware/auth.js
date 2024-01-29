@@ -12,9 +12,6 @@ const verifyToken = (req, res, next) => {
     try {
         const decoded = jwt.verify(token, config.SECRET_KEY);
         req.user = decoded;
-        console.log(token);
-        console.log(req.user);
-        console.log(decoded);
     } catch (error) {
         logger.error(`ip: ${req.ip},url: ${req.url},error:${error.stack}`,'error')
         return response.authError(res, "Unauthorized")

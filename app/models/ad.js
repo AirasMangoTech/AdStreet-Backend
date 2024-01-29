@@ -26,9 +26,14 @@ const adSchema = new mongoose.Schema({
     type: String,
     required: true
   },
+  Proposal: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Proposal',
+    required: false
+  },
   postedBy: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
+    ref: 'users',
     required: true
   },
   createdAt: {

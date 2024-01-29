@@ -3,7 +3,7 @@ const user = require("../controllers/users.controller");
 const verifyToken = require("../middleware/auth");
 const {verifyOTP} = require("../middleware/otp");
 const ad = require("../controllers/add.controller");
-const upload = require('../utils/imageUpload'); // Adjusted path to multerConfig
+const upload = require('../utils/imageUpload'); 
 const user_route = express.Router();
 
 

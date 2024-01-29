@@ -1,14 +1,13 @@
 const express = require('express');
-const router = express.Router();
+const category_router = express.Router();
 const cc = require('../controllers/category.controller');
-//const {verifyAdmin} = require('../middleware/verifyadmin')
 const verifyToken = require("../middleware/auth");
 
 
-router.post('/categories', [verifyToken], cc.createCategory);
-router.get('/allcategories', cc.getAllCategories);
-router.get('/categoriesId/:id', cc.getCategoryById);
-router.put('/update/:id', cc.updateCategory);
-router.delete('/delete/:id', cc.deleteCategory);
+category_router.post('/categories', [verifyToken], cc.createCategory);
+category_router.get('/allcategories', cc.getAllCategories);
+category_router.get('/categoriesId/:id', cc.getCategoryById);
+category_router.put('/update/:id', cc.updateCategory);
+category_router.delete('/delete/:id', cc.deleteCategory);
 
-module.exports = router;
+module.exports = category_router;
