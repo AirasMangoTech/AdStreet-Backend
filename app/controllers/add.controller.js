@@ -52,8 +52,8 @@ const postAd = async (req, res) => {
 
 const getAllAds = async (req, res) => {
   try {
-    const ads = await Ad.find().populate('Proposal'); 
-
+  const ads = await Ad.find({isApproved:true}).populate('Proposal'); 
+    //ask about populate
     return response.success(res, "All ads retrieved successfully", { ads });
   } catch (error) {
     console.error(`Error getting all ads: ${error}`);
