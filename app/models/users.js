@@ -1,6 +1,7 @@
 const { ObjectId } = require("mongodb");
 const mongoose = require("mongoose");
 const ROLE_IDS = require("../utils/utility");
+
 const UserSchema = new mongoose.Schema({
   name: {
     type: String,
@@ -15,8 +16,16 @@ const UserSchema = new mongoose.Schema({
   },
   roles: {
     type: String,
-    enum: [ROLE_IDS.BRAND_COMPANY, ROLE_IDS.AGENCY, ROLE_IDS.INDIVIDUAL, ROLE_IDS.ADMIN],
+    enum: [
+      ROLE_IDS.BRAND_COMPANY,
+      ROLE_IDS.AGENCY,
+      ROLE_IDS.INDIVIDUAL,
+      ROLE_IDS.ADMIN,
+    ],
     required: true,
+  },
+  fcmToken: { 
+    type: String 
   },
   password: {
     type: String,

@@ -50,7 +50,7 @@ const postProposal = async (req, res) => {
 };
 const getAllProposals = async (req, res) => {
   try {
-    const proposals = await Proposal.find().populate('submittedBy'); // Assuming 'submittedBy' is the field in the Proposal model referencing the User model
+    const proposals = await Proposal.find().populate('submittedBy'); 
 
     return response.success(res, "All proposals retrieved successfully", { proposals });
   } catch (error) {

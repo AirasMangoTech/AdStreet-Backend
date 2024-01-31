@@ -1,7 +1,9 @@
 const OTPCode = require("../models/otp");
-//const SMS = require("../utils/sendSms");
-const generator = require('generate-password');
-const moment = require('moment')
+const generator = require("generate-password");
+const moment = require("moment");
+const jwt = require("jsonwebtoken");
+const response = require("../utils/responseHelpers");
+const config = process.env;
 
 
 const GenerateOTP = (length) => {
@@ -15,18 +17,25 @@ const GenerateOTP = (length) => {
   return OTP;
 };
 
-
 const verifyOTP = async (req, res, next) => {
   try {
-    const device_id = req.headers.deviceid;
-    const api_name = req.url; // or req.baseUrl + req.path to get the endpoint
-
-    if (!device_id) {
-      return res
-        .status(400)
-        .json({ message: "Device ID required." });
+    if (req.body.otp_token) {
+      try {
+        const decoded = jwt.verify(req.body.otp_token, config.SECRET_KEY);
+        if (
+          decoded.device_id == req.headers.deviceid &&
+          decoded.api == req.url
+        ) {
+          return next();
+        }
+      } catch (error) {
+        if (error) {
+          return response.otpAuthExpired(res, "OTP Authentication Expired");
+        }
+      }
     }
-
+    let device_id = req.headers.deviceid;
+    let api_name = req.url;
     // Find the OTP for the device ID and API endpoint that hasn't expired or been verified
     const otp = await OTPCode.findOne({
       device_id: device_id,
@@ -43,7 +52,7 @@ const verifyOTP = async (req, res, next) => {
         code: newOtpCode,
         api_name: api_name,
         is_verified: false,
-        expired_at: new Date(new Date().getTime() + 5 * 60000), 
+        expired_at: new Date(new Date().getTime() + 5 * 60000),
       });
       await newOtp.save();
       console.log(newOtpCode);
@@ -58,17 +67,28 @@ const verifyOTP = async (req, res, next) => {
     if (otp.code === req.body.code) {
       otp.is_verified = true;
       await otp.save();
-      next(); // Proceed to next middleware
+      //next();
+      const token = jwt.sign(
+        { device_id: req.headers.deviceid, api: req.url },
+        process.env.SECRET_KEY,
+        {
+          expiresIn: "2d",
+        }
+      );
+      return response.success(res, "OTP verified", { otp_token: token });
     } else {
+
       return res.status(401).json({ message: "Invalid OTP code." });
     }
   } catch (error) {
     console.error("Error verifying OTP:", error);
-    return res.status(500).json({ message: "An error occurred while verifying OTP." });
+    return res
+      .status(500)
+      .json({ message: "An error occurred while verifying OTP." });
   }
 };
 
 module.exports = {
-  verifyOTP, GenerateOTP
+  verifyOTP,
+  GenerateOTP,
 };
-

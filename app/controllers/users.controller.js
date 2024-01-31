@@ -4,26 +4,23 @@ const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
 const response = require("../utils/responseHelpers");
 const logger = require("../logger");
+const FcmToken = require("../models/fcmTokens");
 require("dotenv").config();
 
 const signup = async (req, res) => {
   try {
-    let { email, password, confirmPassword, phoneNumber, roles } = req.body;
-
+    let { email, password, phoneNumber, roles, fcm_token } = req.body;
+   
     // Validate and process inputs
-    if (!email || !password || !confirmPassword || !phoneNumber || !roles) {
+    if (!email || !password || !phoneNumber || !roles || !fcm_token) {
       return response.badRequest(
         res,
-        "Email, Password, Confirm Password, and Phone Number are required"
+        "Email, Password, fcmToken, and Phone Number are required"
       );
     }
 
-    // Check if password and confirm password match
-    if (password !== confirmPassword) {
-      return response.badRequest(res, "Passwords do not match");
-    }
 
-    email = email.trim();
+    email = email.toLowerCase().trim();
     phoneNumber = phoneNumber.trim();
 
     // Check for existing user by email or phone number
@@ -62,14 +59,23 @@ const signup = async (req, res) => {
       await bcrypt.genSalt(10)
     );
     console.log(roleId);
+
     const newUser = new User({
       email,
       password: encryptedPassword,
       roles: roleId, // Save the role ID
       phone_Number: phoneNumber,
+      
     });
-
     await newUser.save();
+
+    let fcmObj = {
+      user_id: newUser._id,
+      //device_uid: req.headers.deviceid,
+      token: req.body.fcm_token,
+    };
+    let fcm = new FcmToken(fcmObj);
+    await fcm.save();
 
     // Generate JWT token
     const token = jwt.sign(
@@ -94,7 +100,7 @@ const signup = async (req, res) => {
 
 const login = async (req, res) => {
   try {
-    let { phoneNumber, password } = req.body;
+    let { phoneNumber, password, fcmToken } = req.body;
     phoneNumber = phoneNumber ? phoneNumber.trim() : undefined;
 
     // Find the user by phone number
@@ -104,6 +110,9 @@ const login = async (req, res) => {
 
     // Compare the provided password with the stored hashed password
     if (await bcrypt.compare(password, user.password)) {
+      user.fcmToken = fcmToken; // Update FCM token
+    await user.save();
+
       // User found and password is correct, create a JWT token
       const token = jwt.sign({ 
         name: user.name, 
@@ -122,8 +131,16 @@ const login = async (req, res) => {
         phoneNumber: user.phoneNumber,
         role_id: user.role_id,
         token: token,
+        //fcmToken:  user.fcmToken,
       };
-
+      let fcmObj = {
+        user_id: auth.user_id,
+        device_uid: req.headers.deviceid,
+        token: req.body.fcm_token,
+      };
+      let fcm = new FcmToken(fcmObj);
+      await fcm.save();
+      
       // Return success response
       return response.success(res, "Login Successful", obj);
     } else {
