@@ -1,5 +1,5 @@
 const User = require("../models/users");
-const {ROLE_IDS} = require("../utils/utility");
+const { ROLE_IDS } = require("../utils/utility");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
 const response = require("../utils/responseHelpers");
@@ -10,7 +10,7 @@ require("dotenv").config();
 const signup = async (req, res) => {
   try {
     let { email, password, phoneNumber, roles, fcm_token } = req.body;
-   
+
     // Validate and process inputs
     if (!email || !password || !phoneNumber || !roles || !fcm_token) {
       return response.badRequest(
@@ -18,7 +18,6 @@ const signup = async (req, res) => {
         "Email, Password, fcmToken, and Phone Number are required"
       );
     }
-
 
     email = email.toLowerCase().trim();
     phoneNumber = phoneNumber.trim();
@@ -65,7 +64,6 @@ const signup = async (req, res) => {
       password: encryptedPassword,
       roles: roleId, // Save the role ID
       phone_Number: phoneNumber,
-      
     });
     await newUser.save();
 
@@ -89,7 +87,7 @@ const signup = async (req, res) => {
       phone_Number: newUser.phone_Number,
       token: token,
     };
-    
+
     return response.success(res, "Signup Successful", obj);
   } catch (error) {
     console.log(error.message);
@@ -105,21 +103,23 @@ const login = async (req, res) => {
 
     // Find the user by phone number
     const user = await User.findOne({ phone_Number: phoneNumber });
-    
+
     if (!user) return response.notFound(res, "Invalid Credentials");
 
     // Compare the provided password with the stored hashed password
     if (await bcrypt.compare(password, user.password)) {
       user.fcmToken = fcmToken; // Update FCM token
-    await user.save();
+      await user.save();
 
       // User found and password is correct, create a JWT token
-      const token = jwt.sign({ 
-        name: user.name, 
-        phoneNumber: user.phoneNumber, 
-        id: user._id,
-        role_id: user.roles
-      },process.env.SECRET_KEY,
+      const token = jwt.sign(
+        {
+          name: user.name,
+          phoneNumber: user.phoneNumber,
+          id: user._id,
+          role_id: user.roles,
+        },
+        process.env.SECRET_KEY,
         {
           expiresIn: "1d",
         }
@@ -140,7 +140,7 @@ const login = async (req, res) => {
       };
       let fcm = new FcmToken(fcmObj);
       await fcm.save();
-      
+
       // Return success response
       return response.success(res, "Login Successful", obj);
     } else {
@@ -157,7 +157,7 @@ const login = async (req, res) => {
 
 const retrieveDataForRole = async (req, res) => {
   try {
-    const user = await User.findById(req.user._id); 
+    const user = await User.findById(req.user.id);
 
     let data;
     switch (user.role) {

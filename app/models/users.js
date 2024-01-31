@@ -36,6 +36,41 @@ const UserSchema = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
+  additional: {
+    company_name:{
+      type: String,
+    },
+    years_experience: {
+      type: Number
+    },
+    services: {
+      type: String
+    },
+    area_expertise:{
+      typr: String
+    },
+    s_link:{
+      type: String
+    },
+    w_link:{
+      type: String
+    },
+    p_link:{
+      type: String
+    },
+  },
+  
+  country: {
+    type: String,
+  },
+  city: {
+    type: String,
+  },
+  state: {
+    type: String,
+  },
+  
+  
   updated_at: Date,
 });
 const Users = mongoose.model("users", UserSchema);

@@ -3,6 +3,7 @@ const logger = require("../logger");
 const response  = require("../utils/responseHelpers");
 const config = process.env;
 
+
 const verifyToken = (req, res, next) => {
     var token = req.headers['authorization'];
     if (!token) {

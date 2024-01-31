@@ -9,8 +9,7 @@ const postAd = async (req, res) => {
     return response.forbidden(res, "User not authenticated", user);
   }
   try {
-    const { title, category, description, budget, jobDuration, imageUrl } =
-      req.body;
+    const { title, category, description, budget, jobDuration, imageUrl } = req.body;
     //const image = req.file.path; // Assuming file paths are sent from the frontend and you're using a middleware like multer for file handling
 
     const newAd = new Ad({
@@ -22,7 +21,8 @@ const postAd = async (req, res) => {
       jobDuration,
       postedBy: req.user.id,
     });
-
+    console.log(req.user.id);
+    
     await newAd.save();
     let notiData = { }
     let notification = new Notification({
