@@ -31,6 +31,10 @@ const UserSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  image: 
+    {
+      type: String,
+    },
   phone_Number: Number,
   created_at: {
     type: Date,
