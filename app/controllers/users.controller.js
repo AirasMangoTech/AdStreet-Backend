@@ -9,7 +9,7 @@ require("dotenv").config();
 
 const signup = async (req, res) => {
   try {
-    let { email, password, phoneNumber, roles, fcm_token } = req.body;
+    let { email, password, phoneNumber, roles, fcm_token,image,country,city,state,additional } = req.body;
 
     // Validate and process inputs
     if (!email || !password || !phoneNumber || !roles || !fcm_token) {
@@ -57,13 +57,18 @@ const signup = async (req, res) => {
       password,
       await bcrypt.genSalt(10)
     );
-    console.log(roleId);
+    console.log(additional);
 
     const newUser = new User({
       email,
       password: encryptedPassword,
       roles: roleId, // Save the role ID
       phone_Number: phoneNumber,
+      image: image ? image:null,
+      country: country ? country: null,
+      city: city? city : null,
+      state :state?state: null,
+      additional: additional ? additional: null
     });
     await newUser.save();
 
@@ -82,13 +87,9 @@ const signup = async (req, res) => {
       { expiresIn: "1d" }
     );
 
-    const obj = {
-      email: newUser.email,
-      phone_Number: newUser.phone_Number,
-      token: token,
-    };
+   
 
-    return response.success(res, "Signup Successful", obj);
+    return response.success(res, "Signup Successful", {user:newUser,token});
   } catch (error) {
     console.log(error.message);
     logger.error(`ip: ${req.ip}, url: ${req.url}, error: ${error.stack}`);

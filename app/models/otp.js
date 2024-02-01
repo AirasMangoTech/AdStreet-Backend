@@ -9,7 +9,7 @@ const OTPSchema = new mongoose.Schema(
       type: String,
     },
     code: {
-      type: String,
+      type: Number,
     },
     phoneNumber: {
       type: String,

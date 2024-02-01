@@ -68,19 +68,21 @@ const verifyOTP = async (req, res, next) => {
         expired_at: new Date(new Date().getTime() + 5 * 60000),
       });
       await newOtp.save();
-      console.log(newOtpCode);
       // Send the OTP to the user's phone
       //SMS.sendSMS(`Your OTP is: ${newOtpCode}`, phoneNumber);
+       return response.success(res, "OTP verified", { otp: newOtp.code });
 
-      return res
-        .status(200)
-        .json({ message: "A new OTP has been sent to your phone." });
+
+      // return res
+      //   .status(200)
+      //   .json({ message: "A new OTP has been sent to your phone." });
     }
-    
+    console.log(otp)
+    console.log(req.body.code)
     if (otp && (otp.code === req.body.code)) {
+
       otp.is_verified = true;
       await otp.save();
-      next();
       const token = jwt.sign(
         { device_id: req.headers.deviceid, api: req.url },
         process.env.SECRET_KEY,
@@ -88,9 +90,10 @@ const verifyOTP = async (req, res, next) => {
           expiresIn: "2d",
         }
       );
+   
+
       return response.success(res, "OTP verified", { otp_token: token });
     } else {
-      
       return res.status(401).json({ message: "Invalid OTP code." });
       
     }

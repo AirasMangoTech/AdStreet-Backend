@@ -24,46 +24,51 @@ const UserSchema = new mongoose.Schema({
     ],
     required: true,
   },
-  fcmToken: { 
-    type: String 
+  fcmToken: {
+    type: String,
   },
   password: {
     type: String,
     required: true,
   },
-  image: 
-    {
-      type: String,
-    },
+  image: {
+    type: String,
+  },
   phone_Number: Number,
   created_at: {
     type: Date,
     default: Date.now,
   },
   additional: {
-    company_name:{
+    company_name: {
       type: String,
     },
     years_experience: {
-      type: Number
+      type: Number,
+    },
+    industry:{
+      type:String,
     },
     services: {
-      type: String
+      type: String,
     },
-    area_expertise:{
-      typr: String
+    currentRole: {
+      type: String,
     },
-    s_link:{
-      type: String
+    area_expertise: {
+      type: String,
     },
-    w_link:{
-      type: String
+    s_link: {
+      type: String,
     },
-    p_link:{
-      type: String
+    w_link: {
+      type: String,
+    },
+    p_link: {
+      type: String,
     },
   },
-  
+
   country: {
     type: String,
   },
@@ -73,8 +78,7 @@ const UserSchema = new mongoose.Schema({
   state: {
     type: String,
   },
-  
-  
+
   updated_at: Date,
 });
 const Users = mongoose.model("users", UserSchema);
