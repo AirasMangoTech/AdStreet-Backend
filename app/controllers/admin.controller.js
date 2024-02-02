@@ -2,6 +2,19 @@ const Ad = require("../models/ad");
 const response = require("../utils/responseHelpers");
 const {ROLE_IDS} = require('../utils/utility');
 
+
+const getAllAds = async (req, res) => {
+  try {
+  const ads = await Ad.find({isApproved:false}).populate('Proposal'); 
+    //ask about populate
+    return response.success(res, "All ads retrieved successfully", { ads });
+  } catch (error) {
+    console.error(`Error getting all ads: ${error}`);
+    return response.serverError(res, "Error getting all ads");
+  }
+};
+
+
 const approveAd = async (req, res) => {
   const { isApproved } = req.body;
 
@@ -25,4 +38,7 @@ const approveAd = async (req, res) => {
   }
 };
 
-module.exports = {approveAd}
+module.exports = {
+  approveAd,
+  getAllAds
+}

@@ -21,7 +21,6 @@ const proposalSchema = new mongoose.Schema({
   adId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Ad',
-    
   },
 
   createdAt: {
