@@ -7,19 +7,16 @@ const dupliUser = async (req, res, next) => {
       email: req.body.email,
     });
     if (email) {
-      return helperFunction.badRequest(res, "This Email already exists");
+      return response.badRequest(res, "This Email already exists");
     }
     let phone = await User.findOne({
-      phone: req.body.phone,
+      phone_Number: req.body.phoneNumber,
     });
     if (phone) {
-      return helperFunction.badRequest(res, "This Phone Number already exists");
-    }
-    if (req.body.validate == true) {
-      return helperFunction.success(res, "Email/Phone is Valid");
+      return response.badRequest(res, "This Phone Number already exists");
     }
 
-    next(); // No existing user found, proceed to the next middleware
+    next();
   } catch (error) {
     console.error("Error in checkUserExists middleware:", error);
     return response.serverError(res, "Server error during user check");
