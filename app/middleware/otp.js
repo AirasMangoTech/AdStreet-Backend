@@ -60,6 +60,14 @@ const verifyOTP = async (req, res, next) => {
     if (!req.body.code) {
       // If no valid OTP is found, generate and send a new one
       const newOtpCode = GenerateOTP(4);
+
+      if (otp) {
+        otp.code = newOtpCode,
+        expired_at= new Date(new Date().getTime() + 5 * 60000)
+        await otp.save()
+      }
+      else{
+
       const newOtp = new OTPCode({
         device_id: device_id,
         code: newOtpCode,
@@ -68,9 +76,10 @@ const verifyOTP = async (req, res, next) => {
         expired_at: new Date(new Date().getTime() + 5 * 60000),
       });
       await newOtp.save();
+    }
       // Send the OTP to the user's phone
       //SMS.sendSMS(`Your OTP is: ${newOtpCode}`, phoneNumber);
-       return response.success(res, "OTP verified", { otp: newOtp.code });
+       return response.success(res, "OTP verified", { otp: newOtpCode });
 
 
       // return res

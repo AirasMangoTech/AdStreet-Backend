@@ -9,7 +9,18 @@ require("dotenv").config();
 
 const signup = async (req, res) => {
   try {
-    let { email, password, phoneNumber, roles, fcm_token,image,country,city,state,additional } = req.body;
+    let {
+      email,
+      password,
+      phoneNumber,
+      roles,
+      fcm_token,
+      image,
+      country,
+      city,
+      state,
+      additional,
+    } = req.body;
 
     // Validate and process inputs
     if (!email || !password || !phoneNumber || !roles || !fcm_token) {
@@ -64,11 +75,11 @@ const signup = async (req, res) => {
       password: encryptedPassword,
       roles: roleId, // Save the role ID
       phone_Number: phoneNumber,
-      image: image ? image:null,
-      country: country ? country: null,
-      city: city? city : null,
-      state :state?state: null,
-      additional: additional ? additional: null
+      image: image ? image : null,
+      country: country ? country : null,
+      city: city ? city : null,
+      state: state ? state : null,
+      additional: additional ? additional : null,
     });
     await newUser.save();
 
@@ -87,9 +98,7 @@ const signup = async (req, res) => {
       { expiresIn: "1d" }
     );
 
-   
-
-    return response.success(res, "Signup Successful", {user:newUser,token});
+    return response.success(res, "Signup Successful", { user: newUser, token });
   } catch (error) {
     console.log(error.message);
     logger.error(`ip: ${req.ip}, url: ${req.url}, error: ${error.stack}`);
@@ -156,40 +165,53 @@ const login = async (req, res) => {
   }
 };
 
-const retrieveDataForRole = async (req, res) => {
+// const retrieveDataForRole = async (req, res) => {
+//   try {
+//     const user = await User.findById(req.user.id);
+
+//     let data;
+//     switch (user.role) {
+//       case ROLE_IDS.BRAND_COMPANY:
+//         data = await BrandCompany.findOne({ _id: user.companyId });
+//         data = await getBrandCompanyData(user);
+//         console.log(BRAND_COMPANY);
+//         break;
+//       case ROLE_IDS.AGENCY:
+//         // Fetch data specific to agencies
+//         data = await getAgencyData(user);
+//         console.log(AGENCY);
+//         break;
+//       case ROLE_IDS.INDIVIDUAL:
+//         // Fetch data specific to individuals
+//         data = await getIndividualData(user);
+//         console.log(INDIVIDUAL);
+//         break;
+//       default:
+//         throw new Error("Unknown role");
+//     }
+
+//     res.json(data);
+//   } catch (error) {
+//     console.error(`Error retrieving data for role: ${error}`);
+//     res.status(500).json({ message: "Error retrieving data" });
+//   }
+// };
+
+// controllers/userController.js
+
+
+const getAllUsers = async (req, res) => {
   try {
-    const user = await User.findById(req.user.id);
-
-    let data;
-    switch (user.role) {
-      case ROLE_IDS.BRAND_COMPANY:
-        data = await BrandCompany.findOne({ _id: user.companyId });
-        data = await getBrandCompanyData(user);
-        console.log(BRAND_COMPANY);
-        break;
-      case ROLE_IDS.AGENCY:
-        // Fetch data specific to agencies
-        data = await getAgencyData(user);
-        console.log(AGENCY);
-        break;
-      case ROLE_IDS.INDIVIDUAL:
-        // Fetch data specific to individuals
-        data = await getIndividualData(user);
-        console.log(INDIVIDUAL);
-        break;
-      default:
-        throw new Error("Unknown role");
-    }
-
-    res.json(data);
+    const users = await User.find({}); // Retrieves all users
+    res.json(users);
   } catch (error) {
-    console.error(`Error retrieving data for role: ${error}`);
-    res.status(500).json({ message: "Error retrieving data" });
+    res.status(500).send('Error occurred while retrieving users');
   }
 };
+
 
 module.exports = {
   signup,
   login,
-  retrieveDataForRole,
+  getAllUsers,
 };
