@@ -1,7 +1,7 @@
 const User = require("../models/users");
 const response = require("../utils/responseHelpers");
 
-const checkUserExists = async (req, res, next) => {
+const dupliUser = async (req, res, next) => {
   try {
     let email = await User.findOne({
       email: req.body.email,
@@ -26,4 +26,4 @@ const checkUserExists = async (req, res, next) => {
   }
 };
 
-module.exports = checkUserExists;
+module.exports = dupliUser;
