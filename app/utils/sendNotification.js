@@ -22,7 +22,7 @@ const sendNotification = async (title, body, data, token) => {
 
     return true;
   } catch (error) {
-    console.log(error);
+    //console.log(error);
     return error;
   }
 };

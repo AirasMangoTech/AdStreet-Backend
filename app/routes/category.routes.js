@@ -5,9 +5,9 @@ const verifyToken = require("../middleware/auth");
 
 
 category_router.post('/categories', [verifyToken], cc.createCategory);
-category_router.get('/allcategories', cc.getAllCategories);
-category_router.get('/categoriesId/:id', cc.getCategoryById);
-category_router.put('/update/:id', cc.updateCategory);
-category_router.delete('/delete/:id', cc.deleteCategory);
+category_router.get('/allcategories', [verifyToken], cc.getAllCategories);
+category_router.get('/categoriesId/:id',[verifyToken], cc.getCategoryById);
+category_router.put('/update/:id',[verifyToken], cc.updateCategory);
+category_router.delete('/delete/:id',[verifyToken], cc.deleteCategory);
 
 module.exports = category_router;

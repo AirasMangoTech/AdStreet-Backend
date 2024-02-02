@@ -18,6 +18,12 @@ const proposalSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: "users",
   }, 
+  adId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Ad',
+    
+  },
+
   createdAt: {
     type: Date,
     default: Date.now,

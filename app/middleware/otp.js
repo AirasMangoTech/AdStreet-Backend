@@ -43,7 +43,7 @@ const verifyOTP = async (req, res, next) => {
           expiresIn: "2d",
         }
       );
-      return response.success(res, "OTP verified", { otp_token: token });
+      return response.success(res, "OTP sent.", { otp_token: token });
     }
   
 
@@ -79,7 +79,7 @@ const verifyOTP = async (req, res, next) => {
     }
       // Send the OTP to the user's phone
       //SMS.sendSMS(`Your OTP is: ${newOtpCode}`, phoneNumber);
-       return response.success(res, "OTP verified", { otp: newOtpCode });
+       return response.success(res, "OTP sent", { otp: newOtpCode });
 
 
       // return res

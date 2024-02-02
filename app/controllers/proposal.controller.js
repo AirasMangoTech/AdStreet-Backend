@@ -1,5 +1,6 @@
 const Proposal = require("../models/proposals");
 const Notification = require('../models/notifications');
+const sendNotification = require('../utils/sendNotification');
 const FcmToken = require('../models/fcmTokens');
 const Users = require('../models/users');
 const response = require("../utils/responseHelpers");
@@ -16,8 +17,8 @@ const postProposal = async (req, res) => {
       jobDuration: req.body.jobDuration,
       submittedBy: req.user.id,
     });
-
     await proposal.save();
+
     let notiData = {};
     let notification = new Notification({
       title: `${req.user.name} sent you a proposal`,
@@ -33,8 +34,7 @@ const postProposal = async (req, res) => {
       const token = party2Tokens[i];
 
       await sendNotification(
-        `${req.user.name} sent a NDA for you`,
-        `You've received a new NDA "${req.body.name}" from ${req.user.name}`,
+        `${req.user.name} sent a proposal`,
         notiData,
         token.token
       );
@@ -51,15 +51,23 @@ const postProposal = async (req, res) => {
 const getAllProposals = async (req, res) => {
   try {
     const proposals = await Proposal.find().populate('submittedBy'); 
-
     return response.success(res, "All proposals retrieved successfully", { proposals });
   } catch (error) {
     console.error(`Error getting all proposals: ${error}`);
     return response.serverError(res, "Error getting all proposals");
   }
 };
-
+const getProposalsByAdId = async (req, res) => {
+  try {
+    const { adId } = req.params; // Get ad ID from URL params
+    const proposals = await Proposal.find({ adId: adId });
+    return response.success(res, "All proposals retrieved successfully", { proposals });
+  } catch (error) {
+    return response.serverError(res, "Error getting this ad id proposals");
+  }
+};
 module.exports = {
   postProposal,
-  getAllProposals
+  getAllProposals,
+  getProposalsByAdId
 };

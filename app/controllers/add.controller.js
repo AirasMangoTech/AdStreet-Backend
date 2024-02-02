@@ -1,6 +1,7 @@
 const Ad = require("../models/ad");
 const {Proposal} = require('../models/proposals');
 const Notification = require('../models/notifications');
+const sendNotification = require('../utils/sendNotification')
 const FcmToken =require('../models/fcmTokens');
 const response = require("../utils/responseHelpers");
 
@@ -9,7 +10,7 @@ const postAd = async (req, res) => {
     return response.forbidden(res, "User not authenticated", user);
   }
   try {
-    const { title, category, description, budget, jobDuration, imageUrl } = req.body;
+    const { title, category, description, budget, jobDuration, imageUrl, valid_till } = req.body;
     //const image = req.file.path; // Assuming file paths are sent from the frontend and you're using a middleware like multer for file handling
 
     const newAd = new Ad({
@@ -20,8 +21,8 @@ const postAd = async (req, res) => {
       budget,
       jobDuration,
       postedBy: req.user.id,
+      valid_till,
     });
-    console.log(req.user.id);
     
     await newAd.save();
     let notiData = { }

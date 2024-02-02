@@ -11,6 +11,7 @@ require("dotenv").config();
 const signup = async (req, res) => {
   try {
     let {
+      name,
       email,
       password,
       phoneNumber,
@@ -35,15 +36,15 @@ const signup = async (req, res) => {
     phoneNumber = phoneNumber.trim();
 
     // Check for existing user by email or phone number
-    const existingUser = await User.findOne({
-      $or: [{ email: email }, { phone_Number: phoneNumber }],
-    });
-    if (existingUser) {
-      return response.badRequest(
-        res,
-        "User with given email or phone number already exists"
-      );
-    }
+    // const existingUser = await User.findOne({
+    //   $or: [{ email: email }, { phone_Number: phoneNumber }],
+    // });
+    // if (existingUser) {
+    //   return response.badRequest(
+    //     res,
+    //     "User with given email or phone number already exists"
+    //   );
+    // }
     var roleId;
     console.log(roles);
     switch (roles) {
@@ -52,7 +53,6 @@ const signup = async (req, res) => {
         break;
       case "Agency":
         roleId = ROLE_IDS.AGENCY;
-        console.log("i am woking");
         break;
       case "Individual":
         roleId = ROLE_IDS.INDIVIDUAL;
@@ -72,6 +72,7 @@ const signup = async (req, res) => {
     console.log(additional);
 
     const newUser = new User({
+      name,
       email,
       password: encryptedPassword,
       roles: roleId, // Save the role ID
@@ -115,7 +116,6 @@ const login = async (req, res) => {
     const user = await User.findOne({ phone_Number: phoneNumber });
 
     if (!user) return response.notFound(res, "Invalid Credentials");
-    // Compare the provided password with the stored hashed password
     if (await bcrypt.compare(password, user.password)) {
    
       // User found and password is correct, create a JWT token

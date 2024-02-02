@@ -42,6 +42,10 @@ const adSchema = new mongoose.Schema({
     ref: "users",
     required: true,
   },
+  valid_till:{
+    type : Date
+    //default: () => moment().endOf('day').toDate();
+  },
   createdAt: {
     type: Date,
     default: Date.now,

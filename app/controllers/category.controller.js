@@ -15,8 +15,7 @@ const createCategory = async (req, res) => {
     await category.save();
     return response.success(res, "Category created successfully", { category });
   } catch (error) {
-    res.status(500).json({ message: error.message });
-    return response.forbidden(res, "Only admin can access");
+    return response.badRequest(res, "Already  exists a category with that name.");
   }
 };
 
