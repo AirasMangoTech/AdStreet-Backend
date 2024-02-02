@@ -5,6 +5,7 @@ const bcrypt = require("bcryptjs");
 const response = require("../utils/responseHelpers");
 const logger = require("../logger");
 const FcmToken = require("../models/fcmTokens");
+const auth = require('../middleware/auth');
 require("dotenv").config();
 
 const signup = async (req, res) => {
@@ -111,16 +112,12 @@ const login = async (req, res) => {
     let { phoneNumber, password, fcmToken } = req.body;
     phoneNumber = phoneNumber ? phoneNumber.trim() : undefined;
 
-    // Find the user by phone number
     const user = await User.findOne({ phone_Number: phoneNumber });
 
     if (!user) return response.notFound(res, "Invalid Credentials");
-
     // Compare the provided password with the stored hashed password
     if (await bcrypt.compare(password, user.password)) {
-      user.fcmToken = fcmToken; // Update FCM token
-      await user.save();
-
+   
       // User found and password is correct, create a JWT token
       const token = jwt.sign(
         {
@@ -134,25 +131,27 @@ const login = async (req, res) => {
           expiresIn: "1d",
         }
       );
-      res.json({ token });
+      //res.json({ token });
       // Create object to send as response
+      let userShallow = user.toJSON();
+      delete userShallow.password;
       const obj = {
-        name: user.name,
-        phoneNumber: user.phoneNumber,
-        role_id: user.role_id,
+        ...userShallow,
+        //roles: user.ROLE_IDS,
         token: token,
         //fcmToken:  user.fcmToken,
       };
+      console.log(obj);
       let fcmObj = {
-        user_id: auth.user_id,
+        user_id: user._id,
         device_uid: req.headers.deviceid,
-        token: req.body.fcm_token,
+        token: req.body.fcmToken,
       };
       let fcm = new FcmToken(fcmObj);
       await fcm.save();
 
       // Return success response
-      return response.success(res, "Login Successful", obj);
+      return response.success(res, "Login Successful", {obj});
     } else {
       // Passwords do not match
       return response.notFound(res, "Invalid Credentials");
@@ -164,6 +163,7 @@ const login = async (req, res) => {
     return response.serverError(res, "Something bad happened! Try Again Later");
   }
 };
+
 
 // const retrieveDataForRole = async (req, res) => {
 //   try {
@@ -205,7 +205,7 @@ const getAllUsers = async (req, res) => {
     const users = await User.find({}); // Retrieves all users
     res.json(users);
   } catch (error) {
-    res.status(500).send('Error occurred while retrieving users');
+    res.status(500).json({ error: 'Failed to load users' });
   }
 };
 
