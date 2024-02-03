@@ -10,8 +10,8 @@ const createCategory = async (req, res) => {
     );
   try {
     console.log(req.user);
-    const { name } = req.body;
-    const category = new Category({ name });
+    const { name, imageUrl } = req.body;
+    const category = new Category({ name, image: req.body.imageUrl, });
     await category.save();
     return response.success(res, "Category created successfully", { category });
   } catch (error) {

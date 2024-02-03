@@ -4,6 +4,8 @@ const sendNotification = require("../utils/sendNotification");
 const FcmToken = require("../models/fcmTokens");
 const Users = require("../models/users");
 const response = require("../utils/responseHelpers");
+const mongoose = require("mongoose");
+const { ObjectId } = require("mongodb");
 
 const postProposal = async (req, res) => {
   try {
@@ -63,6 +65,7 @@ const getAllProposals = async (req, res) => {
       "submittedBy",
       "-password"
     );
+
     return response.success(res, "All proposals retrieved successfully", {
       proposals,
     });
@@ -73,17 +76,25 @@ const getAllProposals = async (req, res) => {
 };
 const getProposalsByAdId = async (req, res) => {
   try {
-    const { adId } = req.params; // Get ad ID from URL params
+    const { adId } = req.params;
     const proposals = await Proposal.find({ adId: adId });
+
+    const count = await Proposal.countDocuments({ adId: adId });
+
     return response.success(
       res,
-      "Proposals of this ad ID retrieved successfully",
-      { proposals }
+      "Proposals for this ad ID retrieved successfully",
+      {
+        proposals: proposals,
+        count: count,
+      }
     );
   } catch (error) {
-    return response.serverError(res, "Error getting this ad id proposals");
+    console.error(`Error getting proposals for ad ID ${adId}: ${error}`);
+    return response.serverError(res, "Error getting proposals for this ad ID");
   }
 };
+
 module.exports = {
   postProposal,
   getAllProposals,
