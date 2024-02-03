@@ -1,8 +1,8 @@
 const Proposal = require("../models/proposals");
-const Notification = require('../models/notifications');
-const sendNotification = require('../utils/sendNotification');
-const FcmToken = require('../models/fcmTokens');
-const Users = require('../models/users');
+const Notification = require("../models/notifications");
+const sendNotification = require("../utils/sendNotification");
+const FcmToken = require("../models/fcmTokens");
+const Users = require("../models/users");
 const response = require("../utils/responseHelpers");
 
 const postProposal = async (req, res) => {
@@ -17,7 +17,7 @@ const postProposal = async (req, res) => {
       jobDuration: req.body.jobDuration,
       submittedBy: req.user.id,
       adId: req.body.adId,
-      image: req.body.imageUrl
+      image: req.body.imageUrl,
     });
     await proposal.save();
 
@@ -42,7 +42,9 @@ const postProposal = async (req, res) => {
       );
     }
     // Send a success response
-    return response.success(res, "Proposal submitted successfully", {proposal});
+    return response.success(res, "Proposal submitted successfully", {
+      proposal,
+    });
   } catch (error) {
     console.log(error.message);
     return response.serverError(res, "An error has been occurred");
@@ -50,12 +52,20 @@ const postProposal = async (req, res) => {
 };
 const getAllProposals = async (req, res) => {
   try {
-    let where = {}
-    if(req.query.ad_id){
-        where.adId = req.query.ad_id
+    let where = {};
+    if (req.query.ad_id) {
+      where.adId = req.query.ad_id;
     }
-    const proposals = await Proposal.find(where).populate('submittedBy', '-password');
-    return response.success(res, "All proposals retrieved successfully", { proposals });
+    if (req.query.user_id) {
+      where.submittedBy = req.query.user_id;
+    }
+    const proposals = await Proposal.find(where).populate(
+      "submittedBy",
+      "-password"
+    );
+    return response.success(res, "All proposals retrieved successfully", {
+      proposals,
+    });
   } catch (error) {
     console.error(`Error getting all proposals: ${error}`);
     return response.serverError(res, "Error getting all proposals");
@@ -65,7 +75,11 @@ const getProposalsByAdId = async (req, res) => {
   try {
     const { adId } = req.params; // Get ad ID from URL params
     const proposals = await Proposal.find({ adId: adId });
-    return response.success(res, "Proposals of this ad ID retrieved successfully", { proposals });
+    return response.success(
+      res,
+      "Proposals of this ad ID retrieved successfully",
+      { proposals }
+    );
   } catch (error) {
     return response.serverError(res, "Error getting this ad id proposals");
   }

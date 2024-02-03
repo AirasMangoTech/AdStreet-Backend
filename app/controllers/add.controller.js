@@ -10,7 +10,7 @@ const postAd = async (req, res) => {
     return response.forbidden(res, "User not authenticated", user);
   }
   try {
-    const { title, category, description, budget, jobDuration, imageUrl, valid_till } = req.body;
+    const { title, category, description, budget, jobDuration, imageUrl, name, valid_till } = req.body;
     //const image = req.file.path; // Assuming file paths are sent from the frontend and you're using a middleware like multer for file handling
 
     const newAd = new Ad({
@@ -21,6 +21,7 @@ const postAd = async (req, res) => {
       budget,
       jobDuration,
       postedBy: req.user.id,
+      name,
       valid_till,
     });
     
@@ -52,8 +53,16 @@ const postAd = async (req, res) => {
 };
 
 const getAllAds = async (req, res) => {
+  // try {
+  // const ads = await Ad.find({isApproved:true}).populate('Proposal'); 
   try {
-  const ads = await Ad.find({isApproved:true}).populate('Proposal'); 
+    let query = { isApproved: true };
+
+    // Check for user_id in query parameters and add to the query if present
+    if (req.query.user_id) {
+      query.postedBy = req.query.user_id;
+    }
+    const ads = await Ad.find(query).populate('postedBy', 'name -_id');
     //ask about populate
     return response.success(res, "All ads retrieved successfully", { ads });
   } catch (error) {
