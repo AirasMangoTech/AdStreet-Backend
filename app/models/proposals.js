@@ -22,7 +22,9 @@ const proposalSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Ad',
   },
-
+  image: {
+    type: String
+  },
   createdAt: {
     type: Date,
     default: Date.now,

@@ -16,7 +16,7 @@ const postAd = async (req, res) => {
     const newAd = new Ad({
       title,
       category,
-      image: imageUrl,
+      image: req.body.imageUrl,
       description,
       budget,
       jobDuration,
