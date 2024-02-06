@@ -64,7 +64,8 @@ const getAllProposals = async (req, res) => {
     const proposals = await Proposal.find(where).populate(
       "submittedBy",
       "-password"
-    );
+    ); 
+    
 
     return response.success(res, "All proposals retrieved successfully", {
       proposals,
@@ -76,10 +77,13 @@ const getAllProposals = async (req, res) => {
 };
 const getProposalsByAdId = async (req, res) => {
   try {
-    const { adId } = req.params;
-    const proposals = await Proposal.find({ adId: adId });
-
-    const count = await Proposal.countDocuments({ adId: adId });
+   // const { adId } = req.params;
+   let where = {};
+    if (req.query.ad_id) {
+      where.adId = req.query.ad_id;
+    }
+    const proposals = await Proposal.find(where);
+    const count = await Proposal.countDocuments(where);
 
     return response.success(
       res,
