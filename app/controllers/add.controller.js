@@ -1,8 +1,8 @@
 const Ad = require("../models/ad");
-const {Proposal} = require('../models/proposals');
-const Notification = require('../models/notifications');
-const sendNotification = require('../utils/sendNotification')
-const FcmToken =require('../models/fcmTokens');
+const { Proposal } = require("../models/proposals");
+const Notification = require("../models/notifications");
+const sendNotification = require("../utils/sendNotification");
+const FcmToken = require("../models/fcmTokens");
 const response = require("../utils/responseHelpers");
 
 const postAd = async (req, res) => {
@@ -10,7 +10,16 @@ const postAd = async (req, res) => {
     return response.forbidden(res, "User not authenticated", user);
   }
   try {
-    const { title, category, description, budget, jobDuration, imageUrl, name, valid_till } = req.body;
+    const {
+      title,
+      category,
+      description,
+      budget,
+      jobDuration,
+      imageUrl,
+      name,
+      valid_till,
+    } = req.body;
     //const image = req.file.path; // Assuming file paths are sent from the frontend and you're using a middleware like multer for file handling
 
     const newAd = new Ad({
@@ -24,9 +33,9 @@ const postAd = async (req, res) => {
       name,
       valid_till,
     });
-    
+
     await newAd.save();
-    let notiData = { }
+    let notiData = {};
     let notification = new Notification({
       title: `Thank you for listing`,
       content: `Thank you for listing your servive, Thank you your listing has been approved`,
@@ -54,15 +63,21 @@ const postAd = async (req, res) => {
 
 const getAllAds = async (req, res) => {
   // try {
-  // const ads = await Ad.find({isApproved:true}).populate('Proposal'); 
+  // const ads = await Ad.find({isApproved:true}).populate('Proposal');
   try {
-    let query = { isApproved: true };
+    let query = { isApproved: false };
+    // add search filter for ads by name
+    if (req.query.title) {
+      query.title = { $regex: new RegExp(req.query.title, "i") };
+    }
 
-    // Check for user_id in query parameters and add to the query if present
+    // Check for user_id 0in query parameters and add to the query if present
     if (req.query.user_id) {
       query.postedBy = req.query.user_id;
     }
-    const ads = await Ad.find(query).populate('postedBy', 'name -_id');
+    const ads = await Ad.find(query)
+      .populate("category")
+      .populate("postedBy", "-password");
     //ask about populate
     return response.success(res, "All ads retrieved successfully", { ads });
   } catch (error) {
@@ -74,5 +89,5 @@ const getAllAds = async (req, res) => {
 console.log();
 module.exports = {
   postAd,
-  getAllAds
+  getAllAds,
 };
