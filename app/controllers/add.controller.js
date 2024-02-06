@@ -83,9 +83,35 @@ const getAllAds = async (req, res) => {
     return response.serverError(res, "Error getting all ads");
   }
 };
+const GetAdddetails = async (req, res) => {
+  try {
+    const { ad_id } = req.params;
+
+    // Find the ad details
+    const adDetails = await Ad.findById(ad_id).populate('category').populate('postedBy', '-password');
+
+    if (!adDetails) {
+      return response.notFound(res, 'Ad not found');
+    }
+
+    // Check if the user has already applied for this job
+    const userApplied = await Proposal.exists({ adId: ad_id, submittedBy: req.user.id });
+
+    // Update ad details to include the 'applied' flag
+    adDetails = adDetails.toObject(); // Convert to plain JavaScript object
+    adDetails.applied = userApplied;
+
+    return response.success(res, 'Ad details retrieved successfully', { adDetails });
+  } catch (error) {
+    console.error(`Error getting ad details: ${error}`);
+    return response.serverError(res, 'Error getting ad details');
+  }
+};
+
 
 console.log();
 module.exports = {
   postAd,
   getAllAds,
+  GetAdddetails,
 };

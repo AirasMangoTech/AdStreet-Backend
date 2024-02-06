@@ -38,7 +38,10 @@ const adSchema = new mongoose.Schema({
     type: Boolean, 
     default: false 
   },
-  
+  hired_user:{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "users",
+  },
   postedBy: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "users",
