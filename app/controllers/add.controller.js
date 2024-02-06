@@ -17,7 +17,6 @@ const postAd = async (req, res) => {
       budget,
       jobDuration,
       imageUrl,
-      name,
       valid_till,
     } = req.body;
     //const image = req.file.path; // Assuming file paths are sent from the frontend and you're using a middleware like multer for file handling
@@ -30,7 +29,6 @@ const postAd = async (req, res) => {
       budget,
       jobDuration,
       postedBy: req.user.id,
-      name,
       valid_till,
     });
 

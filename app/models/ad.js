@@ -38,10 +38,7 @@ const adSchema = new mongoose.Schema({
     type: Boolean, 
     default: false 
   },
-  name: {
-    type: String,
-    required: true,
-  },
+  
   postedBy: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "users",
