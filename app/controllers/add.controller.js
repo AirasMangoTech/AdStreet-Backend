@@ -226,7 +226,6 @@ const GetAdddetails = async (req, res) => {
       ...{adDetails},
       applied: userApplied,
     };
-
     return response.success(res, "Ad details retrieved successfully", {
       adDetails: adDetailsWithAppliedFlag,
     });
