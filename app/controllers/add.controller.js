@@ -60,6 +60,59 @@ const postAd = async (req, res) => {
   }
 };
 
+// const getAllAds = async (req, res) => {
+//   try {
+//     let query = { isApproved: true };
+//     if (req.query.title) {
+//       query.title = { $regex: new RegExp(req.query.title, "i") };
+//     }
+//     if (req.query.user_id) {
+//       query.postedBy = req.query.user_id;
+//     }
+//     if (req.query.adId) {
+//       query._id = req.query.adId;
+//     }
+
+//     const ads = await Ad.aggregate([
+//       {
+//         $match: query
+//       },
+//       {
+//         $lookup: {
+//           from: "proposals",
+//           localField: "_id",
+//           foreignField: "adId",
+//           as: "proposals"
+//         }
+//       },
+      
+//       {
+//         $project: {
+//           _id: 1,
+//           title: 1,
+//           category: 1,
+//           images: 1,
+//           description: 1,
+//           budget: 1,
+//           jobDuration: 1,
+//           postedBy: 1,
+//           createdAt: 1,
+//           image: 1,
+//           isApproved: 1,
+//           totalProposals: { $size: "$proposals" }
+//         }
+//       },
+      
+//     ]);
+
+
+//     return response.success(res, "All ads retrieved successfully", { ads});
+//   } catch (error) {
+//     console.error(`Error getting all ads: ${error}`);
+//     return response.serverError(res, "Error getting all ads");
+//   }
+// };
+
 const getAllAds = async (req, res) => {
   try {
     let query = { isApproved: true };
@@ -67,12 +120,13 @@ const getAllAds = async (req, res) => {
       query.title = { $regex: new RegExp(req.query.title, "i") };
     }
     if (req.query.user_id) {
-      query.postedBy = req.query.user_id;
+      query.postedBy = new mongoose.Types.ObjectId(req.query.user_id);
     }
     if (req.query.adId) {
-      query._id = req.query.adId;
+      query._id = new mongoose.Types.ObjectId(req.query.adId);
     }
-
+    console.log(query.postedBy);
+    //console.log(req.query.adId);
     const ads = await Ad.aggregate([
       {
         $match: query
@@ -85,28 +139,54 @@ const getAllAds = async (req, res) => {
           as: "proposals"
         }
       },
-      
+      {
+        $lookup: {
+          from: "users", // Assuming the collection name is "users" for users data
+          let: { postedBy: "$postedBy" },
+          pipeline: [
+            {
+              $match: {
+                $expr: {
+                  $eq: ["$_id", "$$postedBy"]
+                }
+              }
+            },
+            {
+              $project: {
+                password: 0 // Exclude the password field
+              }
+            }
+          ],
+          as: "postedBy"
+        }
+      },  
+      {
+        $lookup: {
+          from: "categories", // Assuming the collection name is "categories" for categories data
+          localField: "category",
+          foreignField: "_id",
+          as: "category"
+        }
+      },      
       {
         $project: {
           _id: 1,
           title: 1,
-          category: 1,
+          category: { $arrayElemAt: ["$category", 0] }, // unwind category array if necessary
           images: 1,
           description: 1,
           budget: 1,
           jobDuration: 1,
-          postedBy: 1,
+          postedBy: { $arrayElemAt: ["$postedBy", 0] }, // unwind postedBy array if necessary
           createdAt: 1,
           image: 1,
           isApproved: 1,
           totalProposals: { $size: "$proposals" }
         }
       },
-      
     ]);
-
-
-    return response.success(res, "All ads retrieved successfully", { ads});
+    
+    return response.success(res, "All ads retrieved successfully", { ads });
   } catch (error) {
     console.error(`Error getting all ads: ${error}`);
     return response.serverError(res, "Error getting all ads");
@@ -114,12 +194,13 @@ const getAllAds = async (req, res) => {
 };
 
 
+
 // chnages user applied status to true or false
 const GetAdddetails = async (req, res) => {
   try {
     let where = {};
     if (req.query.adId) {
-      where._id = req.query.adId;
+      where._id = new mongoose.Types.ObjectId(req.query.adId);
     }
     const adDetails = await Ad.findOne(where)
       .populate("category")
@@ -142,7 +223,7 @@ const GetAdddetails = async (req, res) => {
     }
     // Update ad details to include the 'applied' flag
     const adDetailsWithAppliedFlag = {
-      ...{ adDetails },
+      ...{adDetails},
       applied: userApplied,
     };
 
