@@ -61,52 +61,59 @@ const postAd = async (req, res) => {
 };
 
 const getAllAds = async (req, res) => {
-  // try {
-  // const ads = await Ad.find({isApproved:true}).populate('Proposal');
   try {
     let query = { isApproved: true };
-    // add search filter for ads by name
     if (req.query.title) {
       query.title = { $regex: new RegExp(req.query.title, "i") };
     }
-    // Check for user_id 0in query parameters and add to the query if present
     if (req.query.user_id) {
       query.postedBy = req.query.user_id;
     }
-    // if (req.query.adId) {
-    //   query._id = req.query.adId;
-    // }
+    if (req.query.adId) {
+      query._id = req.query.adId;
+    }
 
-    const ads = await Ad.find(query)
-      .populate("category")
-      .populate("postedBy", "-password");
-    // const idArray = [];
-    // ads.forEach(ad => {
-    //   // Iterate over each document in the ad's documents array
-    //   ad.documents.forEach(document => {
-    //     // Push the _id of the current document to the idArray
-    //     idArray.push(document._id);
-    //   });
-    // });
-    // const count = await Proposal.countDocuments({ adId: { $in: {adIds : idArray}} });
-    // //ask about populate
-    // const proposals = await Proposal.find(query);
-    // const count = await Proposal.countDocuments(query);
+    const ads = await Ad.aggregate([
+      {
+        $match: query
+      },
+      {
+        $lookup: {
+          from: "proposals",
+          localField: "_id",
+          foreignField: "adId",
+          as: "proposals"
+        }
+      },
+      
+      {
+        $project: {
+          _id: 1,
+          title: 1,
+          category: 1,
+          images: 1,
+          description: 1,
+          budget: 1,
+          jobDuration: 1,
+          postedBy: 1,
+          createdAt: 1,
+          image: 1,
+          isApproved: 1,
+          totalProposals: { $size: "$proposals" }
+        }
+      },
+      
+    ]);
 
-    // return response.success(
-    //   res,
-    //   "Proposals for this ad ID retrieved successfully",
-    //   {
-    //     proposals: proposals,
-    //     count: count,
-    //   }
-    // );
+
     return response.success(res, "All ads retrieved successfully", { ads});
   } catch (error) {
     console.error(`Error getting all ads: ${error}`);
     return response.serverError(res, "Error getting all ads");
   }
 };
+
+
 // chnages user applied status to true or false
 const GetAdddetails = async (req, res) => {
   try {
