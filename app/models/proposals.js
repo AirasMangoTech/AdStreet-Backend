@@ -29,6 +29,10 @@ const proposalSchema = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
+  status: {
+    type: Boolean,
+    default: false
+  },
 });
 
 const Proposal = mongoose.model("Proposal", proposalSchema);

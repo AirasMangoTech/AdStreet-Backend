@@ -73,28 +73,41 @@ const getAllAds = async (req, res) => {
     if (req.query.user_id) {
       query.postedBy = req.query.user_id;
     }
-    
+    // if (req.query.adId) {
+    //   query._id = req.query.adId;
+    // }
 
     const ads = await Ad.find(query)
       .populate("category")
       .populate("postedBy", "-password");
-      // const idArray = [];
-      // ads.forEach(ad => {
-      //   // Iterate over each document in the ad's documents array
-      //   ad.documents.forEach(document => {
-      //     // Push the _id of the current document to the idArray
-      //     idArray.push(document._id);
-      //   });
-      // });
-   // const count = await Proposal.countDocuments({ adId: { $in: {adIds : idArray}} });
-    //ask about populate
+    // const idArray = [];
+    // ads.forEach(ad => {
+    //   // Iterate over each document in the ad's documents array
+    //   ad.documents.forEach(document => {
+    //     // Push the _id of the current document to the idArray
+    //     idArray.push(document._id);
+    //   });
+    // });
+    // const count = await Proposal.countDocuments({ adId: { $in: {adIds : idArray}} });
+    // //ask about populate
+    // const proposals = await Proposal.find(query);
+    // const count = await Proposal.countDocuments(query);
+
+    // return response.success(
+    //   res,
+    //   "Proposals for this ad ID retrieved successfully",
+    //   {
+    //     proposals: proposals,
+    //     count: count,
+    //   }
+    // );
     return response.success(res, "All ads retrieved successfully", { ads});
   } catch (error) {
     console.error(`Error getting all ads: ${error}`);
     return response.serverError(res, "Error getting all ads");
   }
 };
-
+// chnages user applied status to true or false
 const GetAdddetails = async (req, res) => {
   try {
     let where = {};
@@ -103,7 +116,7 @@ const GetAdddetails = async (req, res) => {
     }
     const adDetails = await Ad.findOne(where)
       .populate("category")
-      .populate("postedBy", "name email");
+      .populate("postedBy", "_id name email");
 
     console.log("Ad details:", adDetails);
 
@@ -122,7 +135,7 @@ const GetAdddetails = async (req, res) => {
     }
     // Update ad details to include the 'applied' flag
     const adDetailsWithAppliedFlag = {
-      ...{adDetails}, // Convert to plain JavaScript object
+      ...{ adDetails },
       applied: userApplied,
     };
 
@@ -135,9 +148,44 @@ const GetAdddetails = async (req, res) => {
   }
 };
 
+// write a function where the if the creator of ad acepts the proposal then the user who has applied for the ad that user id will be stored in the hired_user field of the ad schema
+
+const acceptProposal = async (req, res) => {
+  try {
+    const { adId, proposalId } = req.body;
+
+    const ad = await Ad.findById(adId);
+    if (!ad) {
+      return response.notFound(res, "Ad not found");
+    }
+    if (ad.postedBy.toString() !== req.user.id) {
+      return response.authError(
+        res,
+        "Only the creator of the ad can accept proposals"
+      );
+    }
+    const proposalToAccept = await Proposal.findByIdAndUpdate(
+      proposalId,
+      { status: "accepted" },
+      { new: true }
+    ).populate("submittedBy", "_id");
+
+    if (!proposalToAccept) {
+      return response.notFound(res, "Proposal not found");
+    }
+    ad.hired_user = proposalToAccept.submittedBy;
+    await ad.save();
+    return response.success(res, "Proposal accepted successfully", {proposalToAccept, hired_user: ad.hired_user});
+  } catch (error) {
+    console.error(`Error accepting proposal: ${error}`);
+    return response.serverError(res, "Error accepting proposal");
+  }
+};
+
 console.log();
 module.exports = {
   postAd,
   getAllAds,
   GetAdddetails,
+  acceptProposal,
 };
