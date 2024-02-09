@@ -242,7 +242,7 @@ const getHiredUsersAndAds = async (req, res) => {
     const userId = req.user.id;
 
     // Find ads posted by the current user with hired users
-    const ads = await Ad.find({ postedBy: userId, hired_user: { $exists: true, $ne: null } }).populate("hired_user", "_id name email");
+    const ads = await Ad.find({ postedBy: userId, hired_user: { $exists: true, $ne: null } }).populate("hired_user", "-password");
 
     // Check if any ads are found
     if (!ads || ads.length === 0) {
