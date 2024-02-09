@@ -6,9 +6,14 @@ const { handleImageUpload } = require('../controllers/app.controller');
 const {upload} = require('../utils/imageUpload');
 
 ad_route.post('/uploadImage',[ upload.single('image')], handleImageUpload);
+//create an add
 ad_route.post('/postAd', [verifyToken], ad.postAd);
+// filter of user, title and category
 ad_route.get('/getAllAds', [verifyToken], ad.getAllAds);
+// adding applied status
 ad_route.get('/getAdDetails', [verifyToken], ad.GetAdddetails);
 //get route of acceptProposal
-ad_route.put('/acceptProposal', [verifyToken], ad.acceptProposal);                                                                                                                                      
+ad_route.put('/acceptProposal', [verifyToken], ad.acceptProposal);    
+//get route of getHiredUser
+ad_route.get('/getHiredUser/:adId', [verifyToken], ad.getHiredUser);                                                                                                                                  
 module.exports = ad_route;

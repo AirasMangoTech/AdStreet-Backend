@@ -79,15 +79,15 @@ const getAllAds = async (req, res) => {
     //console.log(req.query.adId);
     const ads = await Ad.aggregate([
       {
-        $match: query
+        $match: query,
       },
       {
         $lookup: {
           from: "proposals",
           localField: "_id",
           foreignField: "adId",
-          as: "proposals"
-        }
+          as: "proposals",
+        },
       },
       {
         $lookup: {
@@ -97,27 +97,27 @@ const getAllAds = async (req, res) => {
             {
               $match: {
                 $expr: {
-                  $eq: ["$_id", "$$postedBy"]
-                }
-              }
+                  $eq: ["$_id", "$$postedBy"],
+                },
+              },
             },
             {
               $project: {
-                password: 0 // Exclude the password field
-              }
-            }
+                password: 0, // Exclude the password field
+              },
+            },
           ],
-          as: "postedBy"
-        }
-      },  
+          as: "postedBy",
+        },
+      },
       {
         $lookup: {
           from: "categories", // Assuming the collection name is "categories" for categories data
           localField: "category",
           foreignField: "_id",
-          as: "category"
-        }
-      },      
+          as: "category",
+        },
+      },
       {
         $project: {
           _id: 1,
@@ -131,19 +131,17 @@ const getAllAds = async (req, res) => {
           createdAt: 1,
           image: 1,
           isApproved: 1,
-          totalProposals: { $size: "$proposals" }
-        }
+          totalProposals: { $size: "$proposals" },
+        },
       },
     ]);
-    
+
     return response.success(res, "All ads retrieved successfully", { ads });
   } catch (error) {
     console.error(`Error getting all ads: ${error}`);
     return response.serverError(res, "Error getting all ads");
   }
 };
-
-
 
 // chnages user applied status to true or false
 const GetAdddetails = async (req, res) => {
@@ -174,7 +172,7 @@ const GetAdddetails = async (req, res) => {
     }
     // Update ad details to include the 'applied' flag
     const adDetailsWithAppliedFlag = {
-      ...{adDetails},
+      ...{ adDetails },
       applied: userApplied,
     };
     return response.success(res, "Ad details retrieved successfully", {
@@ -211,17 +209,36 @@ const acceptProposal = async (req, res) => {
     }
     ad.hired_user = proposalToAccept.submittedBy;
     await ad.save();
-    return response.success(res, "Proposal accepted successfully", {proposalToAccept, hired_user: ad.hired_user});
+    return response.success(res, "Proposal accepted successfully", {
+      proposalToAccept,
+      hired_user: ad.hired_user,
+    });
   } catch (error) {
     console.error(`Error accepting proposal: ${error}`);
     return response.serverError(res, "Error accepting proposal");
   }
 };
-
+//function to get hired users for a specific ad
+const getHiredUser = async (req, res) => {
+  try {
+    const { adId } = req.params;
+    const ad = await Ad.findById(adId).populate("hired_user", "_id name email");
+    if (!ad) {
+      return response.notFound(res, "Ad not found");
+    }
+    return response.success(res, "Hired user retrieved successfully", {
+      hired_user: ad.hired_user,
+    });
+  } catch (error) {
+    console.error(`Error getting hired user: ${error}`);
+    return response.serverError(res, "Error getting hired user");
+  }
+};
 console.log();
 module.exports = {
   postAd,
   getAllAds,
   GetAdddetails,
   acceptProposal,
+  getHiredUser,
 };
