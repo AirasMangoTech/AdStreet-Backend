@@ -60,59 +60,6 @@ const postAd = async (req, res) => {
   }
 };
 
-// const getAllAds = async (req, res) => {
-//   try {
-//     let query = { isApproved: true };
-//     if (req.query.title) {
-//       query.title = { $regex: new RegExp(req.query.title, "i") };
-//     }
-//     if (req.query.user_id) {
-//       query.postedBy = req.query.user_id;
-//     }
-//     if (req.query.adId) {
-//       query._id = req.query.adId;
-//     }
-
-//     const ads = await Ad.aggregate([
-//       {
-//         $match: query
-//       },
-//       {
-//         $lookup: {
-//           from: "proposals",
-//           localField: "_id",
-//           foreignField: "adId",
-//           as: "proposals"
-//         }
-//       },
-      
-//       {
-//         $project: {
-//           _id: 1,
-//           title: 1,
-//           category: 1,
-//           images: 1,
-//           description: 1,
-//           budget: 1,
-//           jobDuration: 1,
-//           postedBy: 1,
-//           createdAt: 1,
-//           image: 1,
-//           isApproved: 1,
-//           totalProposals: { $size: "$proposals" }
-//         }
-//       },
-      
-//     ]);
-
-
-//     return response.success(res, "All ads retrieved successfully", { ads});
-//   } catch (error) {
-//     console.error(`Error getting all ads: ${error}`);
-//     return response.serverError(res, "Error getting all ads");
-//   }
-// };
-
 const getAllAds = async (req, res) => {
   try {
     let query = { isApproved: true };
@@ -124,6 +71,9 @@ const getAllAds = async (req, res) => {
     }
     if (req.query.adId) {
       query._id = new mongoose.Types.ObjectId(req.query.adId);
+    }
+    if (req.query.category) {
+      query.category = new mongoose.Types.ObjectId(req.query.category);
     }
     console.log(query.postedBy);
     //console.log(req.query.adId);
@@ -211,11 +161,12 @@ const GetAdddetails = async (req, res) => {
     if (!adDetails) {
       return response.notFound(res, "Ad not found");
     }
-    const userId = req.user.id;
+    const userId = new mongoose.Types.ObjectId(req.user.id);
     const proposal = await Proposal.findOne({
       submittedBy: userId,
       adId: adDetails._id,
     });
+    console.log(proposal);
     // Check if the user has already applied for this proposal
     let userApplied = false;
     if (proposal) {
@@ -235,8 +186,6 @@ const GetAdddetails = async (req, res) => {
   }
 };
 
-// write a function where the if the creator of ad acepts the proposal then the user who has applied for the ad that user id will be stored in the hired_user field of the ad schema
-
 const acceptProposal = async (req, res) => {
   try {
     const { adId, proposalId } = req.body;
@@ -253,7 +202,7 @@ const acceptProposal = async (req, res) => {
     }
     const proposalToAccept = await Proposal.findByIdAndUpdate(
       proposalId,
-      { status: "accepted" },
+      { status: "true" },
       { new: true }
     ).populate("submittedBy", "_id");
 

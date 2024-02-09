@@ -3,6 +3,7 @@ const Notification = require("../models/notifications");
 const sendNotification = require("../utils/sendNotification");
 const FcmToken = require("../models/fcmTokens");
 const Users = require("../models/users");
+const Ad = require("../models/ad");
 const response = require("../utils/responseHelpers");
 const mongoose = require("mongoose");
 const { ObjectId } = require("mongodb");
@@ -13,12 +14,15 @@ const postProposal = async (req, res) => {
       return response.error(res, "Missing required fields", 400);
     }
     console.log(req.user);
+    const adId = req.body.adId;
+    const postedBy = Ad.postedBy;
     const proposal = new Proposal({
       content: req.body.content,
       budget: req.body.budget,
       jobDuration: req.body.jobDuration,
       submittedBy: req.user.id,
-      adId: req.body.adId,
+      postedBy: postedBy,
+      adId: adId,
       image: req.body.imageUrl,
     });
     await proposal.save();
@@ -44,9 +48,7 @@ const postProposal = async (req, res) => {
       );
     }
     // Send a success response
-    return response.success(res, "Proposal submitted successfully", {
-      proposal,
-    });
+    return response.success(res, "Proposal submitted successfully", {proposal});
   } catch (error) {
     console.log(error.message);
     return response.serverError(res, "An error has been occurred");
