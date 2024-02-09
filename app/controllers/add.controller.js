@@ -243,11 +243,19 @@ const getHiredUsersAndAds = async (req, res) => {
     const userId = req.user.id;
 
     // Find ads posted by the current user with hired users
-    const ads = await Ad.find({ postedBy: userId, hired_user: { $exists: true, $ne: null } }).populate("hired_user", "-password");
+    const ads = await Ad.find({
+      postedBy: userId,
+      hired_user: { $exists: true, $ne: null },
+    })
+      .populate("hired_user", "-password")
+      .populate("postedBy", "name _id");
 
     // Check if any ads are found
     if (!ads || ads.length === 0) {
-      return response.notFound(res, "No ads found for the user with hired users");
+      return response.notFound(
+        res,
+        "No ads found for the user with hired users"
+      );
     }
 
     // Extract hired users from all ads
@@ -258,13 +266,46 @@ const getHiredUsersAndAds = async (req, res) => {
       return users;
     }, []);
 
-    return response.success(res, "Hired users and ads retrieved successfully", { ads, hiredUsers });
+    return response.success(res, "Hired users and ads retrieved successfully", {
+      ads,
+      hiredUsers,
+    });
   } catch (error) {
     console.error(`Error getting hired users and ads: ${error}`);
     return response.serverError(res, "Error getting hired users and ads");
   }
 };
 
+// write a function where the creator of the add can update the status of the add to completed
+const updateAdStatus = async (req, res) => {
+  try {
+    const adId = req.query.adId;
+    if (!adId) {
+      return response.badRequest(res, "Ad ID is required");
+    }
+
+    const ad = await Ad.findById(adId);
+    console.log(adId);
+
+    if (!ad) {
+      return response.notFound(res, "Ad not found");
+    }
+    if (ad.postedBy.toString() !== req.user.id) {
+      return response.authError(
+        res,
+        "Only the creator of the ad can update the status"
+      );
+    }
+
+    ad.iscompleted = true;
+    await ad.save();
+
+    return response.success(res, "Ad status updated successfully", { ad });
+  } catch (error) {
+    console.error(`Error updating ad status: ${error}`);
+    return response.serverError(res, "Error updating ad status");
+  }
+};
 
 console.log();
 module.exports = {
@@ -274,4 +315,5 @@ module.exports = {
   acceptProposal,
   getHiredUser,
   getHiredUsersAndAds,
+  updateAdStatus
 };

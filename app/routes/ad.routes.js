@@ -17,6 +17,8 @@ ad_route.put('/acceptProposal', [verifyToken], ad.acceptProposal);
 //get route of getHiredUser for one ad
 ad_route.get('/getHiredUser', [verifyToken], ad.getHiredUser);    
 //get route of getHiredUsers for all ad
-ad_route.get('/getHiredUsers', [verifyToken], ad.getHiredUsersAndAds);                                                                                                                                  
+ad_route.get('/getHiredUsers', [verifyToken], ad.getHiredUsersAndAds);       
+//update ad status
+ad_route.put('/updateAdStatus', [verifyToken], ad.updateAdStatus);                                                                                                                           
 
 module.exports = ad_route;
