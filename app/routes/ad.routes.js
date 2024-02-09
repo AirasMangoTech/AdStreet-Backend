@@ -14,6 +14,9 @@ ad_route.get('/getAllAds', [verifyToken], ad.getAllAds);
 ad_route.get('/getAdDetails', [verifyToken], ad.GetAdddetails);
 //get route of acceptProposal
 ad_route.put('/acceptProposal', [verifyToken], ad.acceptProposal);    
-//get route of getHiredUser
-ad_route.get('/getHiredUser/:adId', [verifyToken], ad.getHiredUser);                                                                                                                                  
+//get route of getHiredUser for one ad
+ad_route.get('/getHiredUser', [verifyToken], ad.getHiredUser);    
+//get route of getHiredUsers for all ad
+ad_route.get('/getHiredUsers', [verifyToken], ad.getHiredUsersAndAds);                                                                                                                                  
+
 module.exports = ad_route;

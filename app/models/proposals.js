@@ -18,10 +18,6 @@ const proposalSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: "users",
   }, 
-  postedBy: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Ad",
-  },
   adId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Ad',

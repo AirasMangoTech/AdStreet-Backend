@@ -60,9 +60,9 @@ const getAllProposals = async (req, res) => {
     if (req.query.ad_id) {
       where.adId = req.query.ad_id;
     }
-    if (req.query.user_id) {
-      where.submittedBy = req.query.user_id;
-    }
+    // if (req.query.user_id) {
+    //   where.submittedBy = req.query.user_id;
+    // }
     const proposals = await Proposal.find(where).populate(
       "submittedBy",
       "-password"
@@ -84,8 +84,12 @@ const getProposalsByAdId = async (req, res) => {
     if (req.query.ad_id) {
       where.adId = req.query.ad_id;
     }
-    const proposals = await Proposal.find(where);
+    
     const count = await Proposal.countDocuments(where);
+    const proposals = await Proposal.find(where).populate(
+      "submittedBy",
+      "-password"
+    ); 
 
     return response.success(
       res,

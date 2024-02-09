@@ -183,7 +183,7 @@ const GetAdddetails = async (req, res) => {
     return response.serverError(res, "Error getting ad details");
   }
 };
-
+// chngaes the status of the proposal to true /false after hiring
 const acceptProposal = async (req, res) => {
   try {
     const { adId, proposalId } = req.body;
@@ -234,6 +234,37 @@ const getHiredUser = async (req, res) => {
     return response.serverError(res, "Error getting hired user");
   }
 };
+
+//function to get hired users for all the ads that are posted by the user
+const getHiredUsersAndAds = async (req, res) => {
+  try {
+    // Assuming req.user.id contains the ID of the current user
+    const userId = req.user.id;
+
+    // Find ads posted by the current user with hired users
+    const ads = await Ad.find({ postedBy: userId, hired_user: { $exists: true, $ne: null } }).populate("hired_user", "_id name email");
+
+    // Check if any ads are found
+    if (!ads || ads.length === 0) {
+      return response.notFound(res, "No ads found for the user with hired users");
+    }
+
+    // Extract hired users from all ads
+    const hiredUsers = ads.reduce((users, ad) => {
+      if (ad.hired_user) {
+        users.push(ad.hired_user);
+      }
+      return users;
+    }, []);
+
+    return response.success(res, "Hired users and ads retrieved successfully", { ads, hiredUsers });
+  } catch (error) {
+    console.error(`Error getting hired users and ads: ${error}`);
+    return response.serverError(res, "Error getting hired users and ads");
+  }
+};
+
+
 console.log();
 module.exports = {
   postAd,
@@ -241,4 +272,5 @@ module.exports = {
   GetAdddetails,
   acceptProposal,
   getHiredUser,
+  getHiredUsersAndAds,
 };
