@@ -144,7 +144,7 @@ const login = async (req, res) => {
       await fcm.save();
 
       // Return success response
-      return response.success(res, "Login Successful", {user: obj, token });
+      return response.success(res, "Login Successful", {user: obj });
     } else {
       // Passwords do not match
       return response.notFound(res, "Invalid Credentials");

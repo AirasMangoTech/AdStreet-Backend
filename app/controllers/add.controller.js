@@ -63,7 +63,7 @@ const postAd = async (req, res) => {
 
 const getAllAds = async (req, res) => {
   try {
-    let query = { isApproved: true, iscompleted: false };
+    let query = { isApproved: true };
     if (req.query.title) {
       query.title = { $regex: new RegExp(req.query.title, "i") };
     }
@@ -247,7 +247,7 @@ const getHiredUsersAndAds = async (req, res) => {
     const ads = await Ad.find({
       postedBy: userId,
       hired_user: { $exists: true, $ne: null },
-      isCompleted: false,
+      //isCompleted: false,
     })
       .populate("hired_user", "-password")
       .populate("postedBy", "name _id");
