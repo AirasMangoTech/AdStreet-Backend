@@ -7,11 +7,13 @@ const adSchema = new mongoose.Schema({
     required: true,
     trim: true,
   },
-  category: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Category",
-    required: true,
-  },
+  category: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Category",
+      required: true,
+    },
+  ],
   image: [
     {
       type: String,
@@ -34,15 +36,15 @@ const adSchema = new mongoose.Schema({
     ref: "Proposal",
     required: false,
   },
-  isApproved: { 
-    type: Boolean, 
-    default: false 
+  isApproved: {
+    type: Boolean,
+    default: false,
   },
   iscompleted: {
     type: Boolean,
     default: false,
   },
-  hired_user:{
+  hired_user: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "users",
   },
@@ -51,8 +53,8 @@ const adSchema = new mongoose.Schema({
     ref: "users",
     required: true,
   },
-  valid_till:{
-    type : Date
+  valid_till: {
+    type: Date,
     //default: () => moment().endOf('day').toDate();
   },
   createdAt: {

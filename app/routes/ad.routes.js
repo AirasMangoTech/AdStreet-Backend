@@ -19,6 +19,11 @@ ad_route.get('/getHiredUser', [verifyToken], ad.getHiredUser);
 //get route of getHiredUsers for all ad
 ad_route.get('/getHiredUsers', [verifyToken], ad.getHiredUsersAndAds);       
 //update ad status
-ad_route.put('/updateAdStatus', [verifyToken], ad.updateAdStatus);                                                                                                                           
+ad_route.put('/updateAdStatus', [verifyToken], ad.updateAdStatus);      
+//handle ad status
+//ad_route.get('/handleAdStatus', [verifyToken], ad.handleAdStatus);                                                                                                                     
+
+ad_route.post('/createResponse', [verifyToken], ad.createResponse);
+ad_route.get('/getResponses', [verifyToken], ad.getAllResponses);
 
 module.exports = ad_route;

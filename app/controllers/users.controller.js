@@ -35,16 +35,6 @@ const signup = async (req, res) => {
     email = email.toLowerCase().trim();
     phoneNumber = phoneNumber.trim();
 
-    // Check for existing user by email or phone number
-    // const existingUser = await User.findOne({
-    //   $or: [{ email: email }, { phone_Number: phoneNumber }],
-    // });
-    // if (existingUser) {
-    //   return response.badRequest(
-    //     res,
-    //     "User with given email or phone number already exists"
-    //   );
-    // }
     var roleId;
     console.log(roles);
     switch (roles) {
@@ -82,6 +72,7 @@ const signup = async (req, res) => {
       city: city ? city : null,
       state: state ? state : null,
       additional: additional ? additional : null,
+      
     });
     await newUser.save();
 
@@ -99,6 +90,8 @@ const signup = async (req, res) => {
       process.env.SECRET_KEY,
       { expiresIn: "1d" }
     );
+
+    
 
     return response.success(res, "Signup Successful", { user: newUser, token });
   } catch (error) {
@@ -151,7 +144,7 @@ const login = async (req, res) => {
       await fcm.save();
 
       // Return success response
-      return response.success(res, "Login Successful", {user: obj });
+      return response.success(res, "Login Successful", {user: obj, token });
     } else {
       // Passwords do not match
       return response.notFound(res, "Invalid Credentials");

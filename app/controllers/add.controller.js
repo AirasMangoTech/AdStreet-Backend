@@ -1,6 +1,7 @@
 const Ad = require("../models/ad");
 const Proposal = require("../models/proposals");
 const Notification = require("../models/notifications");
+const AdResponse = require("../models/responseAd");
 const sendNotification = require("../utils/sendNotification");
 const FcmToken = require("../models/fcmTokens");
 const response = require("../utils/responseHelpers");
@@ -62,7 +63,7 @@ const postAd = async (req, res) => {
 
 const getAllAds = async (req, res) => {
   try {
-    let query = { isApproved: true };
+    let query = { isApproved: true, iscompleted: false };
     if (req.query.title) {
       query.title = { $regex: new RegExp(req.query.title, "i") };
     }
@@ -73,8 +74,8 @@ const getAllAds = async (req, res) => {
       query._id = new mongoose.Types.ObjectId(req.query.adId);
     }
     if (req.query.category) {
-      query.category = new mongoose.Types.ObjectId(req.query.category);
     }
+
     console.log(query.postedBy);
     //console.log(req.query.adId);
     const ads = await Ad.aggregate([
@@ -246,6 +247,7 @@ const getHiredUsersAndAds = async (req, res) => {
     const ads = await Ad.find({
       postedBy: userId,
       hired_user: { $exists: true, $ne: null },
+      isCompleted: false,
     })
       .populate("hired_user", "-password")
       .populate("postedBy", "name _id");
@@ -307,6 +309,37 @@ const updateAdStatus = async (req, res) => {
   }
 };
 
+// function to create response
+const createResponse = async (req, res) => {
+  try {
+    console.log(req.user);
+    const { name } = req.body;
+    const newResponse = new AdResponse({ name }); // Use a different name for the response object
+    await newResponse.save();
+    return response.success(res, "Response created successfully", {
+      newResponse,
+    });
+  } catch (error) {
+    return response.badRequest(
+      res,
+      "A response with that name already exists."
+    );
+  }
+};
+
+// get all responses
+const getAllResponses = async (req, res) => {
+  try {
+    const responses = await AdResponse.find();
+    return response.success(res, "All responses retrieved successfully", {
+      responses,
+    });
+  } catch (error) {
+    console.log(error);
+    return response.serverError(res, "Failed to load responses");
+  }
+};
+
 console.log();
 module.exports = {
   postAd,
@@ -315,5 +348,8 @@ module.exports = {
   acceptProposal,
   getHiredUser,
   getHiredUsersAndAds,
-  updateAdStatus
+  updateAdStatus,
+  //handleAdStatus,
+  createResponse,
+  getAllResponses,
 };
