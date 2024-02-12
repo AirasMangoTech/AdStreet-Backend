@@ -60,15 +60,14 @@ const getAllProposals = async (req, res) => {
     if (req.query.ad_id) {
       where.adId = req.query.ad_id;
     }
-    // if (req.query.user_id) {
-    //   where.submittedBy = req.query.user_id;
-    // }
+    // all proposals of the logged in users
+    if (req.query.user_id) {
+      where.submittedBy = new mongoose.Types.ObjectId(req.query.user_id);
+    }
     const proposals = await Proposal.find(where).populate(
       "submittedBy",
       "-password"
     ); 
-    
-
     return response.success(res, "All proposals retrieved successfully", {
       proposals,
     });
@@ -77,6 +76,7 @@ const getAllProposals = async (req, res) => {
     return response.serverError(res, "Error getting all proposals");
   }
 };
+
 const getProposalsByAdId = async (req, res) => {
   try {
    // const { adId } = req.params;
