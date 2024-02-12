@@ -11,10 +11,21 @@ const { ObjectId } = require("mongodb");
 const postProposal = async (req, res) => {
   try {
     if (!req.body.content || !req.body.budget || !req.body.jobDuration) {
-      return response.error(res, "Missing required fields", 400);
+      return response.badRequest(res, "Missing required fields", 400);
     }
-    console.log(req.user);
+
     const adId = req.body.adId;
+    const ad = await Ad.findById(adId);
+    
+    if (!ad) {
+      return response.notFound(res, "Ad not found", 404);
+    }
+    // Check if the user is trying to post a proposal on their own ad
+    if (req.user.id.toString() === ad.postedBy.toString()) {
+
+      return response.badRequest(res, "You cannot post a proposal on your own ad", 400);
+    }
+    
     const postedBy = Ad.postedBy;
     const proposal = new Proposal({
       content: req.body.content,
