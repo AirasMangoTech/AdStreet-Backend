@@ -193,14 +193,46 @@ const login = async (req, res) => {
 // controllers/userController.js
 
 
+// const getAllUsers = async (req, res) => {
+//   try {
+//     let query = {};
+//     if (req.query.city) {
+//       query.city = { $regex: new RegExp(req.query.city, "i") };
+//     }
+//     const users = await User.find({}); // Retrieves all users
+//     res.json(users);
+//   } catch (error) {
+//     res.status(500).json({ error: 'Failed to load users' });
+//   }
+// };
+
 const getAllUsers = async (req, res) => {
   try {
-    const users = await User.find({}); // Retrieves all users
+    let query = {};
+
+    // Add search by city
+    if (req.query.city) {
+      query.city = { $regex: new RegExp(req.query.city, "i") };
+    }
+
+    // Add search by industry
+    if (req.query.industry) {
+      query['additional.industry'] = { $regex: new RegExp(req.query.industry, "i") };
+    }
+
+    // Add search by services
+    if (req.query.services) {
+      query['additional.services'] = { $regex: new RegExp(req.query.services, "i") };
+    }
+
+    const users = await User.find(query); // Retrieve users based on query
     res.json(users);
   } catch (error) {
+
     res.status(500).json({ error: 'Failed to load users' });
   }
 };
+
 
 
 module.exports = {

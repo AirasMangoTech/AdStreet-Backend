@@ -73,7 +73,19 @@ const getAllAds = async (req, res) => {
     if (req.query.adId) {
       query._id = new mongoose.Types.ObjectId(req.query.adId);
     }
-    if (req.query.category) {
+    if (req.query.category !== undefined) {
+      const categories = req.query.category.split(',');
+      const categoryObjectIDs = categories.map(category => new mongoose.Types.ObjectId(category));
+      query.category = { $in: categoryObjectIDs };
+    }
+    if (req.query.valid_till) {
+      // Assuming valid_till is in ISO format (e.g., 2024-02-29T23:59:59Z)
+      query.valid_till = { $lte: new Date(req.query.valid_till) };
+    }
+
+    if (req.query.created_at) {
+      // Assuming createdAt is in ISO format (e.g., 2024-02-01T00:00:00Z)
+      query.created_at = { $gte: new Date(req.query.created_at) };
     }
 
     console.log(query.postedBy);
