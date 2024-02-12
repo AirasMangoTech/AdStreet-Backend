@@ -6,6 +6,7 @@ const sendNotification = require("../utils/sendNotification");
 const FcmToken = require("../models/fcmTokens");
 const response = require("../utils/responseHelpers");
 const mongoose = require("mongoose");
+const moment = require('moment');
 
 const postAd = async (req, res) => {
   if (!req.user) {
@@ -74,22 +75,49 @@ const getAllAds = async (req, res) => {
       query._id = new mongoose.Types.ObjectId(req.query.adId);
     }
     if (req.query.category !== undefined) {
-      const categories = req.query.category.split(',');
-      const categoryObjectIDs = categories.map(category => new mongoose.Types.ObjectId(category));
+      const categories = req.query.category.split(",");
+      const categoryObjectIDs = categories.map(
+        (category) => new mongoose.Types.ObjectId(category)
+      );
       query.category = { $in: categoryObjectIDs };
     }
-    if (req.query.valid_till) {
-      // Assuming valid_till is in ISO format (e.g., 2024-02-29T23:59:59Z)
-      query.valid_till = { $gte: new Date(req.query.valid_till) };
+    const getStartOfDay = (date) => {
+      return moment(date).startOf("day").toDate();
+    };
+    // Function to get the end of the day for a given date using Moment.js
+    const getEndOfDay = (date) => {
+      return moment(date).endOf("day").toDate();
+    };
+    if (req.query.valid_till_from && req.query.valid_till_to) {
+      query.valid_till = {
+        $gte: getStartOfDay(new Date(req.query.valid_till_from)),
+        $lte: getEndOfDay(new Date(req.query.valid_till_to)),
+      };
+    } else if (req.query.valid_till_from) {
+      query.valid_till = {
+        $gte: getStartOfDay(new Date(req.query.valid_till_from)),
+      };
+    } else if (req.query.valid_till_to) {
+      query.valid_till = {
+        $lte: getEndOfDay(new Date(req.query.valid_till_to)),
+      };
+    }
+    // Date range for createdAt
+    if (req.query.created_at_from && req.query.created_at_to) {
+      query.createdAt = {
+        $gte: getStartOfDay(new Date(req.query.created_at_from)),
+        $lte: getEndOfDay(new Date(req.query.created_at_to)),
+      };
+    } else if (req.query.valid_till_from) {
+      query.valid_till = {
+        $gte: getStartOfDay(new Date(req.query.created_at_from)),
+      };
+    } else if (req.query.valid_till_to) {
+      query.valid_till = {
+        $lte: getEndOfDay(new Date(req.query.created_at_to)),
+      };
     }
 
-    if (req.query.createdAt) {
-      // Assuming createdAt is in ISO format (e.g., 2024-02-01T00:00:00Z)
-      query.createdAt = { $lte: new Date(req.query.createdAt) };
-    }
-
-    console.log(query.postedBy);
-    //console.log(req.query.adId);
     const ads = await Ad.aggregate([
       {
         $match: query,
@@ -317,7 +345,10 @@ const updateAdStatus = async (req, res) => {
     const adResponse = await AdResponse.findById(responseId);
     console.log(adResponse.name);
 
-    return response.success(res, "Ad status updated successfully", {ad, responseMessage: adResponse.name});
+    return response.success(res, "Ad status updated successfully", {
+      ad,
+      responseMessage: adResponse.name,
+    });
   } catch (error) {
     console.error(`Error updating ad status: ${error}`);
     return response.serverError(res, "Error updating ad status");

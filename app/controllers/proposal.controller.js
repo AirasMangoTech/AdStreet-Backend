@@ -54,6 +54,7 @@ const postProposal = async (req, res) => {
     return response.serverError(res, "An error has been occurred");
   }
 };
+// Get all proposals of an ad
 const getAllProposals = async (req, res) => {
   try {
     let where = {};
@@ -79,7 +80,7 @@ const getAllProposals = async (req, res) => {
 
 const getProposalsByAdId = async (req, res) => {
   try {
-   // const { adId } = req.params;
+   
    let where = {};
     if (req.query.ad_id) {
       where.adId = req.query.ad_id;
