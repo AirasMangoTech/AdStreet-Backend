@@ -6,7 +6,7 @@ const sendNotification = require("../utils/sendNotification");
 const FcmToken = require("../models/fcmTokens");
 const response = require("../utils/responseHelpers");
 const mongoose = require("mongoose");
-const moment = require('moment');
+const moment = require("moment");
 
 const postAd = async (req, res) => {
   if (!req.user) {
