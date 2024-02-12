@@ -40,7 +40,7 @@ const adSchema = new mongoose.Schema({
     type: Boolean,
     default: false,
   },
-  iscompleted: {
+  isCompleted: {
     type: Boolean,
     default: false,
   },

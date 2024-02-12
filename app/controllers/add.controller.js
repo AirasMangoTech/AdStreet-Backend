@@ -247,7 +247,7 @@ const getHiredUsersAndAds = async (req, res) => {
     const ads = await Ad.find({
       postedBy: userId,
       hired_user: { $exists: true, $ne: null },
-      //isCompleted: false,
+      isCompleted: false,
     })
       .populate("hired_user", "-password")
       .populate("postedBy", "name _id");
@@ -299,7 +299,7 @@ const updateAdStatus = async (req, res) => {
       );
     }
 
-    ad.iscompleted = true;
+    ad.isCompleted = true;
     await ad.save();
 
     return response.success(res, "Ad status updated successfully", { ad });
