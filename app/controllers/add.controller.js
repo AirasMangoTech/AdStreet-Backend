@@ -83,9 +83,9 @@ const getAllAds = async (req, res) => {
       query.valid_till = { $lte: new Date(req.query.valid_till) };
     }
 
-    if (req.query.created_at) {
+    if (req.query.createdAt) {
       // Assuming createdAt is in ISO format (e.g., 2024-02-01T00:00:00Z)
-      query.created_at = { $gte: new Date(req.query.created_at) };
+      query.createdAt = { $gte: new Date(req.query.createdAt) };
     }
 
     console.log(query.postedBy);
