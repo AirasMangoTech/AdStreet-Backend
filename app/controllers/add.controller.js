@@ -282,12 +282,12 @@ const getHiredUsersAndAds = async (req, res) => {
 const updateAdStatus = async (req, res) => {
   try {
     const adId = req.query.adId;
+    const responseId = req.query.responseId;
     if (!adId) {
       return response.badRequest(res, "Ad ID is required");
     }
 
     const ad = await Ad.findById(adId);
-    console.log(adId);
 
     if (!ad) {
       return response.notFound(res, "Ad not found");
@@ -302,7 +302,10 @@ const updateAdStatus = async (req, res) => {
     ad.isCompleted = true;
     await ad.save();
 
-    return response.success(res, "Ad status updated successfully", { ad });
+    const adResponse = await AdResponse.findById(responseId);
+    console.log(adResponse.name);
+
+    return response.success(res, "Ad status updated successfully", {ad, responseMessage: adResponse.name});
   } catch (error) {
     console.error(`Error updating ad status: ${error}`);
     return response.serverError(res, "Error updating ad status");
