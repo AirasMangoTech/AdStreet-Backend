@@ -26,6 +26,24 @@ const blogSchema = new mongoose.Schema({
     required: false,
   },
   additional: {
+    name:{
+      type: String,
+    },
+    email:{
+      type:String,
+    },
+    phone_num : {
+      type: String,
+    },
+    location:{
+      type: String,
+    },
+    date: {
+      type: Date,
+    },
+    num_people: {
+      type: Number,
+    },
     f_link: {
       type: String,
     },
