@@ -5,7 +5,7 @@ const bcrypt = require("bcryptjs");
 const response = require("../utils/responseHelpers");
 const logger = require("../logger");
 const FcmToken = require("../models/fcmTokens");
-const auth = require('../middleware/auth');
+const auth = require("../middleware/auth");
 require("dotenv").config();
 
 const signup = async (req, res) => {
@@ -72,7 +72,6 @@ const signup = async (req, res) => {
       city: city ? city : null,
       state: state ? state : null,
       additional: additional ? additional : null,
-      
     });
     await newUser.save();
 
@@ -91,8 +90,6 @@ const signup = async (req, res) => {
       { expiresIn: "1d" }
     );
 
-    
-
     return response.success(res, "Signup Successful", { user: newUser, token });
   } catch (error) {
     console.log(error.message);
@@ -110,7 +107,6 @@ const login = async (req, res) => {
 
     if (!user) return response.notFound(res, "Invalid Credentials");
     if (await bcrypt.compare(password, user.password)) {
-   
       // User found and password is correct, create a JWT token
       const token = jwt.sign(
         {
@@ -144,7 +140,7 @@ const login = async (req, res) => {
       await fcm.save();
 
       // Return success response
-      return response.success(res, "Login Successful", {user: obj });
+      return response.success(res, "Login Successful", { user: obj });
     } else {
       // Passwords do not match
       return response.notFound(res, "Invalid Credentials");
@@ -156,7 +152,6 @@ const login = async (req, res) => {
     return response.serverError(res, "Something bad happened! Try Again Later");
   }
 };
-
 
 // const retrieveDataForRole = async (req, res) => {
 //   try {
@@ -192,7 +187,6 @@ const login = async (req, res) => {
 
 // controllers/userController.js
 
-
 // const getAllUsers = async (req, res) => {
 //   try {
 //     let query = {};
@@ -217,23 +211,24 @@ const getAllUsers = async (req, res) => {
 
     // Add search by industry
     if (req.query.industry) {
-      query['additional.industry'] = { $regex: new RegExp(req.query.industry, "i") };
+      query["additional.industry"] = {
+        $regex: new RegExp(req.query.industry, "i"),
+      };
     }
 
     // Add search by services
     if (req.query.services) {
-      query['additional.services'] = { $regex: new RegExp(req.query.services, "i") };
+      query["additional.services"] = {
+        $regex: new RegExp(req.query.services, "i"),
+      };
     }
 
     const users = await User.find(query); // Retrieve users based on query
     res.json(users);
   } catch (error) {
-
-    res.status(500).json({ error: 'Failed to load users' });
+    res.status(500).json({ error: "Failed to load users" });
   }
 };
-
-
 
 module.exports = {
   signup,

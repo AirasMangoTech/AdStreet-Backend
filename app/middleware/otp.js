@@ -5,7 +5,6 @@ const jwt = require("jsonwebtoken");
 const response = require("../utils/responseHelpers");
 const config = process.env;
 
-
 const GenerateOTP = (length) => {
   let OTP = generator.generate({
     length: length,
@@ -35,7 +34,7 @@ const verifyOTP = async (req, res, next) => {
       }
     }
 
-    if (req.body.code === "0000"){
+    if (req.body.code === "0000") {
       const token = jwt.sign(
         { device_id: req.headers.deviceid, api: req.url },
         process.env.SECRET_KEY,
@@ -45,7 +44,6 @@ const verifyOTP = async (req, res, next) => {
       );
       return response.success(res, "OTP sent.", { otp_token: token });
     }
-  
 
     let device_id = req.headers.deviceid;
     let api_name = req.url;
@@ -62,34 +60,30 @@ const verifyOTP = async (req, res, next) => {
       const newOtpCode = GenerateOTP(4);
 
       if (otp) {
-        otp.code = newOtpCode,
-        expired_at= new Date(new Date().getTime() + 5 * 60000)
-        await otp.save()
+        (otp.code = newOtpCode),
+          (expired_at = new Date(new Date().getTime() + 5 * 60000));
+        await otp.save();
+      } else {
+        const newOtp = new OTPCode({
+          device_id: device_id,
+          code: newOtpCode,
+          api_name: api_name,
+          is_verified: false,
+          expired_at: new Date(new Date().getTime() + 5 * 60000),
+        });
+        await newOtp.save();
       }
-      else{
-
-      const newOtp = new OTPCode({
-        device_id: device_id,
-        code: newOtpCode,
-        api_name: api_name,
-        is_verified: false,
-        expired_at: new Date(new Date().getTime() + 5 * 60000),
-      });
-      await newOtp.save();
-    }
       // Send the OTP to the user's phone
       //SMS.sendSMS(`Your OTP is: ${newOtpCode}`, phoneNumber);
-       return response.success(res, "OTP sent", { otp: newOtpCode });
-
+      return response.success(res, "OTP sent", { otp: newOtpCode });
 
       // return res
       //   .status(200)
       //   .json({ message: "A new OTP has been sent to your phone." });
     }
-    console.log(otp)
-    console.log(req.body.code)
-    if (otp && (otp.code === req.body.code)) {
-
+    console.log(otp);
+    console.log(req.body.code);
+    if (otp && otp.code === req.body.code) {
       otp.is_verified = true;
       await otp.save();
       const token = jwt.sign(
@@ -99,14 +93,11 @@ const verifyOTP = async (req, res, next) => {
           expiresIn: "2d",
         }
       );
-   
 
       return response.success(res, "OTP verified", { otp_token: token });
     } else {
       return res.status(401).json({ message: "Invalid OTP code." });
-      
     }
-    
   } catch (error) {
     console.error("Error verifying OTP:", error);
     return res

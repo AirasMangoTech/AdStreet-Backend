@@ -1,5 +1,6 @@
 const Blog = require("../models/blogs");
 const BlogCategory = require("../models/blogCategory");
+const Category = require("../models/categories");
 const response = require("../utils/responseHelpers");
 const {ROLE_IDS} = require('../utils/utility');
 
@@ -10,16 +11,21 @@ const createBlog = async (req, res) => {
       "You don't have permission to perform this action"
     );
   try {
-    const { title, content, categoryId } = req.body;
-    const category = await BlogCategory.findById(categoryId);
-    if (!category) {
+    const { title, content, blogId, category } = req.body;
+    const blogcategory = await BlogCategory.findById(blogId);
+    if (!blogcategory) {
+        return response.notFound(res, "Invalid Category Id");
+    }
+    const categoryId = await Category.findById(blogId);
+    if (!categoryId) {
         return response.notFound(res, "Invalid Category Id");
     }
 
     const blog = new Blog({
       title,
       content,
-      category: categoryId,
+      blogcategory: blogId,
+      categoryId: category
     });
 
     await blog.save();

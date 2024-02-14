@@ -1,6 +1,7 @@
 const Ad = require("../models/ad");
 const response = require("../utils/responseHelpers");
 const { ROLE_IDS } = require("../utils/utility");
+const moment = require("moment");
 
 const getAllAds = async (req, res) => {
   try {
@@ -9,7 +10,48 @@ const getAllAds = async (req, res) => {
         res,
         "You don't have permission to perform this action"
       );
-    const ads = await Ad.find({ isApproved: false }).populate("Proposal");
+
+    const getStartOfDay = (date) => {
+      return moment(date).startOf("day").toDate();
+    };
+    let query = {};
+    // Function to get the end of the day for a given date using Moment.js
+    const getEndOfDay = (date) => {
+      return moment(date).endOf("day").toDate();
+    };
+    if (req.query.valid_till_from && req.query.valid_till_to) {
+      query.valid_till = {
+        $gte: getStartOfDay(new Date(req.query.valid_till_from)),
+        $lte: getEndOfDay(new Date(req.query.valid_till_to)),
+      };
+    } else if (req.query.valid_till_from) {
+      query.valid_till = {
+        $gte: getStartOfDay(new Date(req.query.valid_till_from)),
+      };
+    } else if (req.query.valid_till_to) {
+      query.valid_till = {
+        $lte: getEndOfDay(new Date(req.query.valid_till_to)),
+      };
+    }
+    // Date range for createdAt
+    if (req.query.created_at_from && req.query.created_at_to) {
+      query.createdAt = {
+        $gte: getStartOfDay(new Date(req.query.created_at_from)),
+        $lte: getEndOfDay(new Date(req.query.created_at_to)),
+      };
+    } else if (req.query.created_at_from) {
+      query.createdAt = {
+        $gte: getStartOfDay(new Date(req.query.created_at_from)),
+      };
+    } else if (req.query.created_at_to) {
+      query.createdAt = {
+        $lte: getEndOfDay(new Date(req.query.created_at_to)),
+      };
+    }
+
+    const ads = await Ad.find({ isApproved: false })
+      .populate("Proposal")
+      .populate("category");
     //ask about populate
     return response.success(res, "All ads retrieved successfully", { ads });
   } catch (error) {

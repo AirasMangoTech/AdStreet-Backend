@@ -10,8 +10,12 @@ const categorySchema = new mongoose.Schema({
   image: {
     type: String,
     required: false,
-  }
- 
+  },
+  type: {
+    type: String,
+    required: true,
+    //default: "adbazaar"
+  },
 });
 
 const Category = mongoose.model('Category', categorySchema);

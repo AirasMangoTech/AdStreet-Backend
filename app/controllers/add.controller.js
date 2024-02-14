@@ -2,15 +2,29 @@ const Ad = require("../models/ad");
 const Proposal = require("../models/proposals");
 const Notification = require("../models/notifications");
 const AdResponse = require("../models/responseAd");
+const Users = require("../models/users");
 const sendNotification = require("../utils/sendNotification");
 const FcmToken = require("../models/fcmTokens");
 const response = require("../utils/responseHelpers");
+const { ROLE_IDS } = require("../utils/utility");
 const mongoose = require("mongoose");
 const moment = require("moment");
 
 const postAd = async (req, res) => {
   if (!req.user) {
     return response.forbidden(res, "User not authenticated", user);
+  }
+  const user = await Users.findById(req.user.id);
+  if (
+    !user ||
+    req.user.role_id !== ROLE_IDS.BRAND_COMPANY ||
+    req.user.role_id !== ROLE_IDS.AGENCY
+  ) {
+    return response.forbidden(
+      res,
+      "Only users with the role of company or agency can post proposals",
+      403
+    );
   }
   try {
     const {
@@ -260,48 +274,76 @@ const acceptProposal = async (req, res) => {
     return response.serverError(res, "Error accepting proposal");
   }
 };
-//function to get hired users for a specific ad
-const getHiredUser = async (req, res) => {
-  try {
-    const { adId } = req.params;
-    const ad = await Ad.findById(adId).populate("hired_user", "_id name email");
-    if (!ad) {
-      return response.notFound(res, "Ad not found");
-    }
-    return response.success(res, "Hired user retrieved successfully", {
-      hired_user: ad.hired_user,
-    });
-  } catch (error) {
-    console.error(`Error getting hired user: ${error}`);
-    return response.serverError(res, "Error getting hired user");
-  }
-};
 
 //function to get hired users for all the ads that are posted by the user
+// const getHiredUsersAndAds = async (req, res) => {
+//   try {
+//     // Assuming req.user.id contains the ID of the current user
+//     const userId = req.user.id;
+//     // Find ads posted by the current user with hired users
+//     const ads = await Ad.find({
+//       postedBy: userId,
+//       hired_user: { $exists: true, $ne: null },
+//       isCompleted: false,
+//     })
+//       .populate("hired_user", "-password")
+//       .populate("postedBy", "name _id");
+//     // Check if any ads are found
+//     if (!ads || ads.length === 0) {
+//       return response.notFound(
+//         res,
+//         "No ads found for the user with hired users"
+//       );
+//     }
+//     // Extract hired users from all ads
+//     const hiredUsers = ads.reduce((users, ad) => {
+//       if (ad.hired_user) {
+//         users.push(ad.hired_user);
+//       }
+//       return users;
+//     }, []);
+//     return response.success(res, "Hired users and ads retrieved successfully", {
+//       ads,
+//       hiredUsers,
+//     });
+//   } catch (error) {
+//     console.error(`Error getting hired users and ads: ${error}`);
+//     return response.serverError(res, "Error getting hired users and ads");
+//   }
+// };
+
 const getHiredUsersAndAds = async (req, res) => {
   try {
     // Assuming req.user.id contains the ID of the current user
     const userId = req.user.id;
-
-    // Find ads posted by the current user with hired users
-    const ads = await Ad.find({
+    
+    // Find ads posted by the current user with hired users (ongoing ads)
+    const ongoingAds = await Ad.find({
       postedBy: userId,
       hired_user: { $exists: true, $ne: null },
       isCompleted: false,
     })
-      .populate("hired_user", "-password")
-      .populate("postedBy", "name _id");
+    .populate("hired_user", "-password")
+    .populate("postedBy", "_id");
+
+    // Find completed ads posted by the current user
+    const completedAds = await Ad.find({
+      postedBy: userId,
+      isCompleted: true,
+    })
+    .populate("hired_user", "-password")
+    .populate("postedBy", "_id");
 
     // Check if any ads are found
-    if (!ads || ads.length === 0) {
+    if ((!ongoingAds || ongoingAds.length === 0) && (!completedAds || completedAds.length === 0)) {
       return response.notFound(
         res,
-        "No ads found for the user with hired users"
+        "No ads found for the user"
       );
     }
 
-    // Extract hired users from all ads
-    const hiredUsers = ads.reduce((users, ad) => {
+    // Extract hired users from all ongoing ads
+    const hiredUsers = ongoingAds.reduce((users, ad) => {
       if (ad.hired_user) {
         users.push(ad.hired_user);
       }
@@ -309,12 +351,46 @@ const getHiredUsersAndAds = async (req, res) => {
     }, []);
 
     return response.success(res, "Hired users and ads retrieved successfully", {
-      ads,
+      ongoingAds,
+      completedAds,
       hiredUsers,
     });
   } catch (error) {
     console.error(`Error getting hired users and ads: ${error}`);
     return response.serverError(res, "Error getting hired users and ads");
+  }
+};
+
+
+const getHiredUser = async (req, res) => {
+  try {
+    const { userId } = req.user;
+
+    // Check if the logged-in user's ID matches the postedBy field
+    const postedByAds = await Ad.find({
+      postedBy: userId,
+      hired_user: { $exists: true, $ne: null },
+    }).populate("hired_user", "-password");
+
+    // Check if the logged-in user's ID matches the hired_user field
+    const hiredUserAds = await Ad.find({ hired_user: userId }).populate(
+      "postedBy",
+      "name"
+    );
+
+    let ads;
+    if (postedByAds.length > 0) {
+      ads = postedByAds;
+    } else if (hiredUserAds.length > 0) {
+      ads = hiredUserAds;
+    } else {
+      return response.notFound(res, "No relevant ads found.");
+    }
+
+    return response.success(res, "Ads retrieved successfully.", { ads });
+  } catch (error) {
+    console.error(`Error getting hired user details: ${error}`);
+    return response.serverError(res, "Error getting hired user details.");
   }
 };
 
