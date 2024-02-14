@@ -10,29 +10,37 @@ const response = require("../utils/responseHelpers");
 const { ROLE_IDS } = require("../utils/utility");
 const postProposal = async (req, res) => {
   try {
-
     const adId = req.body.adId;
     const ad = await Ad.findById(adId);
-    
+
     if (req.user.id.toString() === ad.postedBy.toString()) {
-      return response.badRequest(res,"You cannot post a proposal on your own ad", 400);
+      return response.badRequest(
+        res,
+        "You cannot post a proposal on your own ad",
+        400
+      );
     }
 
     const user = await Users.findById(req.user.id);
-    if (!user || (req.user.role_id !== ROLE_IDS.INDIVIDUAL || req.user.role_id !== ROLE_IDS.AGENCY)) {
-      return response.forbidden(res, "Only users with the role of individual or agency can post proposals", 403);
+    if (
+      !user ||
+      req.user.role_id !== ROLE_IDS.INDIVIDUAL ||
+      req.user.role_id !== ROLE_IDS.AGENCY
+    ) {
+      return response.forbidden(
+        res,
+        "Only users with the role of individual or agency can post proposals",
+        403
+      );
     }
 
     if (!req.body.content || !req.body.budget || !req.body.jobDuration) {
       return response.badRequest(res, "Missing required fields", 400);
     }
 
-    
-
     if (!ad) {
       return response.notFound(res, "Ad not found", 404);
     }
-    
 
     const postedBy = Ad.postedBy;
     const proposal = new Proposal({
@@ -123,27 +131,29 @@ const getHiredUser = async (req, res) => {
 
     console.log(userId);
     // Find all proposals where the user is hired
-    const proposals = await Proposal.find({ submittedBy: userId, status: 'true' });
+    const proposals = await Proposal.find({
+      submittedBy: userId,
+      status: "true",
+    });
 
     if (!proposals || proposals.length === 0) {
-      return response.notFound(res, 'You have not been hired for any ads.');
+      return response.notFound(res, "You have not been hired for any ads.");
     }
 
     // Extract ad IDs from the proposals
-    const adIds = proposals.map(proposal => proposal.adId);
+    const adIds = proposals.map((proposal) => proposal.adId);
 
     // Find all ads corresponding to the extracted ad IDs
     const ads = await Ad.find({ _id: { $in: adIds } })
-      .populate('postedBy', 'name')
-      .populate('category');
+      .populate("postedBy", "name")
+      .populate("category");
 
-    return response.success(res, 'Ads retrieved successfully.', { ads });
+    return response.success(res, "Ads retrieved successfully.", { ads });
   } catch (error) {
     console.error(`Error getting hired user details: ${error}`);
-    return response.serverError(res, 'Error getting hired user details.');
+    return response.serverError(res, "Error getting hired user details.");
   }
 };
-
 
 const getProposalsByAdId = async (req, res) => {
   try {
@@ -176,5 +186,5 @@ module.exports = {
   postProposal,
   getAllProposals,
   getProposalsByAdId,
-  getHiredUser
+  getHiredUser,
 };

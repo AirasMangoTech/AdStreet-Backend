@@ -9,8 +9,10 @@ const admin = require('./admin.routes')
 const app = require('./app.routes');
 const category = require('./category.routes');
 const blog = require('./blog.routes');
+const industry = require('./industry.routes');
 const notification = require('./notification.routes');
 const proposal = require('./proposal.routes');
+const service = require('./service.routes');
 
 router.use('/ad', ad);
 router.use('/admin', admin);
@@ -18,6 +20,8 @@ router.use('/auth', user);
 router.use('/app', app);
 router.use('/blog', blog);
 router.use('/category', category);
+router.use('/industry', industry);
 router.use('/notification', notification);
 router.use('/proposal', proposal);
+router.use('/service', service);
 module.exports = router;
