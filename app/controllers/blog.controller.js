@@ -2,7 +2,7 @@ const Blog = require("../models/blogs");
 const BlogCategory = require("../models/blogCategory");
 const Category = require("../models/categories");
 const response = require("../utils/responseHelpers");
-const {ROLE_IDS} = require('../utils/utility');
+const { ROLE_IDS } = require("../utils/utility");
 
 const createBlog = async (req, res) => {
   if (req.user.role_id !== ROLE_IDS.ADMIN)
@@ -11,25 +11,27 @@ const createBlog = async (req, res) => {
       "You don't have permission to perform this action"
     );
   try {
-    const { title, content, blogId, category } = req.body;
-    const blogcategory = await BlogCategory.findById(blogId);
-    if (!blogcategory) {
-        return response.notFound(res, "Invalid Category Id");
+    const { title, content, image, blogId, categoryId, additional } = req.body;
+    const blogCategory = await BlogCategory.findById(blogId);
+    if (!blogCategory) {
+      return response.notFound(res, "Invalid Category Id");
     }
-    const categoryId = await Category.findById(blogId);
-    if (!categoryId) {
-        return response.notFound(res, "Invalid Category Id");
+    const category = await Category.findById(categoryId);
+    if (!category) {
+      return response.notFound(res, "Invalid Category Id");
     }
 
     const blog = new Blog({
       title,
       content,
-      blogcategory: blogId,
-      categoryId: category
+      image: req.body.imageUrl,
+      blogCategory: blogId,
+      category: categoryId,
+      additional: additional ? additional : null,
     });
 
     await blog.save();
-    return response.success(res, "Blog created successfully", {blog});
+    return response.success(res, "Blog created successfully", { blog });
   } catch (error) {
     return response.serverError(
       res,
@@ -50,18 +52,20 @@ const createBlog = async (req, res) => {
 
 const getAllBlogs = async (req, res) => {
   try {
-    const page = parseInt(req.query.page) || 1; 
-    const limit = parseInt(req.query.limit) || 10; 
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
 
     const skipIndex = (page - 1) * limit;
 
     const blogs = await Blog.find()
-      .sort({ createdAt: -1 }) 
+      .populate("category", "name")
+      .populate("blogCategory")
+      .sort({ createdAt: -1 })
       .skip(skipIndex)
       .limit(limit);
 
-    const totalBlogs = await Blog.countDocuments(); 
-    const totalPages = Math.ceil(totalBlogs / limit); 
+    const totalBlogs = await Blog.countDocuments();
+    const totalPages = Math.ceil(totalBlogs / limit);
 
     res.status(200).json({
       data: blogs,
@@ -69,14 +73,13 @@ const getAllBlogs = async (req, res) => {
         currentPage: page,
         totalPages,
         totalBlogs,
-        limit
-      }
+        limit,
+      },
     });
   } catch (error) {
     return response.authError(res, "something bad happened");
   }
 };
-
 
 const updateBlog = async (req, res) => {
   try {
@@ -91,17 +94,21 @@ const updateBlog = async (req, res) => {
       }
     }
 
-    const updatedBlog = await Blog.findByIdAndUpdate(blogId, {
-      title,
-      content,
-      category: categoryId
-    }, { new: true });
+    const updatedBlog = await Blog.findByIdAndUpdate(
+      blogId,
+      {
+        title,
+        content,
+        category: categoryId,
+      },
+      { new: true }
+    );
 
     if (!updatedBlog) {
       return response.notFound(res, "Blog not found");
     }
 
-    return response.success(res, "Blog updated successfully", {updatedBlog});
+    return response.success(res, "Blog updated successfully", { updatedBlog });
   } catch (error) {
     return response.serverError(res, error.message, "Failed to update blog");
   }
@@ -116,17 +123,15 @@ const deleteBlog = async (req, res) => {
       return response.notFound(res, "Blog not found");
     }
 
-    return response.success(res, "Blog deleted successfully", {deletedBlog});
+    return response.success(res, "Blog deleted successfully", { deletedBlog });
   } catch (error) {
     return response.serverError(res, error.message, "Failed to delete blog");
   }
 };
-
 
 module.exports = {
   createBlog,
   getAllBlogs,
   updateBlog,
   deleteBlog,
-}
-
+};

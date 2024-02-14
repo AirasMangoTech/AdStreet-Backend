@@ -13,12 +13,31 @@ const blogSchema = new mongoose.Schema({
   },
   category: {
     type: mongoose.Schema.Types.ObjectId,
+    ref: "Category",
+    required: true,
+  },
+  blogCategory: {
+    type: mongoose.Schema.Types.ObjectId,
     ref: "BlogCategory",
     required: true,
   },
   image: {
     type: String,
     required: false,
+  },
+  additional: {
+    f_link: {
+      type: String,
+    },
+    t_link: {
+      type: String,
+    },
+    l_link: {
+      type: String,
+    },
+    w_link: {
+      type: String,
+    },
   },
   createdAt: {
     type: Date,

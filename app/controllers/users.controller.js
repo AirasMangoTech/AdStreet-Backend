@@ -116,9 +116,7 @@ const login = async (req, res) => {
           role_id: user.roles,
         },
         process.env.SECRET_KEY,
-        {
-          expiresIn: "1d",
-        }
+        
       );
       //res.json({ token });
       // Create object to send as response
