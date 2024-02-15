@@ -17,7 +17,7 @@ const postAd = async (req, res) => {
   const user = await Users.findById(req.user.id);
   if (
     !user ||
-    req.user.role_id !== ROLE_IDS.BRAND_COMPANY ||
+    req.user.role_id !== ROLE_IDS.BRAND_COMPANY &&
     req.user.role_id !== ROLE_IDS.AGENCY
   ) {
     return response.forbidden(

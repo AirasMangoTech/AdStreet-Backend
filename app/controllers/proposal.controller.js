@@ -22,18 +22,15 @@ const postProposal = async (req, res) => {
     }
 
     const user = await Users.findById(req.user.id);
-    if (
-      !user ||
-      req.user.role_id !== ROLE_IDS.INDIVIDUAL ||
-      req.user.role_id !== ROLE_IDS.AGENCY
-    ) {
+    
+    if (req.user.role_id !== ROLE_IDS.INDIVIDUAL && req.user.role_id !== ROLE_IDS.AGENCY) {
       return response.forbidden(
         res,
         "Only users with the role of individual or agency can post proposals",
         403
       );
     }
-
+   
     if (!req.body.content || !req.body.budget || !req.body.jobDuration) {
       return response.badRequest(res, "Missing required fields", 400);
     }
