@@ -31,13 +31,8 @@ const updateServiceType = async (req, res) => {
         "You don't have permission to perform this action"
       );
     }
-    let query = {};
-        if (req.body.name) {
-            query["name"] = req.body.name;
-        } else {
-            return response.badRequest(res, "Invalid data provided.");
-        }
-    const service = await Service.findByIdAndUpdate(req.params.id, query, {new: true});
+    
+    const service = await Service.findByIdAndUpdate(req.params.id, req.body, {new: true});
     if (!service) {
       return response.notFound(
         res,

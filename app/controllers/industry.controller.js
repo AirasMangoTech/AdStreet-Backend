@@ -31,28 +31,26 @@ const updateIndustry = async (req, res) => {
         "You don't have permission to perform this action"
       );
     }
-    let query = {};
-        if (req.body.name) {
-            query["name"] = req.body.name;
-        } else {
-            return response.badRequest(res, "Invalid data provided.");
-        }
-    const industry = await Industry.findByIdAndUpdate(req.params.id, query, {new: true});
+    
+    const industry = await Industry.findByIdAndUpdate(req.params.id, req.body, {new: true});
     if (!industry) {
       return response.notFound(
         res,
         `The industry with id ${req.params.id} was not found.`
       );
     }
+    //console.log(err);
     return response.success(res, "industry updated successfully.", { industry });
   } catch (err){
+    
     return response.serverError(
       res,
       "An error occurred while updating the industry."
     );
+    
   }
 };
-
+//console.log(error);
 const getAllIndustry = async (req, res) => {
   try {
     const industry = await Industry.find();
