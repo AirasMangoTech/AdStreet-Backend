@@ -69,6 +69,12 @@ const getCategoryById = async (req, res) => {
 
 const updateCategory = async (req, res) => {
   try {
+    if (req.user.role_id !== ROLE_IDS.ADMIN) {
+      return response.forbidden(
+        res,
+        "You don't have permission to perform this action"
+      );
+    }
     const category = await Category.findByIdAndUpdate(req.params.id, req.body, {
       new: true,
     });
@@ -78,7 +84,7 @@ const updateCategory = async (req, res) => {
         `No Category was found with the id of ${req.params.id}`
       );
     }
-    res.json(category);
+    return response.success(res, "Category updated successfully.", { category });
   } catch (error) {
     response.serverError(
       res,
