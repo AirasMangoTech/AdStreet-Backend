@@ -49,10 +49,73 @@ const getAllAds = async (req, res) => {
       };
     }
 
-    const ads = await Ad.find({ isApproved: false })
-      .populate("Proposal")
-      .populate("category");
+    // const ads = await Ad.find({ isApproved: false })
+    //   .populate("postedBy", "name roles")     
+    //   .populate("Proposal")
+    //   .populate("category");
     //ask about populate
+
+    const ads = await Ad.aggregate([
+      {
+        $match: query,
+      },
+      {
+        $lookup: {
+          from: "proposals",
+          localField: "_id",
+          foreignField: "adId",
+          as: "proposals",
+        },
+      },
+      {
+        $lookup: {
+          from: "users", // Assuming the collection name is "users" for users data
+          let: { postedBy: "$postedBy" },
+          pipeline: [
+            {
+              $match: {
+                $expr: {
+                  $eq: ["$_id", "$$postedBy"],
+                },
+              },
+            },
+            {
+              $project: {
+                roles: 1,    // Include the roles field
+                name: 1,     // Include the name field
+              },
+            },
+          ],
+          as: "postedBy",
+        },
+      },
+      {
+        $lookup: {
+          from: "categories", // Assuming the collection name is "categories" for categories data
+          localField: "category",
+          foreignField: "_id",
+          as: "category",
+        },
+      },
+      {
+        $project: {
+          _id: 1,
+          title: 1,
+          category: { $arrayElemAt: ["$category", 0] }, // unwind category array if necessary
+          images: 1,
+          description: 1,
+          budget: 1,
+          jobDuration: 1,
+          postedBy: { $arrayElemAt: ["$postedBy", 0] }, // unwind postedBy array if necessary
+          createdAt: 1,
+          image: 1,
+          isApproved: 1,
+          valid_till: 1,
+          totalProposals: { $size: "$proposals" },
+        },
+      },
+    ]);
+
     return response.success(res, "All ads retrieved successfully", { ads });
   } catch (error) {
     console.error(`Error getting all ads: ${error}`);
