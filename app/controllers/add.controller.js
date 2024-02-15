@@ -334,6 +334,24 @@ const getHiredUsersAndAds = async (req, res) => {
     .populate("hired_user", "-password")
     .populate("postedBy", "_id");
 
+
+    const ongoingHIREDAds = await Ad.find({
+      hired_user: userId,
+      //hired_user: { $exists: true, $ne: null },
+      isCompleted: false,
+    })
+    .populate("hired_user", "-password")
+    .populate("postedBy", "_id");
+
+    // Find completed ads posted by the current user
+    const completedHIREDAds = await Ad.find({
+      hired_user: userId,
+      isCompleted: true,
+    })
+    .populate("hired_user", "-password")
+    .populate("postedBy", "_id");
+
+
     // Check if any ads are found
     if ((!ongoingAds || ongoingAds.length === 0) && (!completedAds || completedAds.length === 0)) {
       return response.notFound(
@@ -353,7 +371,9 @@ const getHiredUsersAndAds = async (req, res) => {
     return response.success(res, "Hired users and ads retrieved successfully", {
       ongoingAds,
       completedAds,
-      hiredUsers,
+      //hiredUsers,
+      ongoingHIREDAds,
+      completedHIREDAds
     });
   } catch (error) {
     console.error(`Error getting hired users and ads: ${error}`);
