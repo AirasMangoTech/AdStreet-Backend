@@ -85,6 +85,7 @@ const getAllAds = async (req, res) => {
     if (req.query.user_id) {
       query.postedBy = new mongoose.Types.ObjectId(req.query.user_id);
     }
+    
     if (req.query.adId) {
       query._id = new mongoose.Types.ObjectId(req.query.adId);
     }
@@ -131,6 +132,33 @@ const getAllAds = async (req, res) => {
         $lte: getEndOfDay(new Date(req.query.created_at_to)),
       };
     }
+    
+    let userLookupPipeline = [
+      {
+        $match: {
+          $expr: {
+            $eq: ["$_id", "$$postedBy"],
+          },
+        },
+      },
+      {
+        $project: {
+          password: 0, // Exclude the password field
+        },
+      },
+    ];
+  
+    if (req.query.role) {
+      userLookupPipeline.unshift({
+        $match: {
+          roles: req.query.role, // Assumes roles field exists and contains the role
+        },
+      });
+    }
+
+    const page = parseInt(req.query.page, 10) || 1; // Default to page 1
+    const limit = parseInt(req.query.limit, 10) || 10; // Default limit to 10 items
+    const skip = (page - 1) * limit;
 
     const ads = await Ad.aggregate([
       {
@@ -145,23 +173,29 @@ const getAllAds = async (req, res) => {
         },
       },
       {
+        // $lookup: {
+        //   from: "users", // Assuming the collection name is "users" for users data
+        //   let: { postedBy: "$postedBy" },
+        //   pipeline: [
+        //     {
+        //       $match: {
+        //         $expr: {
+        //           $eq: ["$_id", "$$postedBy"],
+        //         },
+        //       },
+        //     },
+        //     {
+        //       $project: {
+        //         password: 0, // Exclude the password field
+        //       },
+        //     },
+        //   ],
+        //   as: "postedBy",
+        // },
         $lookup: {
-          from: "users", // Assuming the collection name is "users" for users data
+          from: "users",
           let: { postedBy: "$postedBy" },
-          pipeline: [
-            {
-              $match: {
-                $expr: {
-                  $eq: ["$_id", "$$postedBy"],
-                },
-              },
-            },
-            {
-              $project: {
-                password: 0, // Exclude the password field
-              },
-            },
-          ],
+          pipeline: userLookupPipeline,
           as: "postedBy",
         },
       },
@@ -190,9 +224,19 @@ const getAllAds = async (req, res) => {
           totalProposals: { $size: "$proposals" },
         },
       },
+      { $skip: skip }, 
+      { $limit: limit },
     ]);
 
-    return response.success(res, "All ads retrieved successfully", { ads });
+    const totalAds = await Ad.countDocuments(query);
+    const totalPages = Math.ceil(totalAds / limit);
+
+    return response.success(res, "All ads retrieved successfully", { 
+      ads,
+      totalAds,
+      totalPages,
+      currentPage: page,
+    });
   } catch (error) {
     console.error(`Error getting all ads: ${error}`);
     return response.serverError(res, "Error getting all ads");
@@ -265,6 +309,7 @@ const acceptProposal = async (req, res) => {
     }
     ad.hired_user = proposalToAccept.submittedBy;
     await ad.save();
+    
     return response.success(res, "Proposal accepted successfully", {
       proposalToAccept,
       hired_user: ad.hired_user,

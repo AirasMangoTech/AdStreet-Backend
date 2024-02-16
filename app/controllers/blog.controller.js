@@ -41,15 +41,6 @@ const createBlog = async (req, res) => {
   }
 };
 
-// const getAllBlogs = async (req, res) => {
-//   try {
-//     const blogs = await Blog.find().populate('category', 'name');
-//     return response.success(res, "Blogs retrieved successfully", blogs);
-//   } catch (error) {
-//     return response.serverError(res, error.message, "Failed to retrieve blogs");
-//   }
-// };
-
 const getAllBlogs = async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;

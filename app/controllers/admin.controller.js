@@ -48,13 +48,7 @@ const getAllAds = async (req, res) => {
         $lte: getEndOfDay(new Date(req.query.created_at_to)),
       };
     }
-
-    // const ads = await Ad.find({ isApproved: false })
-    //   .populate("postedBy", "name roles")     
-    //   .populate("Proposal")
-    //   .populate("category");
-    //ask about populate
-
+    
     const ads = await Ad.aggregate([
       {
         $match: query,

@@ -38,7 +38,7 @@ const adSchema = new mongoose.Schema({
   },
   isApproved: {
     type: Boolean,
-    default: false,
+    default: null,
   },
   isCompleted: {
     type: Boolean,

@@ -16,7 +16,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 //app.use('/uploads', express.static('uploads'));
 app.use(cors({
-    origin: ['http://localhost:3002', 'https://addstreet.surge.sh']
+    origin: ['http://localhost:3002', 'https://adstreet-db.surge.sh']
 }));
 
 const port=process.env.PORT||8035
