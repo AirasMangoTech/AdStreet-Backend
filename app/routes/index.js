@@ -8,6 +8,7 @@ const ad = require('./ad.routes');
 const admin = require('./admin.routes')
 const app = require('./app.routes');
 const category = require('./category.routes');
+const geo = require('./geo.routes');
 const blog = require('./blog.routes');
 const industry = require('./industry.routes');
 const notification = require('./notification.routes');
@@ -20,6 +21,7 @@ router.use('/auth', user);
 router.use('/app', app);
 router.use('/blog', blog);
 router.use('/category', category);
+router.use('/geo', geo);
 router.use('/industry', industry);
 router.use('/notification', notification);
 router.use('/proposal', proposal);
