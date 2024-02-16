@@ -115,8 +115,7 @@ const login = async (req, res) => {
           id: user._id,
           role_id: user.roles,
         },
-        process.env.SECRET_KEY,
-        
+        process.env.SECRET_KEY
       );
       //res.json({ token });
       // Create object to send as response
@@ -201,24 +200,28 @@ const login = async (req, res) => {
 const getAllUsers = async (req, res) => {
   try {
     let query = {};
-
-    // Add search by city
     if (req.query.city) {
       query.city = { $regex: new RegExp(req.query.city, "i") };
     }
-
-    // Add search by industry
+    if (req.query.name) {
+      query.name = { $regex: new RegExp(req.query.name, "i") };
+    }
     if (req.query.industry) {
       query["additional.industry"] = {
         $regex: new RegExp(req.query.industry, "i"),
       };
     }
-
-    // Add search by services
     if (req.query.services) {
       query["additional.services"] = {
         $regex: new RegExp(req.query.services, "i"),
       };
+    }
+    if (req.query.category !== undefined) {
+      const categories = req.query.category.split(",");
+      const categoryObjectIDs = categories.map(
+        (category) => new mongoose.Types.ObjectId(category)
+      );
+      query.category = { $in: categoryObjectIDs };
     }
 
     const users = await User.find(query); // Retrieve users based on query

@@ -22,15 +22,18 @@ const postProposal = async (req, res) => {
     }
 
     const user = await Users.findById(req.user.id);
-    
-    if (req.user.role_id !== ROLE_IDS.INDIVIDUAL && req.user.role_id !== ROLE_IDS.AGENCY) {
+
+    if (
+      req.user.role_id !== ROLE_IDS.INDIVIDUAL &&
+      req.user.role_id !== ROLE_IDS.AGENCY
+    ) {
       return response.forbidden(
         res,
         "Only users with the role of individual or agency can post proposals",
         403
       );
     }
-   
+
     if (!req.body.content || !req.body.budget || !req.body.jobDuration) {
       return response.badRequest(res, "Missing required fields", 400);
     }
@@ -91,36 +94,27 @@ const getAllProposals = async (req, res) => {
     if (req.query.user_id) {
       where.submittedBy = new mongoose.Types.ObjectId(req.query.user_id);
     }
-    const proposals = await Proposal.find(where).populate(
-      "submittedBy",
-      "-password"
-    );
+    const page = parseInt(req.query.page, 10) || 1;
+    const limit = parseInt(req.query.limit, 10) || 10;
+    const skip = (page - 1) * limit;
+
+    const proposals = await Proposal.find(where)
+      .populate("submittedBy", "-password")
+      .skip(skip)
+      .limit(limit);
+      const totalProposals = await Proposal.countDocuments(where);
+      
     return response.success(res, "All proposals retrieved successfully", {
       proposals,
+      total: totalProposals,
+      page,
+      pages: Math.ceil(totalProposals / limit),
     });
   } catch (error) {
     console.error(`Error getting all proposals: ${error}`);
     return response.serverError(res, "Error getting all proposals");
   }
 };
-
-// const getHiredUser = async (req, res) => {
-//   try {
-//     const { adId } = req.query;
-
-//     // Query the database to find the proposal submitted by the current user for the specified ad
-//     const proposal = await Proposal.findOne({ adId, submittedBy: req.user.id, status: 'true' });
-
-//     if (!proposal) {
-//       return response.notFound(res, 'You have not been hired for this ad.');
-//     }
-
-//     return response.success(res, 'You have been hired for this ad.', { hiredUser: proposal.submittedBy });
-//   } catch (error) {
-//     console.error(`Error getting hired user details: ${error}`);
-//     return response.serverError(res, 'Error getting hired user details.');
-//   }
-// };
 
 const getHiredUser = async (req, res) => {
   try {
