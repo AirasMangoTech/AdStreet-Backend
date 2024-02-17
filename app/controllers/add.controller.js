@@ -222,7 +222,6 @@ const getAllAds = async (req, res) => {
     return response.serverError(res, "Error getting all ads");
   }
 };
-
 // chnages user applied status to true or false
 const GetAdddetails = async (req, res) => {
   try {
@@ -272,12 +271,22 @@ const acceptProposal = async (req, res) => {
     if (!ad) {
       return response.notFound(res, "Ad not found");
     }
+  
     if (ad.postedBy.toString() !== req.user.id) {
+      
       return response.authError(
         res,
         "Only the creator of the ad can accept proposals"
       );
+      
     }
+    if (ad.hired_user) {
+      return response.badRequest(
+        res,
+        "Another proposal cannot be accepted as the ad already has a hired user"
+      );
+    }
+
     const proposalToAccept = await Proposal.findByIdAndUpdate(
       proposalId,
       { status: "true" },
@@ -299,7 +308,6 @@ const acceptProposal = async (req, res) => {
     return response.serverError(res, "Error accepting proposal");
   }
 };
-
 //function to get hired users for all the ads that are posted by the user
 // const getHiredUsersAndAds = async (req, res) => {
 //   try {
@@ -336,7 +344,6 @@ const acceptProposal = async (req, res) => {
 //     return response.serverError(res, "Error getting hired users and ads");
 //   }
 // };
-
 const getHiredUsersAndAds = async (req, res) => {
   try {
     // Assuming req.user.id contains the ID of the current user
@@ -405,8 +412,6 @@ const getHiredUsersAndAds = async (req, res) => {
     return response.serverError(res, "Error getting hired users and ads");
   }
 };
-
-
 const getHiredUser = async (req, res) => {
   try {
     const { userId } = req.user;
@@ -453,7 +458,10 @@ const updateAdStatus = async (req, res) => {
     if (!ad) {
       return response.notFound(res, "Ad not found");
     }
+
     if (ad.postedBy.toString() !== req.user.id) {
+      console.log(req.user.id);
+      
       return response.authError(
         res,
         "Only the creator of the ad can update the status"

@@ -1,6 +1,7 @@
 const Ad = require("../models/ad");
 const response = require("../utils/responseHelpers");
 const { ROLE_IDS } = require("../utils/utility");
+const mongoose = require("mongoose");
 const moment = require("moment");
 
 const getAllAds = async (req, res) => {
@@ -15,6 +16,9 @@ const getAllAds = async (req, res) => {
       return moment(date).startOf("day").toDate();
     };
     let query = {};
+    if (req.query.user_id) {
+      query.postedBy = new mongoose.Types.ObjectId(req.query.user_id);
+    }
     // Function to get the end of the day for a given date using Moment.js
     const getEndOfDay = (date) => {
       return moment(date).endOf("day").toDate();

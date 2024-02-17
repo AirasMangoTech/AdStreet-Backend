@@ -74,10 +74,12 @@ const postProposal = async (req, res) => {
         token.token
       );
     }
+    console.log(proposal);
     // Send a success response
     return response.success(res, "Proposal submitted successfully", {
       proposal,
     });
+    
   } catch (error) {
     console.log(error.message);
     return response.serverError(res, "An error has been occurred");
@@ -100,10 +102,13 @@ const getAllProposals = async (req, res) => {
 
     const proposals = await Proposal.find(where)
       .populate("submittedBy", "-password")
+      .populate("adId")
       .skip(skip)
       .limit(limit);
       const totalProposals = await Proposal.countDocuments(where);
-      
+      console.log(proposals);
+
+      //console.log(adId);
     return response.success(res, "All proposals retrieved successfully", {
       proposals,
       total: totalProposals,
