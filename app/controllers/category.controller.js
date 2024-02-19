@@ -18,7 +18,6 @@ const createCategory = async (req, res) => {
     return response.badRequest(res, "Already  exists a category with that name.");
   }
 };
-
 const getAllCategories = async (req, res) => {
   try {
     const { search } = req.query;
@@ -29,42 +28,16 @@ const getAllCategories = async (req, res) => {
 
     const categories = await Category.find(query);
 
-    if (categories.length === 0) {
-      return response.success(
-        res,
-        {categories}
-      );
-    }else  
-    return response.success(res, "Categories loaded successfully", { categories });
+    // Use a consistent structure for the response
+    const message = categories.length === 0 ? "No categories found" : "Categories loaded successfully";
+    return response.success(res, message, { categories });
+    
   } catch (error) {
     console.log(error);
-    return response.serverError(
-      res,
-      error.message,
-      "Failed to load Categories"
-    );
+    return response.serverError(res, error.message, "Failed to load Categories");
   }
 };
 
-const getCategoryById = async (req, res) => {
-  try {
-    const category = await Category.findById(req.params.id);
-    if (!category) {
-      return response.notFound(
-        res,
-        `No Category found with the id of ${req.params.id}`
-      );
-    }
-    res.json(category);
-  } catch (error) {
-    response.badRequest(
-      res,
-      error.message,
-      `Invalid request for getting Category by Id
-    with the value of ${req.params.id}`
-    );
-  }
-};
 
 const updateCategory = async (req, res) => {
   try {
@@ -117,7 +90,7 @@ const deleteCategory = async (req, res) => {
 module.exports = {
   createCategory,
   getAllCategories,
-  getCategoryById,
+  //getCategoryById,
   updateCategory,
   deleteCategory,
 };

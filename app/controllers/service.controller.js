@@ -51,19 +51,12 @@ const updateServiceType = async (req, res) => {
 const getAllServiceTypes = async (req, res) => {
   try {
     const service = await Service.find();
-        if (service.length === 0) {
-          return response.notFound(
-                res,
-                "No service types found based on the search criteria"
-          );
-        }
-    return response.success(res, "Successfully retrieved all service types", { service}
-    )
+    const message = service.length === 0 ? "No services found" : "services loaded successfully";
+    return response.success(res, message, { service });
+    
   } catch (error) {
-        return response.serverError(
-          res,
-          "An error occurred while retrieving the service types."
-        );
+    console.log(error);
+    return response.serverError(res, error.message, "Failed to load Services");
   }
 };
 

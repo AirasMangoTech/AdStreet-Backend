@@ -54,19 +54,12 @@ const updateIndustry = async (req, res) => {
 const getAllIndustry = async (req, res) => {
   try {
     const industry = await Industry.find();
-        if (industry.length === 0) {
-          return response.notFound(
-                res,
-                "No industry found based on the search criteria"
-          );
-        }
-    return response.success(res, "Successfully retrieved all industries", { industry}
-    )
+    const message = industry.length === 0 ? "No industry found" : "industry loaded successfully";
+    return response.success(res, message, { industry });
+    
   } catch (error) {
-        return response.serverError(
-          res,
-          "An error occurred while retrieving the industries."
-        );
+    console.log(error);
+    return response.serverError(res, error.message, "Failed to load industry");
   }
 };
 
