@@ -223,9 +223,24 @@ const getAllUsers = async (req, res) => {
       );
       query.category = { $in: categoryObjectIDs };
     }
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
 
-    const users = await User.find(query); // Retrieve users based on query
-    res.json(users);
+    const users = await User.find(query).skip(skip).limit(limit);
+    const totalUsers = await User.countDocuments(query);
+    const totalPages = Math.ceil(totalUsers / limit);
+    const pagination = {
+      totalUsers,
+      totalPages,
+      currentPage: page,
+      limit,
+    };
+    // Retrieve users based on query
+    return response.success(res, "All users retrieved successfully", {
+      users,
+      pagination,
+    });
   } catch (error) {
     res.status(500).json({ error: "Failed to load users" });
   }

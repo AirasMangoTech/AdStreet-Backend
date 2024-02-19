@@ -19,6 +19,9 @@ const getAllAds = async (req, res) => {
     if (req.query.user_id) {
       query.postedBy = new mongoose.Types.ObjectId(req.query.user_id);
     }
+    if (req.query.adId) {
+      query._id = new mongoose.Types.ObjectId(req.query.adId);
+    }
     // Function to get the end of the day for a given date using Moment.js
     const getEndOfDay = (date) => {
       return moment(date).endOf("day").toDate();

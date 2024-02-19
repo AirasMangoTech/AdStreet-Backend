@@ -30,13 +30,12 @@ const getAllCategories = async (req, res) => {
     const categories = await Category.find(query);
 
     if (categories.length === 0) {
-      return response.notFound(
+      return response.success(
         res,
-        "No categories found based on the search criteria"
+        {categories}
       );
-    }
-
-    res.json(categories);
+    }else  
+    return response.success(res, "Categories loaded successfully", { categories });
   } catch (error) {
     console.log(error);
     return response.serverError(

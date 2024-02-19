@@ -20,9 +20,7 @@ const postProposal = async (req, res) => {
         400
       );
     }
-
-    const user = await Users.findById(req.user.id);
-
+    //const user = await Users.findById(req.user.id);
     if (
       req.user.role_id !== ROLE_IDS.INDIVIDUAL &&
       req.user.role_id !== ROLE_IDS.AGENCY
