@@ -192,7 +192,7 @@ const getAllAds = async (req, res) => {
           _id: 1,
           title: 1,
           category: { $arrayElemAt: ["$category", 0] }, // unwind category array if necessary
-          images: 1,
+         // images: 1,
           description: 1,
           budget: 1,
           jobDuration: 1,
