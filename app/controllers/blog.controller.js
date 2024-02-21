@@ -4,12 +4,44 @@ const Category = require("../models/categories");
 const response = require("../utils/responseHelpers");
 const { ROLE_IDS } = require("../utils/utility");
 
+// const createBlog = async (req, res) => {
+//   if (req.user.role_id !== ROLE_IDS.ADMIN)
+//     return response.forbidden(
+//       res,
+//       "You don't have permission to perform this action"
+//     );
+//   try {
+//     const { title, content, image, blogId, categoryId, additional } = req.body;
+//     const blogCategory = await BlogCategory.findById(blogId);
+//     if (!blogCategory) {
+//       return response.notFound(res, "Invalid Category Id");
+//     }
+//     const category = await Category.findById(categoryId);
+//     if (!category) {
+//       return response.notFound(res, "Invalid Category Id");
+//     }
+
+//     const blog = new Blog({
+//       title,
+//       content,
+//       image: req.body.imageUrl,
+//       blogCategory: blogId,
+//       category: categoryId,
+//       additional: additional ? additional : null,
+//     });
+
+//     await blog.save();
+//     return response.success(res, "Blog created successfully", { blog });
+//   } catch (error) {
+//     return response.serverError(
+//       res,
+//       error.message,
+//       "Failed to load Categories"
+//     );
+//   }
+// };
+
 const createBlog = async (req, res) => {
-  if (req.user.role_id !== ROLE_IDS.ADMIN)
-    return response.forbidden(
-      res,
-      "You don't have permission to perform this action"
-    );
   try {
     const { title, content, image, blogId, categoryId, additional } = req.body;
     const blogCategory = await BlogCategory.findById(blogId);
@@ -21,6 +53,8 @@ const createBlog = async (req, res) => {
       return response.notFound(res, "Invalid Category Id");
     }
 
+    const isApproved = req.user.role_id === ROLE_IDS.ADMIN; // Auto-approve if admin
+
     const blog = new Blog({
       title,
       content,
@@ -28,38 +62,38 @@ const createBlog = async (req, res) => {
       blogCategory: blogId,
       category: categoryId,
       additional: additional ? additional : null,
+      isApproved: isApproved, // Set based on the user's role
     });
 
     await blog.save();
-    return response.success(res, "Blog created successfully", { blog });
+    const message = isApproved
+      ? "Blog created and approved successfully"
+      : "Blog created and pending approval";
+    return response.success(res, message, { blog });
   } catch (error) {
-    return response.serverError(
-      res,
-      error.message,
-      "Failed to load Categories"
-    );
+    return response.serverError(res, error.message, "Failed to create blog");
   }
 };
 
 const getAllBlogs = async (req, res) => {
   try {
+    let query = {isApproved: true};
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
 
     const skipIndex = (page - 1) * limit;
 
-    const blogs = await Blog.find()
-      .populate("category", "name")
+    const blogs = await Blog.find(query)
+      .populate("category")
       .populate("blogCategory")
       .sort({ createdAt: -1 })
       .skip(skipIndex)
       .limit(limit);
-
     const totalBlogs = await Blog.countDocuments();
     const totalPages = Math.ceil(totalBlogs / limit);
 
-    res.status(200).json({
-      data: blogs,
+    return response.success(res, "All blogs retrieved successfully", {
+      blogs,
       pageInfo: {
         currentPage: page,
         totalPages,

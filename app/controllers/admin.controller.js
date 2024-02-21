@@ -1,4 +1,5 @@
 const Ad = require("../models/ad");
+const Blog = require("../models/blogs");
 const response = require("../utils/responseHelpers");
 const { ROLE_IDS } = require("../utils/utility");
 const mongoose = require("mongoose");
@@ -110,7 +111,7 @@ const getAllAds = async (req, res) => {
           _id: 1,
           title: 1,
           category: "$category_docs", // unwind category array if necessary
-         // images: 1,
+          // images: 1,
           description: 1,
           budget: 1,
           jobDuration: 1,
@@ -183,7 +184,39 @@ const approveAd = async (req, res) => {
   }
 };
 
+const getAllBlogs = async (req, res) => {
+  try {
+    let query = { isApproved: false };
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+
+    const skipIndex = (page - 1) * limit;
+
+    const blogs = await Blog.find(query)
+      .populate("category")
+      .populate("blogCategory")
+      .sort({ createdAt: -1 })
+      .skip(skipIndex)
+      .limit(limit);
+    const totalBlogs = await Blog.countDocuments();
+    const totalPages = Math.ceil(totalBlogs / limit);
+
+    return response.success(res, "All blogs retrieved successfully", {
+      blogs,
+      pageInfo: {
+        currentPage: page,
+        totalPages,
+        totalBlogs,
+        limit,
+      },
+    });
+  } catch (error) {
+    return response.authError(res, "something bad happened");
+  }
+};
+
 module.exports = {
   approveAd,
   getAllAds,
+  getAllBlogs,
 };

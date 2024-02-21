@@ -75,7 +75,6 @@ const UserSchema = new mongoose.Schema({
   state: {
     type: String,
   },
-
   updated_at: Date,
 });
 const Users = mongoose.model("users", UserSchema);
