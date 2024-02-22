@@ -101,10 +101,17 @@ const getAllProposals = async (req, res) => {
     const proposals = await Proposal.find(where)
       .populate("submittedBy", "-password")
       .populate("adId")
+      .populate({ 
+        path: "adId", 
+        populate: {
+          path: "category", 
+          select: "_id name"
+        }
+      })
       .skip(skip)
       .limit(limit);
       const totalProposals = await Proposal.countDocuments(where);
-      console.log(proposals);
+      
 
       //console.log(adId);
     return response.success(res, "All proposals retrieved successfully", {

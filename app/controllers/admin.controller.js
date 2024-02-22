@@ -119,6 +119,7 @@ const getAllAds = async (req, res) => {
           createdAt: 1,
           image: 1,
           isApproved: 1,
+          isCompleted: 1,
           valid_till: 1,
           totalProposals: { $size: "$proposals" },
         },
