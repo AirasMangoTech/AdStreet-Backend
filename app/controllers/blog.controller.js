@@ -77,13 +77,13 @@ const createBlog = async (req, res) => {
 
 const getAllBlogs = async (req, res) => {
   try {
-    let query = {isApproved: true};
+    //let query = {isApproved: true};
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
 
     const skipIndex = (page - 1) * limit;
 
-    const blogs = await Blog.find(query)
+    const blogs = await Blog.find()
       .populate("category")
       .populate("blogCategory")
       .sort({ createdAt: -1 })
