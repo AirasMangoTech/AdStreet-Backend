@@ -242,6 +242,7 @@ const getAllUsers = async (req, res) => {
         path: "additional.industry",
         model: "Industry",
       });
+      console.log(users);
     const totalUsers = await User.countDocuments(query);
     const totalPages = Math.ceil(totalUsers / limit);
     const pagination = {
