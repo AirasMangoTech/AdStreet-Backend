@@ -11,19 +11,19 @@ const createBlogCategory = async (req, res) => {
   try {
     const { name, description, imageUrl } = req.body;
 
-    const blogCategory = new BlogCategory({
+    const Category_blog = new BlogCategory({
       name,
       description,
       image: imageUrl,
     });
 
-    await blogCategory.save();
+    await Category_blog.save();
     return response.success(res, "The blog is successfully created", {
-      blogCategory,
+      Category_blog,
     });
   } catch (error) {
     console.log(error.message);
-    return response.serverError(res, "Something bad happended try again");
+    return response.serverError(res, "Something bad happended try again aaaaaaaaa");
   }
 };
 

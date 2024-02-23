@@ -43,7 +43,7 @@ const { ROLE_IDS } = require("../utils/utility");
 
 const createBlog = async (req, res) => {
   try {
-    const { title, content, image, blogId, categoryId, additional } = req.body;
+    const { title, content, date, blogId, categoryId, additional } = req.body;
     const blogCategory = await BlogCategory.findById(blogId);
     if (!blogCategory) {
       return response.notFound(res, "Invalid Category Id");
@@ -58,6 +58,7 @@ const createBlog = async (req, res) => {
     const blog = new Blog({
       title,
       content,
+      date,
       image: req.body.imageUrl,
       blogCategory: blogId,
       category: categoryId,
@@ -80,7 +81,6 @@ const getAllBlogs = async (req, res) => {
     //let query = {isApproved: true};
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
-
     const skipIndex = (page - 1) * limit;
 
     const blogs = await Blog.find()

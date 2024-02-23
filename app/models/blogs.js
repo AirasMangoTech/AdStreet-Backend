@@ -19,11 +19,18 @@ const blogSchema = new mongoose.Schema({
   blogCategory: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "BlogCategory",
-    required: true,
+   // required: true,
   },
   image: {
     type: String,
     required: false,
+  },
+  date: {
+    type: Date,
+  },
+  status: {
+    type: Boolean,
+    default: true,
   },
   additional: {
     name:{
@@ -37,9 +44,6 @@ const blogSchema = new mongoose.Schema({
     },
     location:{
       type: String,
-    },
-    date: {
-      type: Date,
     },
     num_people: {
       type: Number,

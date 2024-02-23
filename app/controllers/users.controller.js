@@ -100,10 +100,10 @@ const signup = async (req, res) => {
 
 const login = async (req, res) => {
   try {
-    let { phoneNumber, password, fcmToken } = req.body;
-    phoneNumber = phoneNumber ? phoneNumber.trim() : undefined;
+    let { phone_Number, password, fcmToken } = req.body;
+    phone_Number = phone_Number ? phone_Number.trim() : undefined;
 
-    const user = await User.findOne({ phone_Number: phoneNumber });
+    const user = await User.findOne({ phone_Number: phone_Number });
 
     if (!user) return response.notFound(res, "Invalid Credentials");
     if (await bcrypt.compare(password, user.password)) {
@@ -111,7 +111,7 @@ const login = async (req, res) => {
       const token = jwt.sign(
         {
           name: user.name,
-          phoneNumber: user.phoneNumber,
+          phoneNumber: user.phone_Number,
           id: user._id,
           role_id: user.roles,
         },
@@ -127,7 +127,7 @@ const login = async (req, res) => {
         token: token,
         //fcmToken:  user.fcmToken,
       };
-      console.log(obj);
+      
       let fcmObj = {
         user_id: user._id,
         device_uid: req.headers.deviceid,

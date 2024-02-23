@@ -14,7 +14,7 @@ blog_router.delete("/deleteblog/:id", [verifyToken], blogCategory.deleteBlogCate
 
 // these routes are for blog 
 
-blog_router.post("/createBlog", [verifyToken], blog.createBlog);
+blog_router.post("/blog", [verifyToken], blog.createBlog);
 blog_router.get('/getallblogs', [verifyToken], blog.getAllBlogs);
 blog_router.put('/updateblogs/:id', [verifyToken], blog.updateBlog);
 blog_router.delete('/deleteblogs/:id', [verifyToken], blog.deleteBlog);

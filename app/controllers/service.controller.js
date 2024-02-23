@@ -31,8 +31,10 @@ const updateServiceType = async (req, res) => {
         "You don't have permission to perform this action"
       );
     }
-    
-    const service = await Service.findByIdAndUpdate(req.params.id, req.body, {new: true});
+
+    const service = await Service.findByIdAndUpdate(req.params.id, req.body, {
+      new: true,
+    });
     if (!service) {
       return response.notFound(
         res,
@@ -40,7 +42,7 @@ const updateServiceType = async (req, res) => {
       );
     }
     return response.success(res, "Service updated successfully.", { service });
-  } catch (err){
+  } catch (err) {
     return response.serverError(
       res,
       "An error occurred while updating the service type."
@@ -50,10 +52,23 @@ const updateServiceType = async (req, res) => {
 
 const getAllServiceTypes = async (req, res) => {
   try {
-    const service = await Service.find();
-    const message = service.length === 0 ? "No services found" : "services loaded successfully";
-    return response.success(res, message, { service });
-    
+    const page = parseInt(req.query.page) || 1; // Default to page 1 if not specified
+    const limit = parseInt(req.query.limit) || 10; // Default limit to 10 items per page
+    const skipIndex = (page - 1) * limit;
+    const service = await Service.find()
+      .sort({ createdAt: -1 })
+      .skip(skipIndex)
+      .limit(limit);
+    const totalServices = await Service.countDocuments();
+    const totalPages = Math.ceil(totalServices / limit);
+
+  //const response = { service, totalPages, currentPage: page }
+
+    const message =
+      service.length === 0
+        ? "No services found"
+        : "services loaded successfully";
+    return response.success(res, message, { service, totalPages, currentPage: page });
   } catch (error) {
     console.log(error);
     return response.serverError(res, error.message, "Failed to load Services");

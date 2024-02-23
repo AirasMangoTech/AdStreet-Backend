@@ -7,6 +7,7 @@ const moment = require("moment");
 
 const getAllAds = async (req, res) => {
   try {
+    console.log(req.user.role_id);
     if (req.user.role_id !== ROLE_IDS.ADMIN)
       return response.forbidden(
         res,
@@ -56,7 +57,27 @@ const getAllAds = async (req, res) => {
         $lte: getEndOfDay(new Date(req.query.created_at_to)),
       };
     }
-
+    let userLookupPipeline = [
+      {
+        $match: {
+          $expr: {
+            $eq: ["$_id", "$$postedBy"],
+          },
+        },
+      },
+      {
+        $project: {
+          password: 0, // Exclude the password field
+        },
+      },
+    ];
+    if (req.query.role) {
+      userLookupPipeline.unshift({
+        $match: {
+          roles: req.query.role, // Assumes roles field exists and contains the role
+        },
+      });
+    }
     const page = parseInt(req.query.page, 10) || 1; // Default to page 1
     const limit = parseInt(req.query.limit, 10) || 10; // Default limit to 10 items
     const skip = (page - 1) * limit;
@@ -75,43 +96,26 @@ const getAllAds = async (req, res) => {
       },
       {
         $lookup: {
-          from: "users", // Assuming the collection name is "users" for users data
+          from: "users",
           let: { postedBy: "$postedBy" },
-          pipeline: [
-            {
-              $match: {
-                $expr: {
-                  $eq: ["$_id", "$$postedBy"],
-                },
-              },
-            },
-            {
-              $project: {
-                roles: 1, // Include the roles field
-                name: 1, // Include the name field
-              },
-            },
-          ],
+          pipeline: userLookupPipeline,
           as: "postedBy",
         },
       },
       {
         $lookup: {
-          from: "categories",
+          from: "categories", // Assuming the collection name is "categories" for categories data
           localField: "category",
           foreignField: "_id",
-          as: "category_docs",
+          as: "category",
         },
-      },
-      {
-        $unwind: "$category_docs", // Unwind the array of category documents
       },
       {
         $project: {
           _id: 1,
           title: 1,
-          category: "$category_docs", // unwind category array if necessary
-          // images: 1,
+          category: { $arrayElemAt: ["$category", 0] }, // unwind category array if necessary
+         // images: 1,
           description: 1,
           budget: 1,
           jobDuration: 1,
@@ -124,30 +128,14 @@ const getAllAds = async (req, res) => {
           totalProposals: { $size: "$proposals" },
         },
       },
-      {
-        $group: {
-          _id: "$_id",
-          title: { $first: "$title" },
-          category: { $push: "$category" }, // Group back into an array of categories
-          images: { $first: "$images" },
-          description: { $first: "$description" },
-          budget: { $first: "$budget" },
-          jobDuration: { $first: "$jobDuration" },
-          postedBy: { $first: "$postedBy" },
-          createdAt: { $first: "$createdAt" },
-          image: { $first: "$image" },
-          isApproved: { $first: "$isApproved" },
-          valid_till: { $first: "$valid_till" },
-          totalProposals: { $first: "$totalProposals" },
-        },
-      },
-      { $skip: skip },
+      { $skip: skip }, 
       { $limit: limit },
     ]);
 
+
     const totalAds = await Ad.countDocuments(query);
     const totalPages = Math.ceil(totalAds / limit);
-
+    console.log(ads);
     return response.success(res, "All ads retrieved successfully", {
       ads,
       totalAds,
@@ -187,10 +175,9 @@ const approveAd = async (req, res) => {
 
 const getAllBlogs = async (req, res) => {
   try {
-    let query = { isApproved: false };
+    let query = {};
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
-
     const skipIndex = (page - 1) * limit;
 
     const blogs = await Blog.find(query)

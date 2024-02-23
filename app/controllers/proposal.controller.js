@@ -8,6 +8,7 @@ const Users = require("../models/users");
 const Ad = require("../models/ad");
 const response = require("../utils/responseHelpers");
 const { ROLE_IDS } = require("../utils/utility");
+
 const postProposal = async (req, res) => {
   try {
     const adId = req.body.adId;
@@ -20,11 +21,15 @@ const postProposal = async (req, res) => {
         400
       );
     }
-    //const user = await Users.findById(req.user.id);
+
+    const user = await Users.findById(req.user.id);
+    //console.log(req.user.role_id !== ROLE_IDS.INDIVIDUAL);
+    console.log(user.roles);
     if (
-      req.user.role_id !== ROLE_IDS.INDIVIDUAL &&
-      req.user.role_id !== ROLE_IDS.AGENCY
-    ) {
+      !user ||
+      (user.roles !== ROLE_IDS.INDIVIDUAL &&
+      user.roles !== ROLE_IDS.AGENCY)
+  ) {
       return response.forbidden(
         res,
         "Only users with the role of individual or agency can post proposals",
@@ -77,7 +82,6 @@ const postProposal = async (req, res) => {
     return response.success(res, "Proposal submitted successfully", {
       proposal,
     });
-    
   } catch (error) {
     console.log(error.message);
     return response.serverError(res, "An error has been occurred");
@@ -101,19 +105,18 @@ const getAllProposals = async (req, res) => {
     const proposals = await Proposal.find(where)
       .populate("submittedBy", "-password")
       .populate("adId")
-      .populate({ 
-        path: "adId", 
+      .populate({
+        path: "adId",
         populate: {
-          path: "category", 
-          select: "_id name"
-        }
+          path: "category",
+          select: "_id name",
+        },
       })
       .skip(skip)
       .limit(limit);
-      const totalProposals = await Proposal.countDocuments(where);
-      
+    const totalProposals = await Proposal.countDocuments(where);
 
-      //console.log(adId);
+    //console.log(adId);
     return response.success(res, "All proposals retrieved successfully", {
       proposals,
       total: totalProposals,

@@ -15,6 +15,7 @@ const postAd = async (req, res) => {
     return response.forbidden(res, "User not authenticated", user);
   }
   const user = await Users.findById(req.user.id);
+  console.log(req.user.role_id);
   if (
     !user ||
     req.user.role_id !== ROLE_IDS.BRAND_COMPANY &&
@@ -22,7 +23,7 @@ const postAd = async (req, res) => {
   ) {
     return response.forbidden(
       res,
-      "Only users with the role of company or agency can post proposals",
+      "Only users with the role of company or agency can post Ads",
       403
     );
   }
