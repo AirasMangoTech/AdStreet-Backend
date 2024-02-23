@@ -127,7 +127,7 @@ const login = async (req, res) => {
         token: token,
         //fcmToken:  user.fcmToken,
       };
-      
+
       let fcmObj = {
         user_id: user._id,
         device_uid: req.headers.deviceid,
@@ -223,14 +223,25 @@ const getAllUsers = async (req, res) => {
       );
       query.category = { $in: categoryObjectIDs };
     }
-    if(req.query.role){
+    if (req.query.role) {
       query.roles = req.query.role;
     }
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
     const skip = (page - 1) * limit;
 
-    const users = await User.find(query).sort({ created_at: -1 }).skip(skip).limit(limit);
+    const users = await User.find(query)
+      .sort({ created_at: -1 })
+      .skip(skip)
+      .limit(limit)
+      .populate({
+        path: "additional.services",
+        model: "Service",
+      })
+      .populate({
+        path: "additional.industry",
+        model: "Industry",
+      });
     const totalUsers = await User.countDocuments(query);
     const totalPages = Math.ceil(totalUsers / limit);
     const pagination = {

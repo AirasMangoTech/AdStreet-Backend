@@ -31,7 +31,9 @@ const UserSchema = new mongoose.Schema({
   image: {
     type: String,
   },
-  phone_Number: Number,
+  phone_Number: {
+    Number,
+  },
   created_at: {
     type: Date,
     default: Date.now,
@@ -43,11 +45,13 @@ const UserSchema = new mongoose.Schema({
     years_experience: {
       type: Number,
     },
-    industry:{
-      type:String,
+    industry: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Industry',
     },
     services: {
-      type: String,
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Service",
     },
     currentRole: {
       type: String,
