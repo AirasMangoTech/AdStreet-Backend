@@ -5,43 +5,6 @@ const response = require("../utils/responseHelpers");
 const { ROLE_IDS } = require("../utils/utility");
 const mongoose = require("mongoose");
 
-// const createBlog = async (req, res) => {
-//   if (req.user.role_id !== ROLE_IDS.ADMIN)
-//     return response.forbidden(
-//       res,
-//       "You don't have permission to perform this action"
-//     );
-//   try {
-//     const { title, content, image, blogId, categoryId, additional } = req.body;
-//     const blogCategory = await BlogCategory.findById(blogId);
-//     if (!blogCategory) {
-//       return response.notFound(res, "Invalid Category Id");
-//     }
-//     const category = await Category.findById(categoryId);
-//     if (!category) {
-//       return response.notFound(res, "Invalid Category Id");
-//     }
-
-//     const blog = new Blog({
-//       title,
-//       content,
-//       image: req.body.imageUrl,
-//       blogCategory: blogId,
-//       category: categoryId,
-//       additional: additional ? additional : null,
-//     });
-
-//     await blog.save();
-//     return response.success(res, "Blog created successfully", { blog });
-//   } catch (error) {
-//     return response.serverError(
-//       res,
-//       error.message,
-//       "Failed to load Categories"
-//     );
-//   }
-// };
-
 const createBlog = async (req, res) => {
   try {
     const { title, content, date, categoryId, additional } = req.body;
@@ -99,7 +62,7 @@ const getAllBlogs = async (req, res) => {
       .sort({ createdAt: -1 })
       .skip(skipIndex)
       .limit(limit);
-    const totalBlogs = await Blog.countDocuments();
+    const totalBlogs = await Blog.countDocuments(query);
     const totalPages = Math.ceil(totalBlogs / limit);
 
     return response.success(res, "All blogs retrieved successfully", {
