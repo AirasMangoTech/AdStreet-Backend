@@ -3,6 +3,7 @@ const BlogCategory = require("../models/blogCategory");
 const Category = require("../models/categories");
 const response = require("../utils/responseHelpers");
 const { ROLE_IDS } = require("../utils/utility");
+const mongoose = require("mongoose");
 
 // const createBlog = async (req, res) => {
 //   if (req.user.role_id !== ROLE_IDS.ADMIN)
@@ -78,12 +79,22 @@ const createBlog = async (req, res) => {
 
 const getAllBlogs = async (req, res) => {
   try {
-    //let query = {isApproved: true};
+    let query = {};
+    if (req.query.category !== undefined) {
+      const categories = req.query.category.split(",");
+      const categoryObjectIDs = categories.map(
+        (category) => new mongoose.Types.ObjectId(category)
+      );
+      query.category = { $in: categoryObjectIDs };
+    }
+    if (req.query.title) {
+      query.title = { $regex: new RegExp(req.query.title, "i") };
+    }
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
     const skipIndex = (page - 1) * limit;
 
-    const blogs = await Blog.find()
+    const blogs = await Blog.find(query)
       .populate("category")
       .sort({ createdAt: -1 })
       .skip(skipIndex)
@@ -101,6 +112,7 @@ const getAllBlogs = async (req, res) => {
       },
     });
   } catch (error) {
+    console.error(`Error getting all blogs: ${error}`);
     return response.authError(res, "something bad happened");
   }
 };
@@ -111,12 +123,12 @@ const updateBlog = async (req, res) => {
     const blogId = req.params.id;
 
     // Optional: Check if the category exists
-    if (categoryId) {
-      const category = await BlogCategory.findById(categoryId);
-      if (!category) {
-        return response.notFound(res, "Invalid Category Id");
-      }
-    }
+    // if (categoryId) {
+    //   const category = await BlogCategory.findById(categoryId);
+    //   if (!category) {
+    //     return response.notFound(res, "Invalid Category Id");
+    //   }
+    // }
 
     const updatedBlog = await Blog.findByIdAndUpdate(
       blogId,
