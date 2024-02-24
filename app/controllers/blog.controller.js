@@ -43,11 +43,11 @@ const { ROLE_IDS } = require("../utils/utility");
 
 const createBlog = async (req, res) => {
   try {
-    const { title, content, date, blogId, categoryId, additional } = req.body;
-    const blogCategory = await BlogCategory.findById(blogId);
-    if (!blogCategory) {
-      return response.notFound(res, "Invalid Category Id");
-    }
+    const { title, content, date, categoryId, additional } = req.body;
+    // const blogCategory = await BlogCategory.findById(blogId);
+    // if (!blogCategory) {
+    //   return response.notFound(res, "Invalid Category Id");
+    // }
     const category = await Category.findById(categoryId);
     if (!category) {
       return response.notFound(res, "Invalid Category Id");
@@ -60,7 +60,7 @@ const createBlog = async (req, res) => {
       content,
       date,
       image: req.body.imageUrl,
-      blogCategory: blogId,
+      //blogCategory: blogId,
       category: categoryId,
       additional: additional ? additional : null,
       isApproved: isApproved, // Set based on the user's role
