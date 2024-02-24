@@ -85,7 +85,6 @@ const getAllBlogs = async (req, res) => {
 
     const blogs = await Blog.find()
       .populate("category")
-      .populate("blogCategory")
       .sort({ createdAt: -1 })
       .skip(skipIndex)
       .limit(limit);
