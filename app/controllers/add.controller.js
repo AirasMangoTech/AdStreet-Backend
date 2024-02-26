@@ -198,7 +198,7 @@ const getAllAds = async (req, res) => {
           budget: 1,
           jobDuration: 1,
           postedBy: { $arrayElemAt: ["$postedBy", 0] }, // unwind postedBy array if necessary
-          createdAt: 1,
+          createdAt: -1,
           image: 1,
           isApproved: 1,
           isHired: 1,
@@ -209,6 +209,8 @@ const getAllAds = async (req, res) => {
       },
       { $skip: skip }, 
       { $limit: limit },
+      { $sort: { createdAt: -1 }},
+      
     ]);
 
     const totalAds = await Ad.countDocuments(query);

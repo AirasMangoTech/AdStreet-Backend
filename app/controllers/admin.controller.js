@@ -131,6 +131,7 @@ const getAllAds = async (req, res) => {
       },
       { $skip: skip }, 
       { $limit: limit },
+      { $sort: { createdAt: -1 }},
     ]);
 
 

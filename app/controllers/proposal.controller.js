@@ -113,7 +113,8 @@ const getAllProposals = async (req, res) => {
         },
       })
       .skip(skip)
-      .limit(limit);
+      .limit(limit)
+      .sort({ createdAt: -1 });
     const totalProposals = await Proposal.countDocuments(where);
 
     //console.log(adId);
@@ -167,10 +168,9 @@ const getProposalsByAdId = async (req, res) => {
     }
 
     const count = await Proposal.countDocuments(where);
-    const proposals = await Proposal.find(where).populate(
-      "submittedBy",
-      "-password"
-    );
+    const proposals = await Proposal.find(where)
+    .populate("submittedBy", "-password")
+    .populate("adId", "isHired");
 
     return response.success(
       res,

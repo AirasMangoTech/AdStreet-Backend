@@ -31,7 +31,7 @@ const signup = async (req, res) => {
         "Email, Password, fcmToken, and Phone Number are required"
       );
     }
-
+    
     email = email.toLowerCase().trim();
     phoneNumber = phoneNumber.trim();
 
@@ -242,7 +242,6 @@ const getAllUsers = async (req, res) => {
         path: "additional.industry",
         model: "Industry",
       });
-      console.log(users);
     const totalUsers = await User.countDocuments(query);
     const totalPages = Math.ceil(totalUsers / limit);
     const pagination = {

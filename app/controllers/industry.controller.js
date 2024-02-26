@@ -53,9 +53,18 @@ const updateIndustry = async (req, res) => {
 //console.log(error);
 const getAllIndustry = async (req, res) => {
   try {
-    const industry = await Industry.find();
+    const page = parseInt(req.query.page) || 1; // Default to page 1 if not specified
+    const limit = parseInt(req.query.limit) || 10; // Default limit to 10 items per page
+    const skipIndex = (page - 1) * limit;
+    const industry = await Industry.find()
+      .sort({ createdAt: -1 })
+      .skip(skipIndex)
+      .limit(limit);
+    const totalIndustry = await Industry.countDocuments();
+    const totalPages = Math.ceil(totalIndustry / limit);
+    
     const message = industry.length === 0 ? "No industry found" : "industry loaded successfully";
-    return response.success(res, message, { industry });
+    return response.success(res, message, { industry, totalPages, currentPage: page});
     
   } catch (error) {
     console.log(error);
