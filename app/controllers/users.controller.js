@@ -216,6 +216,10 @@ const getAllUsers = async (req, res) => {
         $regex: new RegExp(req.query.services, "i"),
       };
     }
+    if (req.query.phone_Number) {
+      // Assuming phone number is stored in 'phone_Number' field
+      query.phone_Number = { $regex: new RegExp(req.query.phone_Number, "i") };
+    }
     if (req.query.category !== undefined) {
       const categories = req.query.category.split(",");
       const categoryObjectIDs = categories.map(
@@ -256,7 +260,9 @@ const getAllUsers = async (req, res) => {
       pagination,
     });
   } catch (error) {
-    res.status(500).json({ error: "Failed to load users" });
+    console.error(`Error getting all users: ${error}`);
+    return response.serverError(res, "Error getting all users");
+    //res.status(500).json({ error: "Failed to load users" });
   }
 };
 
