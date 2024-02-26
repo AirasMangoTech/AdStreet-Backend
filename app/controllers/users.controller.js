@@ -7,6 +7,7 @@ const logger = require("../logger");
 const FcmToken = require("../models/fcmTokens");
 const auth = require("../middleware/auth");
 require("dotenv").config();
+const mongoose = require("mongoose");
 
 const signup = async (req, res) => {
   try {
@@ -31,7 +32,7 @@ const signup = async (req, res) => {
         "Email, Password, fcmToken, and Phone Number are required"
       );
     }
-    
+
     email = email.toLowerCase().trim();
     phoneNumber = phoneNumber.trim();
 
@@ -200,6 +201,7 @@ const login = async (req, res) => {
 const getAllUsers = async (req, res) => {
   try {
     let query = {};
+
     if (req.query.city) {
       query.city = { $regex: new RegExp(req.query.city, "i") };
     }
@@ -207,17 +209,15 @@ const getAllUsers = async (req, res) => {
       query.name = { $regex: new RegExp(req.query.name, "i") };
     }
     if (req.query.industry) {
-      query["additional.industry"] = {
-        $regex: new RegExp(req.query.industry, "i"),
-      };
+      const industryId = new mongoose.Types.ObjectId(req.query.industry);
+      query["additional.industry"] = industryId;
     }
+    console.log(query);
     if (req.query.services) {
-      query["additional.services"] = {
-        $regex: new RegExp(req.query.services, "i"),
-      };
+      const serviceId = new mongoose.Types.ObjectId(req.query.services);
+      query["additional.services"] = serviceId;
     }
     if (req.query.phone_Number) {
-      // Assuming phone number is stored in 'phone_Number' field
       query.phone_Number = { $regex: new RegExp(req.query.phone_Number, "i") };
     }
     if (req.query.category !== undefined) {
@@ -246,6 +246,7 @@ const getAllUsers = async (req, res) => {
         path: "additional.industry",
         model: "Industry",
       });
+
     const totalUsers = await User.countDocuments(query);
     const totalPages = Math.ceil(totalUsers / limit);
     const pagination = {
