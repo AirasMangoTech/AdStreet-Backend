@@ -201,6 +201,7 @@ const getAllAds = async (req, res) => {
           createdAt: 1,
           image: 1,
           isApproved: 1,
+          isHired: 1,
           isCompleted: 1,
           valid_till: 1,
           totalProposals: { $size: "$proposals" },
@@ -299,6 +300,7 @@ const acceptProposal = async (req, res) => {
       return response.notFound(res, "Proposal not found");
     }
     ad.hired_user = proposalToAccept.submittedBy;
+    ad.isHired = true;
     await ad.save();
     
     return response.success(res, "Proposal accepted successfully", {
