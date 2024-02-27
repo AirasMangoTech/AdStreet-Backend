@@ -24,7 +24,6 @@ const createBlog = async (req, res) => {
       content,
       date,
       image: req.body.imageUrl,
-      //blogCategory: blogId,
       category: categoryId,
       additional: additional ? additional : null,
       isApproved: isApproved, // Set based on the user's role
@@ -80,27 +79,38 @@ const getAllBlogs = async (req, res) => {
   }
 };
 
+// const updateBlog = async (req, res) => {
+//   try {
+//     const { title, content, categoryId } = req.body;
+//     const blogId = req.params.id;
+
+//     const updatedBlog = await Blog.findByIdAndUpdate(
+//       blogId,
+//       {
+//         title,
+//         content,
+//         category: categoryId,
+//       },
+//       { new: true }
+//     );
+//     if (!updatedBlog) {
+//       return response.notFound(res, "Blog not found");
+//     }
+//     return response.success(res, "Blog updated successfully", { updatedBlog });
+//   } catch (error) {
+//     return response.serverError(res, error.message, "Failed to update blog");
+//   }
+// };
+
 const updateBlog = async (req, res) => {
   try {
-    const { title, content, categoryId } = req.body;
     const blogId = req.params.id;
 
-    // Optional: Check if the category exists
-    // if (categoryId) {
-    //   const category = await BlogCategory.findById(categoryId);
-    //   if (!category) {
-    //     return response.notFound(res, "Invalid Category Id");
-    //   }
-    // }
-
+    // Assuming all fields in req.body are valid for the Blog schema
     const updatedBlog = await Blog.findByIdAndUpdate(
       blogId,
-      {
-        title,
-        content,
-        category: categoryId,
-      },
-      { new: true }
+      req.body, // Directly pass the request body
+      { new: true } // Returns the updated document
     );
 
     if (!updatedBlog) {
@@ -112,6 +122,7 @@ const updateBlog = async (req, res) => {
     return response.serverError(res, error.message, "Failed to update blog");
   }
 };
+
 
 const deleteBlog = async (req, res) => {
   try {
