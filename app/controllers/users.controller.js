@@ -101,10 +101,12 @@ const signup = async (req, res) => {
 
 const login = async (req, res) => {
   try {
-    let { phone_Number, password, fcmToken } = req.body;
+    let { phone_Number, email,  password, fcmToken } = req.body;
     phone_Number = phone_Number ? phone_Number.trim() : undefined;
 
-    const user = await User.findOne({ phone_Number: phone_Number });
+    //const user = await User.findOne({ phone_Number: phone_Number });
+    const user = await User.findOne({ email: email });
+
 
     if (!user) return response.notFound(res, "Invalid Credentials");
     if (await bcrypt.compare(password, user.password)) {
@@ -113,6 +115,7 @@ const login = async (req, res) => {
         {
           name: user.name,
           phoneNumber: user.phone_Number,
+          email: user.email,
           id: user._id,
           role_id: user.roles,
         },

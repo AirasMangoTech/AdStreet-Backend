@@ -126,6 +126,10 @@ const getAllProposals = async (req, res) => {
           path: "category",
           select: "_id name",
         },
+        populate: {
+          path: "postedBy",
+          select: "-password",
+        },
       })
       .skip(skip)
       .limit(limit)
