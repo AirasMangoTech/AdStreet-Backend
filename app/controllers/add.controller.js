@@ -18,8 +18,8 @@ const postAd = async (req, res) => {
   console.log(req.user.role_id);
   if (
     !user ||
-    req.user.role_id !== ROLE_IDS.BRAND_COMPANY &&
-    req.user.role_id !== ROLE_IDS.AGENCY
+    (req.user.role_id !== ROLE_IDS.BRAND_COMPANY &&
+      req.user.role_id !== ROLE_IDS.AGENCY)
   ) {
     return response.forbidden(
       res,
@@ -35,6 +35,7 @@ const postAd = async (req, res) => {
       budget,
       jobDuration,
       imageUrl,
+      links,
       valid_till,
     } = req.body;
     //const image = req.file.path; // Assuming file paths are sent from the frontend and you're using a middleware like multer for file handling
@@ -43,6 +44,7 @@ const postAd = async (req, res) => {
       title,
       category,
       image: req.body.imageUrl,
+      links,
       description,
       budget,
       jobDuration,
@@ -132,7 +134,7 @@ const getAllAds = async (req, res) => {
         $lte: getEndOfDay(new Date(req.query.created_at_to)),
       };
     }
-    
+
     let userLookupPipeline = [
       {
         $match: {
@@ -147,7 +149,7 @@ const getAllAds = async (req, res) => {
         },
       },
     ];
-  
+
     if (req.query.role) {
       userLookupPipeline.unshift({
         $match: {
@@ -193,7 +195,7 @@ const getAllAds = async (req, res) => {
           _id: 1,
           title: 1,
           category: 1, // unwind category array if necessary
-         // images: 1,
+          links: 1,
           description: 1,
           budget: 1,
           jobDuration: 1,
@@ -207,16 +209,15 @@ const getAllAds = async (req, res) => {
           totalProposals: { $size: "$proposals" },
         },
       },
-      { $skip: skip }, 
+      { $skip: skip },
       { $limit: limit },
-      { $sort: { createdAt: -1 }},
-      
+      { $sort: { createdAt: -1 } },
     ]);
 
     const totalAds = await Ad.countDocuments(query);
     const totalPages = Math.ceil(totalAds / limit);
 
-    return response.success(res, "All ads retrieved successfully", { 
+    return response.success(res, "All ads retrieved successfully", {
       ads,
       totalAds,
       totalPages,
@@ -276,14 +277,12 @@ const acceptProposal = async (req, res) => {
     if (!ad) {
       return response.notFound(res, "Ad not found");
     }
-  
+
     if (ad.postedBy.toString() !== req.user.id) {
-      
       return response.authError(
         res,
         "Only the creator of the ad can accept proposals"
       );
-      
     }
     if (ad.hired_user) {
       return response.badRequest(
@@ -304,7 +303,7 @@ const acceptProposal = async (req, res) => {
     ad.hired_user = proposalToAccept.submittedBy;
     ad.isHired = true;
     await ad.save();
-    
+
     return response.success(res, "Proposal accepted successfully", {
       proposalToAccept,
       hired_user: ad.hired_user,
@@ -352,53 +351,50 @@ const acceptProposal = async (req, res) => {
 // };
 const getHiredUsersAndAds = async (req, res) => {
   try {
-    
     const userId = req.user.id;
-    
+
     const ongoingAds = await Ad.find({
       postedBy: userId,
       hired_user: { $exists: true, $ne: null },
       isCompleted: false,
     })
-    .populate("hired_user", "-password")
-    .populate("category")
-    .populate("postedBy", "_id");
+      .populate("hired_user", "-password")
+      .populate("category")
+      .populate("postedBy", "_id");
 
     // Find completed ads posted by the current user
     const completedAds = await Ad.find({
       postedBy: userId,
       isCompleted: true,
     })
-    .populate("hired_user", "-password")
-    .populate("category")
-    .populate("postedBy", "_id");
-
+      .populate("hired_user", "-password")
+      .populate("category")
+      .populate("postedBy", "_id");
 
     const ongoingHIREDAds = await Ad.find({
       hired_user: userId,
       //hired_user: { $exists: true, $ne: null },
       isCompleted: false,
     })
-    .populate("hired_user", "-password")
-    .populate("category")
-    .populate("postedBy", "_id");
+      .populate("hired_user", "-password")
+      .populate("category")
+      .populate("postedBy", "_id");
 
     // Find completed ads posted by the current user
     const completedHIREDAds = await Ad.find({
       hired_user: userId,
       isCompleted: true,
     })
-    .populate("hired_user", "-password")
-    .populate("category")
-    .populate("postedBy", "_id");
-
+      .populate("hired_user", "-password")
+      .populate("category")
+      .populate("postedBy", "_id");
 
     // Check if any ads are found
-    if ((!ongoingAds || ongoingAds.length === 0) && (!completedAds || completedAds.length === 0)) {
-      return response.notFound(
-        res,
-        "No ads found for the user"
-      );
+    if (
+      (!ongoingAds || ongoingAds.length === 0) &&
+      (!completedAds || completedAds.length === 0)
+    ) {
+      return response.notFound(res, "No ads found for the user");
     }
 
     // Extract hired users from all ongoing ads
@@ -414,7 +410,7 @@ const getHiredUsersAndAds = async (req, res) => {
       completedAds,
       //hiredUsers,
       ongoingHIREDAds,
-      completedHIREDAds
+      completedHIREDAds,
     });
   } catch (error) {
     console.error(`Error getting hired users and ads: ${error}`);
@@ -470,7 +466,7 @@ const updateAdStatus = async (req, res) => {
 
     if (ad.postedBy.toString() !== req.user.id) {
       console.log(req.user.id);
-      
+
       return response.authError(
         res,
         "Only the creator of the ad can update the status"

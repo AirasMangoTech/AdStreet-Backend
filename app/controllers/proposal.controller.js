@@ -27,9 +27,8 @@ const postProposal = async (req, res) => {
     console.log(user.roles);
     if (
       !user ||
-      (user.roles !== ROLE_IDS.INDIVIDUAL &&
-      user.roles !== ROLE_IDS.AGENCY)
-  ) {
+      (user.roles !== ROLE_IDS.INDIVIDUAL && user.roles !== ROLE_IDS.AGENCY)
+    ) {
       return response.forbidden(
         res,
         "Only users with the role of individual or agency can post proposals",
@@ -103,8 +102,23 @@ const getAllProposals = async (req, res) => {
     const skip = (page - 1) * limit;
 
     const proposals = await Proposal.find(where)
-      .populate("submittedBy", "-password")
-     
+    .populate("submittedBy", "-password")
+    .populate({
+      path: "submittedBy",
+      select: "-password",
+      populate: [
+        {
+          path: "additional.services",
+          model: "Service", // This should be the exact name of your Service model
+          select: "name", // Add any other fields you need
+        },
+        {
+          path: "additional.industry",
+          model: "Industry", // This should be the exact name of your Industry model
+         select: "name", // Add any other fields you need
+        },
+      ],
+    })
       .populate("adId")
       .populate({
         path: "adId",
@@ -170,8 +184,8 @@ const getProposalsByAdId = async (req, res) => {
 
     const count = await Proposal.countDocuments(where);
     const proposals = await Proposal.find(where)
-    .populate("submittedBy", "-password")
-    .populate("adId", "isHired");
+      .populate("submittedBy", "-password")
+      .populate("adId", "isHired");
 
     return response.success(
       res,

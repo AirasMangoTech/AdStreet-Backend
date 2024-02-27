@@ -19,6 +19,11 @@ const adSchema = new mongoose.Schema({
       type: String,
     },
   ],
+  links: [
+    {
+      type: String,
+    },
+  ],
   description: {
     type: String,
     required: true,
