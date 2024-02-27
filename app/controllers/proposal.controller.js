@@ -119,18 +119,20 @@ const getAllProposals = async (req, res) => {
         },
       ],
     })
-      .populate("adId")
-      .populate({
-        path: "adId",
-        populate: {
+    .populate({
+      path: "adId",
+      populate: [
+        {
           path: "category",
+          model: "Category", // This is optional if Mongoose can infer the model from the schema
           select: "_id name",
         },
-        populate: {
+        {
           path: "postedBy",
-          select: "-password",
+          select: "-password", // Assuming you want to omit the password from the results
         },
-      })
+      ]
+    })
       .skip(skip)
       .limit(limit)
       .sort({ createdAt: -1 });
