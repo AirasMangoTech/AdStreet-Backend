@@ -13,6 +13,7 @@ const blog = require('./blog.routes');
 const industry = require('./industry.routes');
 const notification = require('./notification.routes');
 const proposal = require('./proposal.routes');
+const portfolio = require('./portfolio.routes');
 const service = require('./service.routes');
 
 router.use('/ad', ad);
@@ -24,6 +25,7 @@ router.use('/category', category);
 router.use('/geo', geo);
 router.use('/industry', industry);
 router.use('/notification', notification);
+router.use('/portfolio', portfolio)
 router.use('/proposal', proposal);
 router.use('/service', service);
 module.exports = router;

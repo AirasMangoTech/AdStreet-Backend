@@ -262,8 +262,8 @@ const getAllUsers = async (req, res) => {
     });
   } catch (error) {
     console.error(`Error getting all users: ${error}`);
-    return response.serverError(res, "Error getting all users");
-    //res.status(500).json({ error: "Failed to load users" });
+    return response.serverError(res, `Error getting all users: ${error}`);
+    
   }
 };
 

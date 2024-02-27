@@ -198,7 +198,7 @@ const getAllAds = async (req, res) => {
           budget: 1,
           jobDuration: 1,
           postedBy: { $arrayElemAt: ["$postedBy", 0] }, // unwind postedBy array if necessary
-          createdAt: -1,
+          createdAt: 1,
           image: 1,
           isApproved: 1,
           isHired: 1,
@@ -352,16 +352,16 @@ const acceptProposal = async (req, res) => {
 // };
 const getHiredUsersAndAds = async (req, res) => {
   try {
-    // Assuming req.user.id contains the ID of the current user
+    
     const userId = req.user.id;
     
-    // Find ads posted by the current user with hired users (ongoing ads)
     const ongoingAds = await Ad.find({
       postedBy: userId,
       hired_user: { $exists: true, $ne: null },
       isCompleted: false,
     })
     .populate("hired_user", "-password")
+    .populate("category")
     .populate("postedBy", "_id");
 
     // Find completed ads posted by the current user
@@ -370,6 +370,7 @@ const getHiredUsersAndAds = async (req, res) => {
       isCompleted: true,
     })
     .populate("hired_user", "-password")
+    .populate("category")
     .populate("postedBy", "_id");
 
 
@@ -379,6 +380,7 @@ const getHiredUsersAndAds = async (req, res) => {
       isCompleted: false,
     })
     .populate("hired_user", "-password")
+    .populate("category")
     .populate("postedBy", "_id");
 
     // Find completed ads posted by the current user
@@ -387,6 +389,7 @@ const getHiredUsersAndAds = async (req, res) => {
       isCompleted: true,
     })
     .populate("hired_user", "-password")
+    .populate("category")
     .populate("postedBy", "_id");
 
 

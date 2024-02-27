@@ -104,6 +104,7 @@ const getAllProposals = async (req, res) => {
 
     const proposals = await Proposal.find(where)
       .populate("submittedBy", "-password")
+     
       .populate("adId")
       .populate({
         path: "adId",

@@ -10,4 +10,7 @@ admin_route.patch('/approveAd/:id', [verifyToken], admin.approveAd);
 //ADMIN BLOG ROUTES
 admin_route.get('/getallblogs', [verifyToken], admin.getAllBlogs);
 
+//ADMIN stats
+admin_route.get('/getstats', [verifyToken], admin.getAdStreetStats);
+
 module.exports = admin_route;

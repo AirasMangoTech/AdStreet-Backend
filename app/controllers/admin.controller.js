@@ -1,5 +1,7 @@
 const Ad = require("../models/ad");
 const Blog = require("../models/blogs");
+const Proposal = require("../models/proposals");
+const User = require("../models/users");
 const response = require("../utils/responseHelpers");
 const { ROLE_IDS } = require("../utils/utility");
 const mongoose = require("mongoose");
@@ -115,7 +117,7 @@ const getAllAds = async (req, res) => {
           _id: 1,
           title: 1,
           category: 1, // unwind category array if necessary
-         // images: 1,
+          // images: 1,
           description: 1,
           budget: 1,
           jobDuration: 1,
@@ -129,11 +131,10 @@ const getAllAds = async (req, res) => {
           totalProposals: { $size: "$proposals" },
         },
       },
-      { $skip: skip }, 
+      { $skip: skip },
       { $limit: limit },
-      { $sort: { createdAt: -1 }},
+      { $sort: { createdAt: -1 } },
     ]);
-
 
     const totalAds = await Ad.countDocuments(query);
     const totalPages = Math.ceil(totalAds / limit);
@@ -205,8 +206,87 @@ const getAllBlogs = async (req, res) => {
   }
 };
 
+const getAdStreetStats = async (req, res) => {
+  try {
+    // Aggregation pipeline for Ads by Month
+    const adsByMonth = await Ad.aggregate([
+      {
+        $project: {
+          month: { $month: "$createdAt" },
+        },
+      },
+      {
+        $group: {
+          _id: "$month",
+          totalAds: { $sum: 1 },
+        },
+      },
+      { $sort: { _id: 1 } },
+    ]);
+
+    // Aggregation pipeline for Proposals by Month
+    const proposalsByMonth = await Proposal.aggregate([
+      {
+        $project: {
+          month: { $month: "$createdAt" },
+          adId: 1,
+        },
+      },
+      {
+        $group: {
+          _id: { month: "$month", adId: "$adId" },
+          totalProposals: { $sum: 1 },
+        },
+      },
+      { $sort: { "_id.month": 1, "_id.adId": 1 } },
+    ]);
+
+    // Assuming ROLE_IDS constants are correctly set to match the database values
+    const totalIndividuals = await User.countDocuments({ roles: "INDIVIDUAL" });
+    const totalCompanies = await User.countDocuments({roles: "BRAND_COMPANY"});
+    const totalAgencies = await User.countDocuments({ roles: "AGENCY" });
+
+    // Total Users excluding admins
+    // const adminRoleId = new mongoose.Types.ObjectId("yourAdminRoleId");
+    const totalUsers = await User.countDocuments();
+
+    // Total Proposals
+    const totalProposals = await Proposal.countDocuments();
+
+    // Total Ads
+    const totalAds = await Ad.countDocuments();
+
+    // Building response
+    const responseData = {
+      adsStatsByMonth: adsByMonth,
+      proposalsStatsByMonth: proposalsByMonth,
+      totalUsers,
+      totalIndividuals,
+      totalCompanies,
+      totalAgencies,
+      totalProposals,
+      totalAds,
+    };
+
+    // Use the success method of your response utility
+    response.success(
+      res,
+      "AdStreet statistics retrieved successfully",
+      responseData
+    );
+  } catch (error) {
+    console.error(`Error fetching AdStreet statistics: ${error}`);
+    response.serverError(
+      res,
+      "Error fetching AdStreet statistics",
+      error.message
+    );
+  }
+};
+
 module.exports = {
   approveAd,
   getAllAds,
   getAllBlogs,
+  getAdStreetStats,
 };
