@@ -1,6 +1,6 @@
 const ROLE_IDS = {
-  BRAND_COMPANY: "BRAND_COMPANY", // service seeker
-  AGENCY: "AGENCY", // service provider
+  BRAND_COMPANY: "Service Seeker", // service seeker
+  AGENCY: "Service Provider", // service provider
   INDIVIDUAL: "INDIVIDUAL", // indivisual
   ADMIN: "ADMIN"
 };
