@@ -171,6 +171,7 @@ const getAllProposals = async (req, res) => {
     if (req.query.status) {
       where.status = req.query.status;
     }
+    
   
     if (req.query.roles) {
       const usersWithRoles = await Users.find({ roles: req.query.roles }, '_id');
