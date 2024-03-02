@@ -102,43 +102,42 @@ const getAllProposals = async (req, res) => {
     const skip = (page - 1) * limit;
 
     const proposals = await Proposal.find(where)
-    .populate("submittedBy", "-password")
-    .populate({
-      path: "submittedBy",
-      select: "-password",
-      populate: [
-        {
-          path: "additional.services",
-          model: "Service", // This should be the exact name of your Service model
-          select: "name", // Add any other fields you need
-        },
-        {
-          path: "additional.industry",
-          model: "Industry", // This should be the exact name of your Industry model
-         select: "name", // Add any other fields you need
-        },
-      ],
-    })
-    .populate({
-      path: "adId",
-      populate: [
-        {
-          path: "category",
-          model: "Category", // This is optional if Mongoose can infer the model from the schema
-          select: "_id name",
-        },
-        {
-          path: "postedBy",
-          select: "-password", // Assuming you want to omit the password from the results
-        },
-      ]
-    })
+      .populate("submittedBy", "-password")
+      .populate({
+        path: "submittedBy",
+        select: "-password",
+        populate: [
+          {
+            path: "additional.services",
+            model: "Service", // This should be the exact name of your Service model
+            select: "name", // Add any other fields you need
+          },
+          {
+            path: "additional.industry",
+            model: "Industry", // This should be the exact name of your Industry model
+            select: "name", // Add any other fields you need
+          },
+        ],
+      })
+      .populate({
+        path: "adId",
+        populate: [
+          {
+            path: "category",
+            model: "Category", // This is optional if Mongoose can infer the model from the schema
+            select: "_id name",
+          },
+          {
+            path: "postedBy",
+            select: "-password", // Assuming you want to omit the password from the results
+          },
+        ],
+      })
+      .sort({ createdAt: -1 })
       .skip(skip)
-      .limit(limit)
-      .sort({ createdAt: -1 });
+      .limit(limit);
     const totalProposals = await Proposal.countDocuments(where);
-
-    //console.log(adId);
+    
     return response.success(res, "All proposals retrieved successfully", {
       proposals,
       total: totalProposals,

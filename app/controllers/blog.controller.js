@@ -123,7 +123,6 @@ const updateBlog = async (req, res) => {
   }
 };
 
-
 const deleteBlog = async (req, res) => {
   try {
     const blogId = req.params.id;

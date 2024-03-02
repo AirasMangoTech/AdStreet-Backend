@@ -15,7 +15,6 @@ const postAd = async (req, res) => {
     return response.forbidden(res, "User not authenticated", user);
   }
   const user = await Users.findById(req.user.id);
-  console.log(req.user.role_id);
   if (
     !user ||
     (req.user.role_id !== ROLE_IDS.BRAND_COMPANY &&
@@ -125,12 +124,12 @@ const getAllAds = async (req, res) => {
         $gte: getStartOfDay(new Date(req.query.created_at_from)),
         $lte: getEndOfDay(new Date(req.query.created_at_to)),
       };
-    } else if (req.query.valid_till_from) {
-      query.valid_till = {
+    } else if (req.query.created_at_from) {
+      query.created_at = {
         $gte: getStartOfDay(new Date(req.query.created_at_from)),
       };
-    } else if (req.query.valid_till_to) {
-      query.valid_till = {
+    } else if (req.query.created_at_to) {
+      query.created_at = {
         $lte: getEndOfDay(new Date(req.query.created_at_to)),
       };
     }
@@ -149,7 +148,6 @@ const getAllAds = async (req, res) => {
         },
       },
     ];
-
     if (req.query.role) {
       userLookupPipeline.unshift({
         $match: {
@@ -157,7 +155,7 @@ const getAllAds = async (req, res) => {
         },
       });
     }
-
+    
     const page = parseInt(req.query.page, 10) || 1; // Default to page 1
     const limit = parseInt(req.query.limit, 10) || 10; // Default limit to 10 items
     const skip = (page - 1) * limit;
@@ -194,7 +192,7 @@ const getAllAds = async (req, res) => {
         $project: {
           _id: 1,
           title: 1,
-          category: 1, // unwind category array if necessary
+          category: 1,
           links: 1,
           description: 1,
           budget: 1,
@@ -209,11 +207,11 @@ const getAllAds = async (req, res) => {
           totalProposals: { $size: "$proposals" },
         },
       },
+      { $sort: { createdAt: -1 } },
       { $skip: skip },
       { $limit: limit },
-      { $sort: { createdAt: -1 } },
     ]);
-
+    
     const totalAds = await Ad.countDocuments(query);
     const totalPages = Math.ceil(totalAds / limit);
 
@@ -238,8 +236,6 @@ const GetAdddetails = async (req, res) => {
     const adDetails = await Ad.findOne(where)
       .populate("category")
       .populate("postedBy", "_id name email");
-
-    console.log("Ad details:", adDetails);
 
     if (!adDetails) {
       return response.notFound(res, "Ad not found");
