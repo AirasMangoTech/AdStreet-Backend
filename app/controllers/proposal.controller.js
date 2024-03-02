@@ -8,6 +8,7 @@ const Users = require("../models/users");
 const Ad = require("../models/ad");
 const response = require("../utils/responseHelpers");
 const { ROLE_IDS } = require("../utils/utility");
+const moment = require("moment");
 
 const postProposal = async (req, res) => {
   try {
@@ -87,16 +88,116 @@ const postProposal = async (req, res) => {
   }
 };
 // Get all proposals of an ad
+// const getAllProposals = async (req, res) => {
+//   try {
+//     let where = {};
+//     if (req.query.ad_id) {
+//       where.adId = req.query.ad_id;
+//     }
+//     // all proposals of the logged in users
+//     if (req.query.user_id) {
+//       where.submittedBy = new mongoose.Types.ObjectId(req.query.user_id);
+//     }
+//     if (req.query.status) {
+//       where.status = req.query.status;
+//     }
+//     if (req.query.roles) {
+//       where.roles = req.query.roles;
+//     }
+//     const page = parseInt(req.query.page, 10) || 1;
+//     const limit = parseInt(req.query.limit, 10) || 10;
+//     const skip = (page - 1) * limit;
+
+//     const proposals = await Proposal.find(where)
+//       .populate("submittedBy", "-password")
+//       .populate({
+//         path: "submittedBy",
+//         select: "-password",
+//         populate: [
+//           {
+//             path: "additional.services",
+//             model: "Service", // This should be the exact name of your Service model
+//             select: "name", // Add any other fields you need
+//           },
+//           {
+//             path: "additional.industry",
+//             model: "Industry", // This should be the exact name of your Industry model
+//             select: "name", // Add any other fields you need
+//           },
+//         ],
+//       })
+//       .populate({
+//         path: "adId",
+//         populate: [
+//           {
+//             path: "category",
+//             model: "Category", // This is optional if Mongoose can infer the model from the schema
+//             select: "_id name",
+//           },
+//           {
+//             path: "postedBy",
+//             select: "-password", // Assuming you want to omit the password from the results
+//           },
+//         ],
+//       })
+//       .sort({ createdAt: -1 })
+//       .skip(skip)
+//       .limit(limit);
+
+//     const totalProposals = await Proposal.countDocuments(where);
+    
+//     return response.success(res, "All proposals retrieved successfully", {
+//       proposals,
+//       total: totalProposals,
+//       page,
+//       pages: Math.ceil(totalProposals / limit),
+//     });
+//   } catch (error) {
+//     console.error(`Error getting all proposals: ${error}`);
+//     return response.serverError(res, "Error getting all proposals");
+//   }
+// };
+
 const getAllProposals = async (req, res) => {
   try {
     let where = {};
     if (req.query.ad_id) {
       where.adId = req.query.ad_id;
     }
-    // all proposals of the logged in users
+    // all proposals of the logged-in users
     if (req.query.user_id) {
       where.submittedBy = new mongoose.Types.ObjectId(req.query.user_id);
     }
+    if (req.query.status) {
+      where.status = req.query.status;
+    }
+  
+    if (req.query.roles) {
+      const usersWithRoles = await Users.find({ roles: req.query.roles }, '_id');
+      const userIds = usersWithRoles.map(user => user._id);
+      where.submittedBy = { $in: userIds };
+    }
+    const getStartOfDay = (date) => {
+      return moment(date).startOf("day").toDate();
+    };
+    const getEndOfDay = (date) => {
+      return moment(date).endOf("day").toDate();
+    };
+    if (req.query.created_at_from && req.query.created_at_to) {
+      query.createdAt = {
+        $gte: getStartOfDay(new Date(req.query.created_at_from)),
+        $lte: getEndOfDay(new Date(req.query.created_at_to)),
+      };
+    } else if (req.query.created_at_from) {
+      query.created_at = {
+        $gte: getStartOfDay(new Date(req.query.created_at_from)),
+      };
+    } else if (req.query.created_at_to) {
+      query.created_at = {
+        $lte: getEndOfDay(new Date(req.query.created_at_to)),
+      };
+    }
+
     const page = parseInt(req.query.page, 10) || 1;
     const limit = parseInt(req.query.limit, 10) || 10;
     const skip = (page - 1) * limit;
@@ -109,13 +210,13 @@ const getAllProposals = async (req, res) => {
         populate: [
           {
             path: "additional.services",
-            model: "Service", // This should be the exact name of your Service model
-            select: "name", // Add any other fields you need
+            model: "Service",
+            select: "name",
           },
           {
             path: "additional.industry",
-            model: "Industry", // This should be the exact name of your Industry model
-            select: "name", // Add any other fields you need
+            model: "Industry",
+            select: "name",
           },
         ],
       })
@@ -124,20 +225,21 @@ const getAllProposals = async (req, res) => {
         populate: [
           {
             path: "category",
-            model: "Category", // This is optional if Mongoose can infer the model from the schema
+            model: "Category",
             select: "_id name",
           },
           {
             path: "postedBy",
-            select: "-password", // Assuming you want to omit the password from the results
+            select: "-password",
           },
         ],
       })
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit);
+
     const totalProposals = await Proposal.countDocuments(where);
-    
+
     return response.success(res, "All proposals retrieved successfully", {
       proposals,
       total: totalProposals,
@@ -149,6 +251,7 @@ const getAllProposals = async (req, res) => {
     return response.serverError(res, "Error getting all proposals");
   }
 };
+
 
 const getHiredUser = async (req, res) => {
   try {

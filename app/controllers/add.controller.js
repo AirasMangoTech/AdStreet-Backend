@@ -100,7 +100,6 @@ const getAllAds = async (req, res) => {
     const getStartOfDay = (date) => {
       return moment(date).startOf("day").toDate();
     };
-    // Function to get the end of the day for a given date using Moment.js
     const getEndOfDay = (date) => {
       return moment(date).endOf("day").toDate();
     };

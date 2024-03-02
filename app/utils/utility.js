@@ -5,6 +5,4 @@ const ROLE_IDS = {
   ADMIN: "ADMIN"
 };
 
-
-
 module.exports = {ROLE_IDS };
