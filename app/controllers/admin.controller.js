@@ -1,7 +1,6 @@
 const Ad = require("../models/ad");
 const Blog = require("../models/blogs");
 const Proposal = require("../models/proposals");
-const User = require("../models/users");
 const response = require("../utils/responseHelpers");
 const { ROLE_IDS } = require("../utils/utility");
 const mongoose = require("mongoose");
@@ -25,6 +24,11 @@ const getAllAds = async (req, res) => {
     }
     if (req.query.adId) {
       query._id = new mongoose.Types.ObjectId(req.query.adId);
+    }
+    if (req.query.roles) {
+      const usersWithRoles = await User.find({ roles: req.query.roles }, '_id');
+      const userIds = usersWithRoles.map(user => user._id);
+      query.submittedBy = { $in: userIds };
     }
  
     // Function to get the end of the day for a given date using Moment.js
@@ -132,9 +136,10 @@ const getAllAds = async (req, res) => {
           totalProposals: { $size: "$proposals" },
         },
       },
+      { $sort: { createdAt: -1 } },
       { $skip: skip },
       { $limit: limit },
-      { $sort: { createdAt: -1 } },
+      
     ]);
 
     const totalAds = await Ad.countDocuments(query);
