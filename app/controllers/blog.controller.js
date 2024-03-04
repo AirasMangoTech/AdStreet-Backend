@@ -104,11 +104,11 @@ const getAllBlogs = async (req, res) => {
 
 const updateBlog = async (req, res) => {
   try {
-    const blogId = req.params.id;
+    const categoryId = req.params.id;
 
     // Assuming all fields in req.body are valid for the Blog schema
     const updatedBlog = await Blog.findByIdAndUpdate(
-      blogId,
+      categoryId,
       req.body, // Directly pass the request body
       { new: true } // Returns the updated document
     );
