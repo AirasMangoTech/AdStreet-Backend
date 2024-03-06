@@ -5,13 +5,54 @@ const response = require("../utils/responseHelpers");
 const { ROLE_IDS } = require("../utils/utility");
 const mongoose = require("mongoose");
 
+// const createBlog = async (req, res) => {
+//   try {
+//     const { title, content, date, categoryId, additional } = req.body;
+//     // const blogCategory = await BlogCategory.findById(blogId);
+//     // if (!blogCategory) {
+//     //   return response.notFound(res, "Invalid Category Id");
+//     // }
+//     const category = await Category.findById(categoryId);
+//     if (!category) {
+//       return response.notFound(res, "Invalid Category Id");
+//     }
+
+//     const isApproved = req.user.role_id === ROLE_IDS.ADMIN; // Auto-approve if admin
+
+//     const blog = new Blog({
+//       title,
+//       content,
+//       date,
+//       image: req.body.imageUrl,
+//       category: categoryId,
+//       additional: additional ? additional : null,
+//       isApproved: isApproved, // Set based on the user's role
+//     });
+
+//     await blog.save();
+//     const message = isApproved
+//       ? "Blog created and approved successfully"
+//       : "Blog created and pending approval";
+//     return response.success(res, message, { blog });
+//   } catch (error) {
+//     return response.serverError(res, error.message, "Failed to create blog");
+//   }
+// };
+
 const createBlog = async (req, res) => {
   try {
-    const { title, content, date, categoryId, additional } = req.body;
-    // const blogCategory = await BlogCategory.findById(blogId);
-    // if (!blogCategory) {
-    //   return response.notFound(res, "Invalid Category Id");
-    // }
+    const { title, content, date, categoryId, additional, imageUrl } = req.body;
+
+    // Sanitize the content
+    const cleanContent = sanitizeHtml(content, {
+      allowedTags: sanitizeHtml.defaults.allowedTags.concat(['img']), // Add any additional tags you want to allow
+      allowedAttributes: {
+        ...sanitizeHtml.defaults.allowedAttributes,
+        'img': ['src', 'alt'], // Allow image source and alternative text
+      },
+      // Additional options can be configured as needed
+    });
+
     const category = await Category.findById(categoryId);
     if (!category) {
       return response.notFound(res, "Invalid Category Id");
@@ -21,12 +62,12 @@ const createBlog = async (req, res) => {
 
     const blog = new Blog({
       title,
-      content,
+      content: cleanContent, // Use sanitized content
       date,
-      image: req.body.imageUrl,
+      image: imageUrl, // Assuming imageUrl is properly validated
       category: categoryId,
       additional: additional ? additional : null,
-      isApproved: isApproved, // Set based on the user's role
+      isApproved: isApproved,
     });
 
     await blog.save();
@@ -35,9 +76,11 @@ const createBlog = async (req, res) => {
       : "Blog created and pending approval";
     return response.success(res, message, { blog });
   } catch (error) {
-    return response.serverError(res, error.message, "Failed to create blog");
+    console.error(error); // Logging the error for debugging
+    return response.serverError(res, "Failed to create blog", error.message);
   }
 };
+
 
 const getAllBlogs = async (req, res) => {
   try {

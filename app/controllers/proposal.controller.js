@@ -145,7 +145,7 @@ const postProposal = async (req, res) => {
 //       .limit(limit);
 
 //     const totalProposals = await Proposal.countDocuments(where);
-    
+
 //     return response.success(res, "All proposals retrieved successfully", {
 //       proposals,
 //       total: totalProposals,
@@ -171,11 +171,12 @@ const getAllProposals = async (req, res) => {
     if (req.query.status) {
       where.status = req.query.status;
     }
-    
-  
     if (req.query.roles) {
-      const usersWithRoles = await Users.find({ roles: req.query.roles }, '_id');
-      const userIds = usersWithRoles.map(user => user._id);
+      const usersWithRoles = await Users.find(
+        { roles: req.query.roles },
+        "_id"
+      );
+      const userIds = usersWithRoles.map((user) => user._id);
       where.submittedBy = { $in: userIds };
     }
     const getStartOfDay = (date) => {
@@ -185,12 +186,12 @@ const getAllProposals = async (req, res) => {
       return moment(date).endOf("day").toDate();
     };
     if (req.query.created_at_from && req.query.created_at_to) {
-      query.createdAt = {
+      where.createdAt = {
         $gte: getStartOfDay(new Date(req.query.created_at_from)),
         $lte: getEndOfDay(new Date(req.query.created_at_to)),
       };
     } else if (req.query.created_at_from) {
-      query.created_at = {
+      where.created_at = {
         $gte: getStartOfDay(new Date(req.query.created_at_from)),
       };
     } else if (req.query.created_at_to) {
@@ -252,7 +253,6 @@ const getAllProposals = async (req, res) => {
     return response.serverError(res, "Error getting all proposals");
   }
 };
-
 
 const getHiredUser = async (req, res) => {
   try {
