@@ -2,8 +2,9 @@ const express = require("express");
 const blog_router = express.Router();
 const verifyToken = require("../middleware/auth");
 const blogCategory = require("../controllers/blogCategories.controller");
-const blog = require("../controllers/blog.controller")
-const { upload } = require("../utils/imageUpload");
+const blog = require("../controllers/blog.controller");
+const interest = require("../controllers/interest.controller");
+
 
 // these routes are for blog categories
 
@@ -19,4 +20,7 @@ blog_router.get('/getallblogs', [verifyToken], blog.getAllBlogs);
 blog_router.put('/updateblogs/:id', [verifyToken], blog.updateBlog);
 blog_router.delete('/deleteblogs/:id', [verifyToken], blog.deleteBlog);
 
+// these routes are for interest
+
+blog_router.post("/toggleinterest/:blogId", [verifyToken], interest.toggleInterest);
 module.exports = blog_router;

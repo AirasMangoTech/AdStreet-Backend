@@ -82,45 +82,45 @@ const createBlog = async (req, res) => {
 };
 
 
-const getAllBlogs = async (req, res) => {
-  try {
-    let query = {};
-    if (req.query.category !== undefined) {
-      const categories = req.query.category.split(",");
-      const categoryObjectIDs = categories.map(
-        (category) => new mongoose.Types.ObjectId(category)
-      );
-      query.category = { $in: categoryObjectIDs };
-    }
-    if (req.query.title) {
-      query.title = { $regex: new RegExp(req.query.title, "i") };
-    }
-    const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 10;
-    const skipIndex = (page - 1) * limit;
+// const getAllBlogs = async (req, res) => {
+//   try {
+//     let query = {};
+//     if (req.query.category !== undefined) {
+//       const categories = req.query.category.split(",");
+//       const categoryObjectIDs = categories.map(
+//         (category) => new mongoose.Types.ObjectId(category)
+//       );
+//       query.category = { $in: categoryObjectIDs };
+//     }
+//     if (req.query.title) {
+//       query.title = { $regex: new RegExp(req.query.title, "i") };
+//     }
+//     const page = parseInt(req.query.page) || 1;
+//     const limit = parseInt(req.query.limit) || 10;
+//     const skipIndex = (page - 1) * limit;
 
-    const blogs = await Blog.find(query)
-      .populate("category")
-      .sort({ createdAt: -1 })
-      .skip(skipIndex)
-      .limit(limit);
-    const totalBlogs = await Blog.countDocuments(query);
-    const totalPages = Math.ceil(totalBlogs / limit);
+//     const blogs = await Blog.find(query)
+//       .populate("category")
+//       .sort({ createdAt: -1 })
+//       .skip(skipIndex)
+//       .limit(limit);
+//     const totalBlogs = await Blog.countDocuments(query);
+//     const totalPages = Math.ceil(totalBlogs / limit);
 
-    return response.success(res, "All blogs retrieved successfully", {
-      blogs,
-      pageInfo: {
-        currentPage: page,
-        totalPages,
-        totalBlogs,
-        limit,
-      },
-    });
-  } catch (error) {
-    console.error(`Error getting all blogs: ${error}`);
-    return response.authError(res, "something bad happened");
-  }
-};
+//     return response.success(res, "All blogs retrieved successfully", {
+//       blogs,
+//       pageInfo: {
+//         currentPage: page,
+//         totalPages,
+//         totalBlogs,
+//         limit,
+//       },
+//     });
+//   } catch (error) {
+//     console.error(`Error getting all blogs: ${error}`);
+//     return response.authError(res, "something bad happened");
+//   }
+// };
 
 // const updateBlog = async (req, res) => {
 //   try {
@@ -144,6 +144,80 @@ const getAllBlogs = async (req, res) => {
 //     return response.serverError(res, error.message, "Failed to update blog");
 //   }
 // };
+
+const getAllBlogs = async (req, res) => {
+  try {
+    let query = {};
+    if (req.query.category !== undefined) {
+      const categories = req.query.category.split(",");
+      const categoryObjectIDs = categories.map(
+        (category) => new mongoose.Types.ObjectId(category)
+      );
+      query.category = { $in: categoryObjectIDs };
+    }
+    if (req.query.title) {
+      query.title = { $regex: new RegExp(req.query.title, "i") };
+    }
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skipIndex = (page - 1) * limit;
+
+    // Modify this part to include aggregation for counting interested users
+    const blogsAggregate = await Blog.aggregate([
+      { $match: query },
+      {
+        $lookup: {
+          from: "interests", // Assuming your interests collection is named "interests"
+          let: { blogId: "$_id" },
+          pipeline: [
+            { $match: { $expr: { $and: [{ $eq: ["$blog", "$$blogId"] }, { $eq: ["$expressedInterest", true] }] } } },
+            { $count: "interestCount" }
+          ],
+          as: "interestData"
+        }
+      },
+      {
+        $addFields: {
+          interestCount: { $ifNull: [{ $arrayElemAt: ["$interestData.interestCount", 0] }, 0] }
+        }
+      },
+      { $sort: { createdAt: -1 } },
+      { $skip: skipIndex },
+      { $limit: limit },
+      {
+        $lookup: {
+          from: "categories", // Adjust based on your categories collection
+          localField: "category",
+          foreignField: "_id",
+          as: "category"
+        }
+      },
+      // Removed $unset stage
+    ]);
+    
+    // If you need to remove the interestData field from each document:
+    blogsAggregate.forEach(blog => delete blog.interestData);
+    
+
+    const totalBlogs = await Blog.countDocuments(query);
+    const totalPages = Math.ceil(totalBlogs / limit);
+
+    return response.success(res, "All blogs retrieved successfully", {
+      blogs: blogsAggregate,
+      pageInfo: {
+        currentPage: page,
+        totalPages,
+        totalBlogs,
+        limit,
+      },
+    });
+  } catch (error) {
+    console.error(`Error getting all blogs: ${error}`);
+    return response.authError(res, "Something bad happened");
+  }
+};
+
+
 
 const updateBlog = async (req, res) => {
   try {

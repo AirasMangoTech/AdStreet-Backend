@@ -60,6 +60,10 @@ const blogSchema = new mongoose.Schema({
     w_link: {
       type: String,
     },
+    isInterested:{
+      type: Boolean,
+      default: false,
+    }
   },
   isApproved: {
     type: Boolean,
