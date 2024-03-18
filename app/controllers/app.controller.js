@@ -22,6 +22,17 @@ const handleImageUpload = async (req, res) => {
   }
 };
 
+const handleFileUpload = async (req, res) => {
+  try {
+    // Call the uploadFiles utility function
+    //const fileUrl = await uploadFiles(req.file);
+    return response.success(res, "Successfully uploaded file", {fileUrl: req.filepath} );
+  } catch (error) {
+    console.error('Error uploading file:', error);
+    return response.serverError(res, 'Failed to upload file', error.message);
+  }
+}
+
 module.exports = {
-  handleImageUpload,
+  handleImageUpload, handleFileUpload
 };
