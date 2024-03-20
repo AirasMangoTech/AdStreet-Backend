@@ -23,4 +23,7 @@ blog_router.delete('/deleteblogs/:id', [verifyToken], blog.deleteBlog);
 // these routes are for interest
 
 blog_router.post("/toggleinterest/:blogId", [verifyToken], interest.toggleInterest);
+
+// these routes are for website
+blog_router.get('/getallblogsWEB', blog.getAllBlogs);
 module.exports = blog_router;
