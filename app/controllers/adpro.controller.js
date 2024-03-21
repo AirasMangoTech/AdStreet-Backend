@@ -4,7 +4,7 @@ const adproRegister = async (req, res) => {
   try {
     const {
       name,
-      address,
+      industry,
       phoneNumber,
       email,
       companyName,
@@ -17,7 +17,7 @@ const adproRegister = async (req, res) => {
     } = req.body;
     const newRegistrationAdpro = new RegistrationAdpro({
       name,
-      address,
+      industry,
       phoneNumber,
       email,
       companyName,
