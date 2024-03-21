@@ -6,6 +6,7 @@ let router = express.Router();
 const user = require('./user.routes');
 const ad = require('./ad.routes');
 const admeet = require('./admeet.routes');
+const adpro = require('./adpro.routes');
 const admin = require('./admin.routes')
 const app = require('./app.routes');
 const category = require('./category.routes');
@@ -19,7 +20,8 @@ const portfolio = require('./portfolio.routes');
 const service = require('./service.routes');
 
 router.use('/ad', ad);
-router.use('/admeet', admeet)
+router.use('/admeet', admeet);
+router.use('/adpro', adpro);
 router.use('/admin', admin);
 router.use('/auth', user);
 router.use('/app', app);
