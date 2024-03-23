@@ -32,6 +32,10 @@ const blogSchema = new mongoose.Schema({
     type: Boolean,
     default: true,
   },
+  type: {
+    type: String,
+    required: true,
+  },
   additional: {
     name:{
       type: String,
@@ -43,6 +47,9 @@ const blogSchema = new mongoose.Schema({
       type: String,
     },
     location:{
+      type: String,
+    },
+    time:{
       type: String,
     },
     num_people: {

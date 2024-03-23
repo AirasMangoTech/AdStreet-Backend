@@ -26,4 +26,6 @@ blog_router.post("/toggleinterest/:blogId", [verifyToken], interest.toggleIntere
 
 // these routes are for website
 blog_router.get('/getallblogsWEB', blog.getAllBlogs);
+
+
 module.exports = blog_router;
