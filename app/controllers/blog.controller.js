@@ -161,7 +161,7 @@ const getAllBlogs = async (req, res) => {
       query.title = { $regex: new RegExp(req.query.title, "i") };
     }
     if (req.query.type) {
-      query.type = { $regex: new RegExp(req.query.title, "i") };
+      query.type = { $regex: new RegExp(req.query.type, "i") };
     }
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
