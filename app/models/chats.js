@@ -1,22 +1,117 @@
-const { ObjectId } = require("mongodb");
-const mongoose = require("mongoose");
+const { deleteFields } = require("../utils/utility");
+//const mongoosePaginate = require("mongoose-paginate-v2");
+const { Schema, model, default: mongoose } = require("mongoose");
 
-const ChatSchema = new mongoose.Schema({
-  sender_id: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "users",
+const chatSchema = new Schema(
+  {
+    groupName: {
+      type: String,
+      index: true,
+      required: function () {
+        return this.chatType === "group";
+      },
+    },
+    isChatSupport: {
+      type: Boolean,
+      default: false,
+    },
+    isTicketClosed: {
+      type: Boolean,
+      default: false,
+    },
+    groupImageUrl: {
+      type: String,
+    },
+    chatType: {
+      type: String,
+      enum: ["one-to-one", "group"],
+      default: "one-to-one"
+    },
+    createdBy: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+      required: function () {
+        return this.chatType === "group";
+      },
+    },
+    messages: [
+      {
+        body: {
+          type: String,
+          //   required: true,
+          index: true,
+        },
+        createdAt: {
+          type: Date,
+          default: Date.now,
+        },
+        mediaUrls: [
+          { type: String, }
+        ],
+        mediaType: {
+          type: String,
+        },
+        sentBy: {
+          type: Schema.Types.ObjectId,
+          ref: "User",
+          required: function () {
+            return this.chatType === "one-to-one";
+          },
+        },
+        receivedBy: [
+          {
+            userId: {
+              type: Schema.Types.ObjectId,
+              ref: "User",
+            },
+            status: {
+              type: String,
+              enum: ["sent", "delivered", "seen"],
+              default: "sent",
+            },
+            createdAt: {
+              type: Date,
+              default: Date.now,
+            },
+            ...deleteFields,
+          },
+        ],
+        ...deleteFields,
+      },
+    ],
+    lastUpdatedAt: {
+      type: Date,
+      default: Date.now,
+    },
+    participants: [
+      {
+        userId: {
+          type: Schema.Types.ObjectId,
+          ref: "User",
+        },
+        status: {
+          type : String,
+          default: 'active',
+        },
+        isMuted : {
+          type: Boolean,
+          default: false,
+        },
+        isBlocked:{
+          type: Boolean,
+          default: false,
+        }
+      },
+    ],
+    ...deleteFields,
   },
-  reciever_id: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "users",
-  },
-  message: {
-    type: String,
-  },
-  isRead: {
-    type: Boolean,
-  },
-  created_at: { type: Date, default: Date.now },
-});
-const Chat = mongoose.model("chats", ChatSchema);
-module.export = Chat
+  {
+    timestamps: true,
+  }
+);
+// chatSchema.path("participants").validate(function (value) {
+//   return value.length >= 2;
+// }, "At least 2 group participants are required.");
+
+//chatSchema.plugin(mongoosePaginate);
+exports.ChatModel = model("Chat", chatSchema);

@@ -171,19 +171,39 @@ const getAllBlogs = async (req, res) => {
     const blogsAggregate = await Blog.aggregate([
       { $match: query },
       {
-        $lookup: {
-          from: "interests", // Assuming your interests collection is named "interests"
-          let: { blogId: "$_id" },
-          pipeline: [
-            { $match: { $expr: { $and: [{ $eq: ["$blog", "$$blogId"] }, { $eq: ["$expressedInterest", true] }] } } },
-            { $count: "interestCount" }
+        "$lookup": {
+          "from": "interests",
+          "let": { "blogId": "$_id" },
+          "pipeline": [
+            { 
+              "$match": { 
+                "$expr": { 
+                  "$and": [ 
+                    { "$eq": ["$blog", "$$blogId"] }, 
+                    { "$eq": ["$expressedInterest", true] } 
+                  ] 
+                } 
+              } 
+            },
+            { 
+              "$group": { 
+                "_id": "$blog", 
+                "interestCount": { "$sum": 1 } 
+              } 
+            }
           ],
-          as: "interestData"
+          "as": "interestData"
+        }
+      },      
+      {
+        $addFields: {
+          interestCount: { $ifNull: [{ $arrayElemAt: ["$interestData.interestCount", 0] }, 0] }
         }
       },
       {
         $addFields: {
-          interestCount: { $ifNull: [{ $arrayElemAt: ["$interestData.interestCount", 0] }, 0] }
+          // Projecting the interest boolean value
+          expressedInterest: { $cond: { if: { $gt: ["$interestCount", 0] }, then: true, else: false } }
         }
       },
       { $sort: { createdAt: -1 } },

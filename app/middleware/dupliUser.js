@@ -1,15 +1,15 @@
-const User = require("../models/users");
+const Users = require("../models/users");
 const response = require("../utils/responseHelpers");
 
 const dupliUser = async (req, res, next) => {
   try {
-    let email = await User.findOne({
+    let email = await Users.findOne({
       email: req.body.email,
     });
     if (email) {
       return response.badRequest(res, "This Email already exists");
     }
-    let phone = await User.findOne({
+    let phone = await Users.findOne({
       phone_Number: req.body.phoneNumber,
     });
     if (phone) {

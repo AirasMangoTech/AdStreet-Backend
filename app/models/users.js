@@ -82,4 +82,5 @@ const UserSchema = new mongoose.Schema({
   updated_at: Date,
 });
 const Users = mongoose.model("users", UserSchema);
+//const findUsers = (query) => UserModel.find(query);
 module.exports = Users;

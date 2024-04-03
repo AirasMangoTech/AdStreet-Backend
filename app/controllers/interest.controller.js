@@ -23,6 +23,7 @@ const toggleInterest = async (req, res) => {
     }
 
     await interest.save();
+    
 
     const message = interest.expressedInterest
       ? "You have expressed interest in this blog."

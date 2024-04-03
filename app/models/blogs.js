@@ -49,7 +49,16 @@ const blogSchema = new mongoose.Schema({
     location:{
       type: String,
     },
-    time:{
+    longitute:{
+      type: String,
+    },
+    latitude:{
+      type: String,
+    },
+    start_time:{
+      type: String,
+    },
+    end_time:{
       type: String,
     },
     num_people: {
@@ -67,10 +76,6 @@ const blogSchema = new mongoose.Schema({
     w_link: {
       type: String,
     },
-    isInterested:{
-      type: Boolean,
-      default: false,
-    }
   },
   isApproved: {
     type: Boolean,

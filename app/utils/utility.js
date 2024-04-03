@@ -4,5 +4,14 @@ const ROLE_IDS = {
   INDIVIDUAL: "Indivisual", // indivisual
   ADMIN: "ADMIN"
 };
+const deleteFields = {
+  deleted: {
+    type: Boolean,
+    default: false,
+  },
+  deletedAt: {
+    type: Date,
+  },
+};
 
-module.exports = {ROLE_IDS };
+module.exports = {ROLE_IDS, deleteFields };
