@@ -13,6 +13,7 @@ const inquirySchema = new Schema({
   service:  {type: mongoose.Schema.Types.ObjectId,
   ref: "Service"},
   budget: { type: String },
+  address: { type: String },
   timeline: { type: String },
   details: { type: String },
   links: { type: String },

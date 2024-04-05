@@ -1,5 +1,7 @@
 const RegistrationAdpro = require("../models/adpro");
 const response = require("../utils/responseHelpers");
+
+
 const adproRegister = async (req, res) => {
   try {
     const {
@@ -39,6 +41,25 @@ const adproRegister = async (req, res) => {
   }
 };
 
+const getAdpros = async (req, res) => {
+  try {
+    // Fetch adpros from the database
+    const adpros = await RegistrationAdpro.find();
+
+    // Check if adpros are found
+    if (!adpros || adpros.length === 0) {
+      return response.notFound(res, "No adpros found");
+    }
+
+    // Return adpros in the response
+    return response.success(res, "Adpros fetched successfully", { adpros });
+  } catch (error) {
+    console.log(error);
+    return response.serverError(res, "Error in fetching adpros", error.message);
+  }
+};
+
 module.exports = {
   adproRegister,
+  getAdpros,
 };
