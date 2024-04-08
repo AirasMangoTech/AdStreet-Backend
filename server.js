@@ -3,7 +3,7 @@ const cors = require("cors");
 const bodyParser = require('body-parser');
 const path = require("path");
 const http = require('http');
-const socketIo = require('socket.io');
+const socketio = require('socket.io');
 require('./app/config/database');
 const app_route = require('./app/routes/index');
 const chatRoutes = require('./app/routes/chat.routes');
@@ -11,7 +11,6 @@ const chatRoutes = require('./app/routes/chat.routes');
 
 const app = express();
 const server = http.createServer(app);
-const io = socketIo(server);
 
 // parse requests of content-type - application/json
 app.use(express.json());
@@ -25,18 +24,7 @@ app.use(cors({
     origin: ['http://localhost:3002', 'https://adstreet-db.surge.sh', 'http://localhost:3000', 'https://adstreet.surge.sh/']
 }));
 
-io.on('connection', (socket) => {
-    console.log('New client connected');
-  
-    socket.on('join', ({ userId }) => {
-      socket.join(userId); // Join a room named after the userId
-      console.log(`User ${userId} joined their room`);
-    });
-  
-    socket.on('disconnect', () => {
-      console.log('Client disconnected');
-    });
-  });
+
 
 const port=process.env.PORT||8035
 
@@ -44,8 +32,10 @@ app.get("/", (req, res) => {
     res.json({ message: "Codename: Project Ad Street" });
   });
 app.use("/api",app_route)
-app.use('/chat', chatRoutes);
 
 server.listen(port, () => {
     console.log(`server is running on ${port}`)
 })
+
+const io = socketio(server).sockets
+require('./app/service/chatService')(io)
