@@ -25,12 +25,18 @@ const getAllCategories = async (req, res) => {
     if (search) {
       query = { name: { $regex: new RegExp(search, "i") } };
     }
-
-    const categories = await Category.find(query);
-
-    // Use a consistent structure for the response
+    const page = parseInt(req.query.page) || 1; // Default to page 1 if not specified
+    const limit = parseInt(req.query.limit) || 10; // Default limit to 10 items per page
+    const skipIndex = (page - 1) * limit;
+    const categories = await Category.find(query)
+      .sort({ createdAt: -1 })
+      .skip(skipIndex)
+      .limit(limit);
+    const totalCategory = await Category.countDocuments();
+    const totalPages = Math.ceil(totalCategory / limit);
+     // Use a consistent structure for the response
     const message = categories.length === 0 ? "No categories found" : "Categories loaded successfully";
-    return response.success(res, message, { categories });
+    return response.success(res, message, { categories, totalPages, currentPage: page});
     
   } catch (error) {
     console.log(error);
