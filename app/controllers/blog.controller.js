@@ -24,7 +24,7 @@ const createBlog = async (req, res) => {
       content,
       date,
       type,
-      image: req.body.imageUrl,
+      image: req.body.image,
       category: categoryId,
       additional: additional ? additional : null,
       isApproved: isApproved, // Set based on the user's role
