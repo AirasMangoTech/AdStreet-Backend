@@ -7,13 +7,13 @@ const mongoose = require("mongoose");
 
 const createBlog = async (req, res) => {
   try {
-    const { title, content, date, categoryId, type, additional } = req.body;
+    const { title, content, date, category, type, additional } = req.body;
     // const blogCategory = await BlogCategory.findById(blogId);
     // if (!blogCategory) {
     //   return response.notFound(res, "Invalid Category Id");
     // }
-    const category = await Category.findById(categoryId);
-    if (!category) {
+    const categoryId = await Category.findById(category);
+    if (!categoryId) {
       return response.notFound(res, "Invalid Category Id");
     }
 
@@ -211,16 +211,14 @@ const getAllBlogs = async (req, res) => {
       { $limit: limit },
       {
         $lookup: {
-          from: "categories", // Adjust based on your categories collection
+          from: "categories", 
           localField: "category",
           foreignField: "_id",
           as: "category"
         }
       },
-      // Removed $unset stage
     ]);
     
-    // If you need to remove the interestData field from each document:
     blogsAggregate.forEach(blog => delete blog.interestData);
     
 
@@ -248,11 +246,10 @@ const updateBlog = async (req, res) => {
   try {
     const categoryId = req.params.id;
 
-    // Assuming all fields in req.body are valid for the Blog schema
     const updatedBlog = await Blog.findByIdAndUpdate(
       categoryId,
-      req.body, // Directly pass the request body
-      { new: true } // Returns the updated document
+      req.body, 
+      { new: true }
     );
 
     if (!updatedBlog) {

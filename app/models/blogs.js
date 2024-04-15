@@ -64,6 +64,9 @@ const blogSchema = new mongoose.Schema({
     num_people: {
       type: Number,
     },
+    link:{
+      type: String,
+    },
     f_link: {
       type: String,
     },

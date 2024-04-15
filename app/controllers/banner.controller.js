@@ -7,8 +7,6 @@ const createBanner = async (req, res) => {
     if (!req.body.imageUrl) {
       return response.badRequest(res, "Banner content can not be empty");
     }
-
-    // Create a Banner
     const banner = new Banner({
       imageUrl: req.body.imageUrl,
     });
@@ -29,8 +27,41 @@ const getAllBanners = async (req, res) => {
     return response.serverError(res, `Error retrieving banners: ${err}`);
   }
 };
+//update banner
+const updateBanner = async (req, res) => {
+  try {
+    const bannerId = req.params.id;
+    const banner = await Banner.findByIdAndUpdate(bannerId, req.body, {
+      new: true, //return updated user document
+    });
+    if (!banner) {
+      return response.notFound(res, "Banner not found");
+    }
+    return response.success(res, "Banner updated successfully", { banner });
+  } catch (err) {
+    console.log(err);
+    return response.serverError(res, `Error updating banner: ${err}`);
+  }
+};
+
+// delete banner
+const deleteBanner = async (req, res) => {
+  try {
+    const bannerId = req.params.id;
+    const banner = await Banner.findByIdAndDelete(bannerId);
+    if (!banner) {
+      return response.notFound(res, "Banner not found");
+    }
+    return response.success(res, "Banner deleted successfully");
+  } catch (err) {
+    console.log(err);
+    return response.serverError(res, `Error deleting banner: ${err}`);
+  }
+};
 
 module.exports = {
   createBanner,
   getAllBanners,
+  updateBanner,
+  deleteBanner,
 };
