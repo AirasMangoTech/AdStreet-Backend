@@ -84,6 +84,7 @@ const getAllAds = async (req, res) => {
     if (req.query.title) {
       query.title = { $regex: new RegExp(req.query.title, "i") };
     }
+    
     if (req.query.user_id) {
       query.postedBy = new mongoose.Types.ObjectId(req.query.user_id);
     }

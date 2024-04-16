@@ -12,12 +12,14 @@ const inquirySchema = new Schema({
     ref: "Industry"},
   service:  {type: mongoose.Schema.Types.ObjectId,
   ref: "Service"},
+  category:{type: mongoose.Schema.Types.ObjectId,
+    ref: "Category"},
   budget: { type: String },
   address: { type: String },
   timeline: { type: String },
   details: { type: String },
   links: { type: String },
-  briefFile: { type: String }
+  file: { type: String }
 }, {
   timestamps: true
 });

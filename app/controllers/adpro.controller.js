@@ -11,11 +11,12 @@ const adproRegister = async (req, res) => {
       email,
       companyName,
       service,
+      category,
       timeline,
       budget,
       details,
       links,
-      breifFile,
+      file,
     } = req.body;
     const newRegistrationAdpro = new RegistrationAdpro({
       name,
@@ -24,11 +25,12 @@ const adproRegister = async (req, res) => {
       email,
       companyName,
       service,
+      category,
       budget,
       timeline,
       details,
       links,
-      breifFile,
+      file:req.body.file,
     });
     await newRegistrationAdpro.save();
 
