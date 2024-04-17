@@ -21,7 +21,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 //app.use('/uploads', express.static('uploads'));
 app.use(cors({
-    origin: ['http://localhost:3002', 'https://adstreet-db.surge.sh', 'http://localhost:3000', 'https://adstreet.surge.sh', 'http://adstreet.axsonstech.com']
+    origin: ['http://localhost:3002', 'https://adstreet-db.surge.sh', 'http://localhost:3000', 'https://adstreet.surge.sh', 'https://adstreet.axsonstech.com', 'https://adstreet-dashboard.axsonstech.com']
 }));
 
 
