@@ -1,7 +1,7 @@
 const ROLE_IDS = {
   BRAND_COMPANY: "Service Seeker", // service seeker
   AGENCY: "Service Provider", // service provider
-  INDIVIDUAL: "Indivisual", // indivisual
+  INDIVIDUAL: "Individual", // individual
   ADMIN: "ADMIN"
 };
 const deleteFields = {
