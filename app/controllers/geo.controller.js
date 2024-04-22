@@ -29,16 +29,14 @@ const countries = async (req, res) => {
 
 const states = async (req, res) => {
   try {
-    const states = await State.find({ country_id: req.params.id }).select(
-      "_id state_id name"
-    );
-    return response.success(res, "States List", { states: states });
-  } catch (error) {
-    logger.error(
-      `ip: ${req.ip},url: ${req.url},error:${JSON.stringify(error.stack)}`
-    );
-    return response.serverError(res, "Some Error Is Occurred");
-  }
+        
+    const states = await State.find({"country_id": req.params.id }).select("_id state_id name");
+    return response.success(res, "States List",{states: states})
+} catch (error) {
+    logger.error(`ip: ${req.ip},url: ${req.url},error:${JSON.stringify(error.stack)}`)
+    console.log(error);
+    return response.serverError(res, "Some Error Is Occurred")
+}
 };
 
 const cities = async (req, res) => {
@@ -48,9 +46,11 @@ const cities = async (req, res) => {
     );
     return response.success(res, "Cities List", { cities: cities });
   } catch (error) {
+    
     logger.error(
       `ip: ${req.ip},url: ${req.url},error:${JSON.stringify(error.stack)}`
     );
+    console.log(error);
     return response.serverError(res, "Some Error Is Occurred");
   }
 };

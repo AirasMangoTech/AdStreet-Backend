@@ -4,13 +4,14 @@ const Registration = require("../models/admeet"); // Replace with the path to yo
 
 const register = async (req, res) => {
   try {
-    const { name, phoneNumber, email, companyName, industry } = req.body;
+    const { name, phoneNumber, email, companyName, industry, blogId } = req.body;
     const newRegistration = new Registration({
       name,
       phoneNumber,
       email,
       companyName,
       industry,
+      blogId
     });
     await newRegistration.save();
 
@@ -25,7 +26,11 @@ const register = async (req, res) => {
 
 const getAllRegistrations = async (req, res) => {
   try {
-    const registrations = await Registration.find();
+    let query = {}
+    if(req.query.blogId){
+      query = {blogId: req.query.blogId}
+    }
+    const registrations = await Registration.find(query);
     return response.success(res, "Registrations fetched successfully", {
       registrations,
     });

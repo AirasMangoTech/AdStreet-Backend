@@ -31,6 +31,10 @@ const registrationSchemaADMEET = new Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "Industry",
     },
+    blogId:{
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Blog",
+    }
   },
   {
     timestamps: true, // Automatically include createdAt and updatedAt fields
