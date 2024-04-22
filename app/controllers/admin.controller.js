@@ -1,6 +1,7 @@
 const Ad = require("../models/ad");
 const Blog = require("../models/blogs");
 const Proposal = require("../models/proposals");
+const User = require("../models/users");
 const response = require("../utils/responseHelpers");
 const { ROLE_IDS } = require("../utils/utility");
 const mongoose = require("mongoose");
@@ -248,9 +249,9 @@ const getAdStreetStats = async (req, res) => {
     ]);
 
     // Assuming ROLE_IDS constants are correctly set to match the database values
-    const totalIndividuals = await User.countDocuments({ roles: "INDIVIDUAL" });
-    const totalCompanies = await User.countDocuments({roles: "BRAND_COMPANY"});
-    const totalAgencies = await User.countDocuments({ roles: "AGENCY" });
+    const totalIndividuals = await User.countDocuments({ roles: "Individual" });
+    const totalCompanies = await User.countDocuments({roles: "Service Provider"});
+    const totalAgencies = await User.countDocuments({ roles: "Service Seeker" });
 
     // Total Users excluding admins
     // const adminRoleId = new mongoose.Types.ObjectId("yourAdminRoleId");
