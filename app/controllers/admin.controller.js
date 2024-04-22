@@ -1,7 +1,7 @@
 const Ad = require("../models/ad");
 const Blog = require("../models/blogs");
 const Proposal = require("../models/proposals");
-const User = require("../models/users");
+const User = require("../models/users") ;
 const response = require("../utils/responseHelpers");
 const { ROLE_IDS } = require("../utils/utility");
 const mongoose = require("mongoose");
