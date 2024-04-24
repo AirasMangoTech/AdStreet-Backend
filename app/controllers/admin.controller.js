@@ -1,7 +1,12 @@
 const Ad = require("../models/ad");
 const Blog = require("../models/blogs");
 const Proposal = require("../models/proposals");
-const User = require("../models/users") ;
+const User = require("../models/users");
+const Adleak = require("../models/blogs");
+const Admeet = require("../models/admeet");
+const Adread = require("../models/blogs");
+const Adbook = require("../models/blogs");
+const Adpro = require("../models/adpro")
 const response = require("../utils/responseHelpers");
 const { ROLE_IDS } = require("../utils/utility");
 const mongoose = require("mongoose");
@@ -263,6 +268,10 @@ const getAdStreetStats = async (req, res) => {
     // Total Ads
     const totalAds = await Ad.countDocuments();
 
+  //  const totalAdleaks = await Adleak.countDocuments();
+    const totalAdmeets = await Admeet.countDocuments();
+    const totalAdPros = await Adpro.countDocuments();
+
     // Building response
     const responseData = {
       adsStatsByMonth: adsByMonth,
@@ -273,6 +282,8 @@ const getAdStreetStats = async (req, res) => {
       totalAgencies,
       totalProposals,
       totalAds,
+      totalAdmeets,
+      totalAdPros
     };
 
     // Use the success method of your response utility

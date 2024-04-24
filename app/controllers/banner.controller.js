@@ -9,6 +9,7 @@ const createBanner = async (req, res) => {
     }
     const banner = new Banner({
       imageUrl: req.body.imageUrl,
+      type: req.body.type,
     });
     await banner.save();
     return response.success(res, "Banner created successfully", { banner });
@@ -20,7 +21,11 @@ const createBanner = async (req, res) => {
 // Retrieve all Banners from the database.
 const getAllBanners = async (req, res) => {
   try {
-    const banners = await Banner.find();
+    let query = {};
+    if (req.query.type) {
+      query.type = req.query.type;
+    }
+    const banners = await Banner.find(query);
     return response.success(res, "Banners retrieved successfully", { banners });
   } catch (err) {
     console.log(err);

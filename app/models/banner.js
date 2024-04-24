@@ -13,6 +13,11 @@ const bannerSchema = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
+  type: {
+    type: String,
+    //enum: ["home", "category", "product"],
+    default: "home",
+  },
 });
 
 const Banner = mongoose.model("Banner", bannerSchema);
