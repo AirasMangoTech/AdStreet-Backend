@@ -156,8 +156,8 @@ const getAllAds = async (req, res) => {
       });
     }
 
-    const page = parseInt(req.query.page, 1) || 1; // Default to page 1
-    const limit = parseInt(req.query.limit, 10) || 10; // Default limit to 10 items
+    const page = parseInt(req.query.page) || 1; // Default to page 1
+    const limit = parseInt(req.query.limit) || 10; // Default limit to 10 items
     const skip = (page - 1) * limit;
 
     const ads = await Ad.aggregate([
