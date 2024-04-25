@@ -19,7 +19,6 @@ const register = async (req, res) => {
       newRegistration,
     });
   } catch (error) {
-        console.log(error)
     return response.serverError(res, "Error in registration", error.message);
   }
 };

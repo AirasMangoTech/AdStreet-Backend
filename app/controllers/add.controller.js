@@ -80,7 +80,7 @@ const postAd = async (req, res) => {
 
 const getAllAds = async (req, res) => {
   try {
-    let query = { isApproved: true };
+    let query = { isApproved: true, isHired: false, isCompleted: false};
     if (req.query.title) {
       query.title = { $regex: new RegExp(req.query.title, "i") };
     }

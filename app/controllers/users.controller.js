@@ -60,7 +60,7 @@ const signup = async (req, res) => {
       password,
       await bcrypt.genSalt(10)
     );
-    console.log(additional);
+
 
     const newUser = new User({
       name,
@@ -88,7 +88,7 @@ const signup = async (req, res) => {
     const token = jwt.sign(
       { email: newUser.email, id: newUser._id, role_id: roleId },
       process.env.SECRET_KEY,
-      { expiresIn: "1d" }
+      { expiresIn: "30d" }
     );
 
     return response.success(res, "Signup Successful", { user: newUser, token });
