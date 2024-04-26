@@ -1,20 +1,26 @@
+const crypto = require('crypto');
 const response = require("../utils/responseHelpers");
 
 const Registration = require("../models/admeet"); // Replace with the path to your Mongoose model
 
 const register = async (req, res) => {
   try {
-    const { name, phoneNumber, email, companyName, industry, blogId } = req.body;
+    const { name, phoneNumber, email, companyName, expressedInterest, industry, blogId } = req.body;
+    const password = crypto.randomBytes(6).toString('hex'); 
     const newRegistration = new Registration({
       name,
       phoneNumber,
       email,
+      password,
       companyName,
       industry,
-      blogId
+      blogId,
+      expressedInterest
     });
     await newRegistration.save();
-
+    if(expressedInterest === 'yes'){
+      // send email
+    }
     return response.success(res, "Registration successful", {
       newRegistration,
     });

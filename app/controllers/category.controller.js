@@ -36,7 +36,7 @@ const getAllCategories = async (req, res) => {
     const totalPages = Math.ceil(totalCategory / limit);
      // Use a consistent structure for the response
     const message = categories.length === 0 ? "No categories found" : "Categories loaded successfully";
-    return response.success(res, message, { categories, totalPages, currentPage: page});
+    return response.success(res, message, { categories, totalPages, currentPage: page, totalCategory});
     
   } catch (error) {
     console.log(error);
