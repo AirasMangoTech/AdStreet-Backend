@@ -395,8 +395,8 @@ const getHiredUsersAndAds = async (req, res) => {
 
     // Extract hired users from all ongoing ads
     const hiredUsers = ongoingAds.reduce((users, ad) => {
-      if (ad.hired_user) {
-        users.push(ad.hired_user);
+      if (ad.submittedBy) {
+        users.push(ad.submittedBy);
       }
       return users;
     }, []);
@@ -404,7 +404,7 @@ const getHiredUsersAndAds = async (req, res) => {
     return response.success(res, "Hired users and ads retrieved successfully", {
       ongoingAds,
       completedAds,
-      //hiredUsers,
+      hiredUsers,
       ongoingHIREDAds,
       completedHIREDAds,
     });
