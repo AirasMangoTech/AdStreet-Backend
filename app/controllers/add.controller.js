@@ -80,11 +80,11 @@ const postAd = async (req, res) => {
 
 const getAllAds = async (req, res) => {
   try {
-    let query = { isApproved: true, isHired: false, isCompleted: false};
+    let query = { isApproved: true, isHired: false, isCompleted: false };
     if (req.query.title) {
       query.title = { $regex: new RegExp(req.query.title, "i") };
     }
-    
+
     if (req.query.user_id) {
       query.postedBy = new mongoose.Types.ObjectId(req.query.user_id);
     }
@@ -211,7 +211,7 @@ const getAllAds = async (req, res) => {
       { $skip: skip },
       { $limit: limit },
     ]);
-    
+
     const totalAds = await Ad.countDocuments(query);
     const totalPages = Math.ceil(totalAds / limit);
 
@@ -309,42 +309,7 @@ const acceptProposal = async (req, res) => {
     return response.serverError(res, "Error accepting proposal");
   }
 };
-//function to get hired users for all the ads that are posted by the user
-// const getHiredUsersAndAds = async (req, res) => {
-//   try {
-//     // Assuming req.user.id contains the ID of the current user
-//     const userId = req.user.id;
-//     // Find ads posted by the current user with hired users
-//     const ads = await Ad.find({
-//       postedBy: userId,
-//       hired_user: { $exists: true, $ne: null },
-//       isCompleted: false,
-//     })
-//       .populate("hired_user", "-password")
-//       .populate("postedBy", "name _id");
-//     // Check if any ads are found
-//     if (!ads || ads.length === 0) {
-//       return response.notFound(
-//         res,
-//         "No ads found for the user with hired users"
-//       );
-//     }
-//     // Extract hired users from all ads
-//     const hiredUsers = ads.reduce((users, ad) => {
-//       if (ad.hired_user) {
-//         users.push(ad.hired_user);
-//       }
-//       return users;
-//     }, []);
-//     return response.success(res, "Hired users and ads retrieved successfully", {
-//       ads,
-//       hiredUsers,
-//     });
-//   } catch (error) {
-//     console.error(`Error getting hired users and ads: ${error}`);
-//     return response.serverError(res, "Error getting hired users and ads");
-//   }
-// };
+
 const getHiredUsersAndAds = async (req, res) => {
   try {
     const userId = req.user.id;
@@ -385,26 +350,32 @@ const getHiredUsersAndAds = async (req, res) => {
       .populate("category")
       .populate("postedBy", "_id");
 
+    const hiredUser = await Proposal.find({
+      submittedBy: userId,
+      status: "true",
+      isCompleted: false,
+    }).populate("postedBy", "name");
+
     // Check if any ads are found
-    if (
-      (!ongoingAds || ongoingAds.length === 0) &&
-      (!completedAds || completedAds.length === 0)
-    ) {
-      return response.notFound(res, "No ads found for the user");
-    }
+    // if (
+    //   (!ongoingAds || ongoingAds.length === 0) &&
+    //   (!completedAds || completedAds.length === 0)
+    // ) {
+    //   return response.notFound(res, "No ads found for the user");
+    // }
 
     // Extract hired users from all ongoing ads
-    const hiredUsers = ongoingAds.reduce((users, ad) => {
-      if (ad.submittedBy) {
-        users.push(ad.submittedBy);
-      }
-      return users;
-    }, []);
+    // const hiredUsers = ongoingAds.reduce((users, ad) => {
+    //   if (ad.submittedBy) {
+    //     users.push(ad.submittedBy);
+    //   }
+    //   return users;
+    // }, []);
 
     return response.success(res, "Hired users and ads retrieved successfully", {
       ongoingAds,
       completedAds,
-      hiredUsers,
+      hiredUser,
       ongoingHIREDAds,
       completedHIREDAds,
     });

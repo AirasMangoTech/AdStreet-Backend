@@ -45,6 +45,37 @@ const adproRegister = async (req, res) => {
 
 const getAdpros = async (req, res) => {
   try {
+    let query = {};
+    if (req.query.category !== undefined) {
+      const categories = req.query.category.split(",");
+      const categoryObjectIDs = categories.map(
+        (category) => new mongoose.Types.ObjectId(category)
+      );
+      query.category = { $in: categoryObjectIDs };
+    }
+    if(req.query.status){
+      query = {status: req.query.status}
+    }
+    const getStartOfDay = (date) => {
+      return moment(date).startOf("day").toDate();
+    };
+    const getEndOfDay = (date) => {
+      return moment(date).endOf("day").toDate();
+    };
+    if (req.query.created_at_from && req.query.created_at_to) {
+      query.createdAt = {
+        $gte: getStartOfDay(new Date(req.query.created_at_from)),
+        $lte: getEndOfDay(new Date(req.query.created_at_to)),
+      };
+    } else if (req.query.created_at_from) {
+      query.created_at = {
+        $gte: getStartOfDay(new Date(req.query.created_at_from)),
+      };
+    } else if (req.query.created_at_to) {
+      query.created_at = {
+        $lte: getEndOfDay(new Date(req.query.created_at_to)),
+      };
+    }
     const page = parseInt(req.query.page) || 1; // Default to page 1 if not specified
     const limit = parseInt(req.query.limit) || 10; // Default limit to 10 items per page
     const skipIndex = (page - 1) * limit;
