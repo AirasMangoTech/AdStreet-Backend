@@ -1,13 +1,14 @@
 const crypto = require('crypto');
 const response = require("../utils/responseHelpers");
-
-const Registration = require("../models/admeet"); // Replace with the path to your Mongoose model
+const User = require("../models/users"); // Replace with the path to your Mongoose model
+const Registration = require("../models/admeet");
+const Interest = require("../models/interest") // Replace with the path to your Mongoose model
 
 const register = async (req, res) => {
   try {
     const { name, phoneNumber, email, companyName, expressedInterest, industry, blogId } = req.body;
     const password = crypto.randomBytes(6).toString('hex'); 
-    const newRegistration = new Registration({
+    const newRegistration = new User({
       name,
       phoneNumber,
       email,
@@ -15,16 +16,25 @@ const register = async (req, res) => {
       companyName,
       industry,
       blogId,
+      roles: "Individual",
       expressedInterest
     });
     await newRegistration.save();
-    if(expressedInterest === 'yes'){
-      // send email
-    }
+
+    // const interest = new Interest({
+    //   blog: req.body.blogId,
+    //   user: newRegistration._id,
+    //   expressedInterest: req.body.expressedInterest
+    // });
+    // await interest.save()
+   
+  
     return response.success(res, "Registration successful", {
       newRegistration,
+      interest,
     });
   } catch (error) {
+    console.log(error)
     return response.serverError(res, "Error in registration", error.message);
   }
 };

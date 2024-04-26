@@ -67,6 +67,15 @@ const UserSchema = new mongoose.Schema({
     p_link: {
       type: String,
     },
+    facebook:{
+      type: String,
+    },
+    twitter :{
+      type: String,
+    },
+    linkedin:{
+      type: String,
+    },
   },
 
   country: {
