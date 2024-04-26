@@ -1,43 +1,55 @@
 const crypto = require('crypto');
 const response = require("../utils/responseHelpers");
-const User = require("../models/users"); // Replace with the path to your Mongoose model
+const User = require("../models/users"); 
 const Registration = require("../models/admeet");
-const Interest = require("../models/interest") // Replace with the path to your Mongoose model
+const Interest = require("../models/interest") 
 
 const register = async (req, res) => {
   try {
     const { name, phoneNumber, email, companyName, expressedInterest, industry, blogId } = req.body;
-    const password = crypto.randomBytes(6).toString('hex'); 
-    const newRegistration = new User({
-      name,
-      phoneNumber,
-      email,
-      password,
-      companyName,
-      industry,
-      blogId,
-      roles: "Individual",
+
+    let existingUser = await User.findOne({ email });
+
+    if (!existingUser) {
+      const password = crypto.randomBytes(6).toString('hex');
+      const newRegistration = new User({
+        name,
+        phoneNumber,
+        email,
+        password,
+        companyName,
+        industry,
+        blogId,
+        roles: "Individual",
+        expressedInterest
+      });
+      await newRegistration.save();
+      existingUser = newRegistration;
+    }
+
+    let existingInterest = await Interest.findOne({ blog: blogId, user: existingUser._id });
+
+    if (existingInterest) {
+      return response.badRequest(res, "User has already shown interest in this blog");
+    }
+
+    const newInterest = new Interest({
+      blog: blogId,
+      user: existingUser._id,
       expressedInterest
     });
-    await newRegistration.save();
+    await newInterest.save();
 
-    // const interest = new Interest({
-    //   blog: req.body.blogId,
-    //   user: newRegistration._id,
-    //   expressedInterest: req.body.expressedInterest
-    // });
-    // await interest.save()
-   
-  
-    return response.success(res, "Registration successful", {
-      newRegistration,
-      interest,
+    return response.success(res, "Registration and interest recorded successfully", {
+      user: existingUser,
+      interest: newInterest
     });
   } catch (error) {
-    console.log(error)
-    return response.serverError(res, "Error in registration", error.message);
+    console.error(error);
+    return response.serverError(res, "Error in registration and interest recording", error.message);
   }
 };
+
 
 const getAllRegistrations = async (req, res) => {
   try {

@@ -3,8 +3,8 @@ const response = require("../utils/responseHelpers");
 
 const toggleInterest = async (req, res) => {
   try {
-    const { blogId } = req.params; // The ID of the blog post
-    const userId = req.user.id; // The ID of the user from the request, typically populated by middleware
+    const { blogId } = req.params; 
+    const userId = req.user.id;
 
     // Find an existing interest record
     let interest = await Interest.findOne({ blog: blogId, user: userId });
