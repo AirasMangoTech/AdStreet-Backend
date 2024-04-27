@@ -80,13 +80,17 @@ const postAd = async (req, res) => {
 
 const getAllAds = async (req, res) => {
   try {
+
     let query = { isApproved: true, isHired: false, isCompleted: false };
+   
     if (req.query.title) {
       query.title = { $regex: new RegExp(req.query.title, "i") };
     }
 
     if (req.query.user_id) {
       query.postedBy = new mongoose.Types.ObjectId(req.query.user_id);
+      delete query.isHired;
+      delete query.isCompleted;
     }
     if (req.query.adId) {
       query._id = new mongoose.Types.ObjectId(req.query.adId);

@@ -14,16 +14,12 @@ const moment = require("moment");
 
 const getAllAds = async (req, res) => {
   try {
-    console.log(req.user.role_id);
+    
     if (req.user.role_id !== ROLE_IDS.ADMIN)
       return response.forbidden(
         res,
         "You don't have permission to perform this action"
       );
-
-    const getStartOfDay = (date) => {
-      return moment(date).startOf("day").toDate();
-    };
     let query = {};
     if (req.query.user_id) {
       query.postedBy = new mongoose.Types.ObjectId(req.query.user_id);
@@ -34,10 +30,19 @@ const getAllAds = async (req, res) => {
     if (req.query.roles) {
       const usersWithRoles = await User.find({ roles: req.query.roles }, '_id');
       const userIds = usersWithRoles.map(user => user._id);
-      query.submittedBy = { $in: userIds };
+      query.roles = { $in: userIds };
     }
- 
-    // Function to get the end of the day for a given date using Moment.js
+
+    if (req.query.category !== undefined) {
+      const categories = req.query.category.split(",");
+      const categoryObjectIDs = categories.map(
+        (category) => new mongoose.Types.ObjectId(category)
+      );
+      query.category = { $in: categoryObjectIDs };
+    }
+    const getStartOfDay = (date) => {
+      return moment(date).startOf("day").toDate();
+    };
     const getEndOfDay = (date) => {
       return moment(date).endOf("day").toDate();
     };
@@ -62,14 +67,19 @@ const getAllAds = async (req, res) => {
         $lte: getEndOfDay(new Date(req.query.created_at_to)),
       };
     } else if (req.query.created_at_from) {
-      query.createdAt = {
+      query.created_at = {
         $gte: getStartOfDay(new Date(req.query.created_at_from)),
       };
     } else if (req.query.created_at_to) {
-      query.createdAt = {
+      query.created_at = {
         $lte: getEndOfDay(new Date(req.query.created_at_to)),
       };
     }
+
+
+    const page = parseInt(req.query.page) || 1; // Default to page 1
+    const limit = parseInt(req.query.limit) || 10; // Default limit to 10 items
+    const skip = (page - 1) * limit;
     let userLookupPipeline = [
       {
         $match: {
@@ -84,16 +94,6 @@ const getAllAds = async (req, res) => {
         },
       },
     ];
-    if (req.query.role) {
-      userLookupPipeline.unshift({
-        $match: {
-          roles: req.query.role, // Assumes roles field exists and contains the role
-        },
-      });
-    }
-    const page = parseInt(req.query.page, 10) || 1; // Default to page 1
-    const limit = parseInt(req.query.limit, 10) || 10; // Default limit to 10 items
-    const skip = (page - 1) * limit;
 
     const ads = await Ad.aggregate([
       {
@@ -147,6 +147,14 @@ const getAllAds = async (req, res) => {
       { $limit: limit },
       
     ]);
+    
+    if (req.query.roles) {
+      userLookupPipeline.unshift({
+        $match: {
+          roles: req.query.roles, // Assumes roles field exists and contains the role
+        },
+      });
+    }
 
     const totalAds = await Ad.countDocuments(query);
     const totalPages = Math.ceil(totalAds / limit);
