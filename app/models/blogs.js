@@ -49,7 +49,7 @@ const blogSchema = new mongoose.Schema({
     location:{
       type: String,
     },
-    longitute:{
+    longitude:{
       type: String,
     },
     latitude:{
