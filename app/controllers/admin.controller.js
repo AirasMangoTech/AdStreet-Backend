@@ -21,6 +21,7 @@ const getAllAds = async (req, res) => {
         "You don't have permission to perform this action"
       );
     let query = {};
+    let userLookupPipeline = [];
     if (req.query.user_id) {
       query.postedBy = new mongoose.Types.ObjectId(req.query.user_id);
     }
@@ -32,7 +33,13 @@ const getAllAds = async (req, res) => {
       const userIds = usersWithRoles.map(user => user._id);
       query.roles = { $in: userIds };
     }
-
+    if (req.query.roles) {
+      userLookupPipeline.unshift({
+        $match: {
+          roles: req.query.roles, // Assumes roles field exists and contains the role
+        },
+      });
+    }
     if (req.query.category !== undefined) {
       const categories = req.query.category.split(",");
       const categoryObjectIDs = categories.map(
@@ -80,7 +87,7 @@ const getAllAds = async (req, res) => {
     const page = parseInt(req.query.page) || 1; // Default to page 1
     const limit = parseInt(req.query.limit) || 10; // Default limit to 10 items
     const skip = (page - 1) * limit;
-    let userLookupPipeline = [
+    userLookupPipeline.push(
       {
         $match: {
           $expr: {
@@ -92,8 +99,8 @@ const getAllAds = async (req, res) => {
         $project: {
           password: 0, // Exclude the password field
         },
-      },
-    ];
+      }
+    );
 
     const ads = await Ad.aggregate([
       {
@@ -148,17 +155,11 @@ const getAllAds = async (req, res) => {
       
     ]);
     
-    if (req.query.roles) {
-      userLookupPipeline.unshift({
-        $match: {
-          roles: req.query.roles, // Assumes roles field exists and contains the role
-        },
-      });
-    }
+    
 
     const totalAds = await Ad.countDocuments(query);
     const totalPages = Math.ceil(totalAds / limit);
-    console.log(ads);
+    console.log(query);
     return response.success(res, "All ads retrieved successfully", {
       ads,
       totalAds,
