@@ -14,7 +14,6 @@ const moment = require("moment");
 
 const getAllAds = async (req, res) => {
   try {
-    
     if (req.user.role_id !== ROLE_IDS.ADMIN)
       return response.forbidden(
         res,
@@ -82,6 +81,9 @@ const getAllAds = async (req, res) => {
         $lte: getEndOfDay(new Date(req.query.created_at_to)),
       };
     }
+
+    let matchQuery = {};
+    
 
 
     const page = parseInt(req.query.page) || 1; // Default to page 1
