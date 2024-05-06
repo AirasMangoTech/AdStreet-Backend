@@ -4,7 +4,7 @@ const sendMessage = async (req, res) => {
   try {
     const { senderId, receiverId, text } = req.body;
     const message = await Message.create({ senderId, receiverId, text });
-    global.io.to(receiverId).emit("receiveMessage", message); // Use socket.io to send to specific user
+    global.io.to(receiverId).emit("receiveMessage", message); 
     res.status(200).json(message);
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -25,6 +25,7 @@ const getMessages = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+
 
 module.exports = {
   sendMessage,

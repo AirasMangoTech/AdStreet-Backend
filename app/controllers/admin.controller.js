@@ -2,10 +2,8 @@ const Ad = require("../models/ad");
 const Blog = require("../models/blogs");
 const Proposal = require("../models/proposals");
 const User = require("../models/users");
-const Adleak = require("../models/blogs");
 const Admeet = require("../models/admeet");
-const Adread = require("../models/blogs");
-const Adbook = require("../models/blogs");
+const Interest = require("../models/interest");
 const Adpro = require("../models/adpro")
 const response = require("../utils/responseHelpers");
 const { ROLE_IDS } = require("../utils/utility");
@@ -378,6 +376,90 @@ const getAllBlogs = async (req, res) => {
   }
 };
 
+// const getAdStreetStats = async (req, res) => {
+//   try {
+//     // Aggregation pipeline for Ads by Month
+//     const adsByMonth = await Ad.aggregate([
+//       {
+//         $project: {
+//           month: { $month: "$createdAt" },
+//         },
+//       },
+//       {
+//         $group: {
+//           _id: "$month",
+//           totalAds: { $sum: 1 },
+//         },
+//       },
+//       { $sort: { _id: 1 } },
+//     ]);
+
+//     // Aggregation pipeline for Proposals by Month
+//     const proposalsByMonth = await Proposal.aggregate([
+//       {
+//         $project: {
+//           month: { $month: "$createdAt" },
+//           adId: 1,
+//         },
+//       },
+//       {
+//         $group: {
+//           _id: { month: "$month", adId: "$adId" },
+//           totalProposals: { $sum: 1 },
+//         },
+//       },
+//       { $sort: { "_id.month": 1, "_id.adId": 1 } },
+//     ]);
+
+//     // Assuming ROLE_IDS constants are correctly set to match the database values
+//     const totalIndividuals = await User.countDocuments({ roles: "Individual" });
+//     const totalCompanies = await User.countDocuments({roles: "Service Provider"});
+//     const totalAgencies = await User.countDocuments({ roles: "Service Seeker" });
+
+//     // Total Users excluding admins
+//     // const adminRoleId = new mongoose.Types.ObjectId("yourAdminRoleId");
+//     const totalUsers = await User.countDocuments();
+
+//     // Total Proposals
+//     const totalProposals = await Proposal.countDocuments();
+
+//     // Total Ads
+//     const totalAds = await Ad.countDocuments();
+
+//   //  const totalAdleaks = await Adleak.countDocuments();
+//     const totalAdmeets = await Admeet.countDocuments();
+//     const totalAdPros = await Adpro.countDocuments();
+
+//     // Building response
+//     const responseData = {
+//       adsStatsByMonth: adsByMonth,
+//       proposalsStatsByMonth: proposalsByMonth,
+//       totalUsers,
+//       totalIndividuals,
+//       totalCompanies,
+//       totalAgencies,
+//       totalProposals,
+//       totalAds,
+//       totalAdmeets,
+//       totalAdPros
+//     };
+
+//     // Use the success method of your response utility
+//     response.success(
+//       res,
+//       "AdStreet statistics retrieved successfully",
+//       responseData
+//     );
+//   } catch (error) {
+//     console.error(`Error fetching AdStreet statistics: ${error}`);
+//     response.serverError(
+//       res,
+//       "Error fetching AdStreet statistics",
+//       error.message
+//     );
+//   }
+// };
+
 const getAdStreetStats = async (req, res) => {
   try {
     // Aggregation pipeline for Ads by Month
@@ -401,41 +483,51 @@ const getAdStreetStats = async (req, res) => {
       {
         $project: {
           month: { $month: "$createdAt" },
-          adId: 1,
         },
       },
       {
         $group: {
-          _id: { month: "$month", adId: "$adId" },
+          _id: "$month",
           totalProposals: { $sum: 1 },
         },
       },
-      { $sort: { "_id.month": 1, "_id.adId": 1 } },
+      { $sort: { _id: 1 } },
     ]);
 
-    // Assuming ROLE_IDS constants are correctly set to match the database values
+    // Aggregation for Admeets where interest is true
+    const interestedAdmeetsByMonth = await Interest.aggregate([
+      {
+        $match: { interest: true }
+      },
+      {
+        $project: {
+          month: { $month: "$createdAt" }
+        }
+      },
+      {
+        $group: {
+          _id: "$month",
+          totalInterested: { $sum: 1 }
+        }
+      },
+      { $sort: { _id: 1 } }
+    ]);
+
+    // Total counts for other entities
     const totalIndividuals = await User.countDocuments({ roles: "Individual" });
-    const totalCompanies = await User.countDocuments({roles: "Service Provider"});
+    const totalCompanies = await User.countDocuments({ roles: "Service Provider" });
     const totalAgencies = await User.countDocuments({ roles: "Service Seeker" });
-
-    // Total Users excluding admins
-    // const adminRoleId = new mongoose.Types.ObjectId("yourAdminRoleId");
     const totalUsers = await User.countDocuments();
-
-    // Total Proposals
     const totalProposals = await Proposal.countDocuments();
-
-    // Total Ads
     const totalAds = await Ad.countDocuments();
-
-  //  const totalAdleaks = await Adleak.countDocuments();
     const totalAdmeets = await Admeet.countDocuments();
     const totalAdPros = await Adpro.countDocuments();
 
-    // Building response
+    // Building response data
     const responseData = {
       adsStatsByMonth: adsByMonth,
       proposalsStatsByMonth: proposalsByMonth,
+      interestedAdmeetsByMonth: interestedAdmeetsByMonth,
       totalUsers,
       totalIndividuals,
       totalCompanies,
@@ -446,7 +538,7 @@ const getAdStreetStats = async (req, res) => {
       totalAdPros
     };
 
-    // Use the success method of your response utility
+    // Use the success method of your response utility, if available
     response.success(
       res,
       "AdStreet statistics retrieved successfully",
@@ -454,6 +546,7 @@ const getAdStreetStats = async (req, res) => {
     );
   } catch (error) {
     console.error(`Error fetching AdStreet statistics: ${error}`);
+    // Use the serverError method of your response utility, if available
     response.serverError(
       res,
       "Error fetching AdStreet statistics",
@@ -461,6 +554,8 @@ const getAdStreetStats = async (req, res) => {
     );
   }
 };
+
+
 
 module.exports = {
   approveAd,

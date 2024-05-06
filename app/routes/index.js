@@ -17,6 +17,7 @@ const industry = require('./industry.routes');
 const notification = require('./notification.routes');
 const proposal = require('./proposal.routes');
 const portfolio = require('./portfolio.routes');
+const promoOffer = require('./promoOffer.routes');
 const service = require('./service.routes');
 
 router.use('/ad', ad);
@@ -33,5 +34,6 @@ router.use('/industry', industry);
 router.use('/notification', notification);
 router.use('/portfolio', portfolio)
 router.use('/proposal', proposal);
+router.use('/promoOffer', promoOffer);
 router.use('/service', service);
 module.exports = router;

@@ -14,6 +14,7 @@ const Industry = require("./industry");
 const Interest = require("./interest");
 const Portfolio = require("./portfolio");
 const Proposal = require("./proposals");
+const PromoOffers = require("./promoOffers");
 
 module.exports = {
   Users,
@@ -32,4 +33,5 @@ module.exports = {
   Interest,
   Portfolio,
   Proposal,
+  PromoOffers
 };
