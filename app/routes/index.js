@@ -10,6 +10,8 @@ const adpro = require('./adpro.routes');
 const admin = require('./admin.routes')
 const app = require('./app.routes');
 const category = require('./category.routes');
+const chat = require('./chat.routes');
+const fresh = require('./freshLeaks.routes');
 const geo = require('./geo.routes');
 const blog = require('./blog.routes');
 const banner = require('./banner.routes');
@@ -29,6 +31,8 @@ router.use('/app', app);
 router.use('/blog', blog);
 router.use('/banner', banner);
 router.use('/category', category);
+router.use('/chat', chat);
+router.use('/fresh', fresh);
 router.use('/geo', geo);
 router.use('/industry', industry);
 router.use('/notification', notification);

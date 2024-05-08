@@ -1,33 +1,31 @@
-const Message = require("../models/message");
-
-const sendMessage = async (req, res) => {
-  try {
-    const { senderId, receiverId, text } = req.body;
-    const message = await Message.create({ senderId, receiverId, text });
-    global.io.to(receiverId).emit("receiveMessage", message); 
-    res.status(200).json(message);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-};
+const Chat = require("../models/chats");
 
 const getMessages = async (req, res) => {
-  const { senderId, receiverId } = req.query;
   try {
-    const messages = await Message.find({
-      $or: [
-        { senderId, receiverId },
-        { senderId: receiverId, receiverId: senderId },
-      ],
-    }).sort("createdAt");
-    res.status(200).json(messages);
+    // Extract chatId and userId from request parameters
+    const { id, userId } = req.body;
+
+    // Validate chatId and userId
+    if (!id || !userId) {
+      return res.status(400).json({ error: 'ChatId and userId are required' });
+    }
+
+    // Query messages based on chatId and userId
+    const messages = await Chat.find({ id, userId });
+
+    // Check if messages are found
+    if (messages.length === 0) {
+      return res.status(404).json({ error: 'No messages found' });
+    }
+
+    // Return the messages
+    return res.status(200).json({ messages });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    console.error(error);
+    return res.status(500).json({ error: 'Internal server error' });
   }
 };
 
-
 module.exports = {
-  sendMessage,
   getMessages,
 };

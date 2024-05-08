@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 
-const promoSchema = new mongoose.Schema({
+const leaksSchema = new mongoose.Schema({
   name: {
     type: String,
     required: true,
@@ -8,10 +8,6 @@ const promoSchema = new mongoose.Schema({
   imageUrl: {
     type: String,
     required: true,
-  },
-  adId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Ad",
   },
   blogId:{
     type: mongoose.Schema.Types.ObjectId,
@@ -23,6 +19,6 @@ const promoSchema = new mongoose.Schema({
   },
 });
 
-const Promo = mongoose.model("Promo", promoSchema);
+const FreshLeaks = mongoose.model("FreshLeaks", leaksSchema);
 
-module.exports = Promo;
+module.exports = FreshLeaks;

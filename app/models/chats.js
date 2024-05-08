@@ -1,8 +1,10 @@
 const { deleteFields } = require("../utils/utility");
 //const mongoosePaginate = require("mongoose-paginate-v2");
-const { Schema, model, default: mongoose } = require("mongoose");
 
-const chatSchema = new Schema(
+const mongoose = require('mongoose');
+//const { Schema, model, default: mongoose } = require("mongoose");
+
+const chatSchema = new mongoose.Schema(
   {
     groupName: {
       type: String,
@@ -28,7 +30,7 @@ const chatSchema = new Schema(
       default: "one-to-one"
     },
     createdBy: {
-      type: Schema.Types.ObjectId,
+      type: mongoose.Schema.Types.ObjectId,
       ref: "User",
       required: function () {
         return this.chatType === "group";
@@ -52,7 +54,7 @@ const chatSchema = new Schema(
           type: String,
         },
         sentBy: {
-          type: Schema.Types.ObjectId,
+          type: mongoose.Schema.Types.ObjectId,
           ref: "User",
           required: function () {
             return this.chatType === "one-to-one";
@@ -61,7 +63,7 @@ const chatSchema = new Schema(
         receivedBy: [
           {
             userId: {
-              type: Schema.Types.ObjectId,
+              type: mongoose.Schema.Types.ObjectId,
               ref: "User",
             },
             status: {
@@ -86,7 +88,7 @@ const chatSchema = new Schema(
     participants: [
       {
         userId: {
-          type: Schema.Types.ObjectId,
+          type: mongoose.Schema.Types.ObjectId,
           ref: "User",
         },
         status: {
@@ -114,4 +116,7 @@ const chatSchema = new Schema(
 // }, "At least 2 group participants are required.");
 
 //chatSchema.plugin(mongoosePaginate);
-exports.ChatModel = model("Chat", chatSchema);
+//exports.ChatModel = model("Chat", chatSchema);
+
+const ChatModel =  mongoose.model('Chat', chatSchema)
+module.exports =  ChatModel;
