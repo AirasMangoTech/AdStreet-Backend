@@ -17,6 +17,10 @@ const leaksSchema = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
+  url:{
+        type: String,
+       // required: true,
+  }
 });
 
 const FreshLeaks = mongoose.model("FreshLeaks", leaksSchema);

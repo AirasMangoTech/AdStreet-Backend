@@ -25,12 +25,12 @@ exports.updateFreshLeaks = async (req, res) => {
       new: true,
       
     });
-    if (!promo) {
+    if (!freshLeaks) {
       return response.badRequest(res, "freshLeaks not found", 404);
     }
     return response.success(res, "freshLeaks updated successfully", {freshLeaks});
   } catch (error) {
-    return response.serverError(res, `Error updating promo: ${error}`);
+    return response.serverError(res, `Error updating freshLeaks: ${error}`);
   }
 };
 
