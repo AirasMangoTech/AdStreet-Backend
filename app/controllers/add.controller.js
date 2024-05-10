@@ -3,7 +3,7 @@ const Proposal = require("../models/proposals");
 const Notification = require("../models/notifications");
 const AdResponse = require("../models/responseAd");
 const Users = require("../models/users");
-const sendNotification = require("../utils/sendNotification");
+const sendNotification = require("../utils/sendNotifications");
 const FcmToken = require("../models/fcmTokens");
 const response = require("../utils/responseHelpers");
 const { ROLE_IDS } = require("../utils/utility");
@@ -53,24 +53,24 @@ const postAd = async (req, res) => {
 
     await newAd.save();
     let notiData = {};
-    let notification = new Notification({
-      title: `Thank you for listing`,
-      content: `Thank you for listing your servive, Thank you your listing has been approved`,
-      icon: "check-box",
-      data: JSON.stringify(notiData),
-      user_id: req.user.id,
-    });
-    await notification.save();
-    let party2Tokens = await FcmToken.find({ user_id: req.user.id });
-    for (let i = 0; i < party2Tokens.length; i++) {
-      const token = party2Tokens[i];
+    // let notification = new Notification({
+    //   title: `Thank you for listing`,
+    //   content: `Thank you for listing your servive, Thank you your listing has been approved`,
+    //   icon: "check-box",
+    //   data: JSON.stringify(notiData),
+    //   user_id: req.user.id,
+    // });
+    // await notification.save();
+    // let party2Tokens = await FcmToken.find({ user_id: req.user.id });
+    // for (let i = 0; i < party2Tokens.length; i++) {
+    //   const token = party2Tokens[i];
 
-      await sendNotification(
-        `You've received a new notification "${req.body.name}"`,
-        notiData,
-        token.token
-      );
-    }
+    //   await sendNotification(
+    //     `You've received a new notification "${req.body.name}"`,
+    //     notiData,
+    //     token.token
+    //   );
+    // }
     return response.success(res, "Ad posted successfully", { newAd });
   } catch (error) {
     console.error(`Error posting ad: ${error}`);
@@ -80,9 +80,8 @@ const postAd = async (req, res) => {
 
 const getAllAds = async (req, res) => {
   try {
-
     let query = { isApproved: true, isHired: false, isCompleted: false };
-   
+
     if (req.query.title) {
       query.title = { $regex: new RegExp(req.query.title, "i") };
     }
@@ -271,7 +270,7 @@ const GetAdddetails = async (req, res) => {
 // chngaes the status of the proposal to true /false after hiring
 const acceptProposal = async (req, res) => {
   try {
-    const { adId, proposalId } = req.body;
+    const { adId, proposalId, token } = req.body;
 
     const ad = await Ad.findById(adId);
     if (!ad) {
@@ -303,6 +302,34 @@ const acceptProposal = async (req, res) => {
     ad.hired_user = proposalToAccept.submittedBy;
     ad.isHired = true;
     await ad.save();
+
+    notiTitle = `${req.user.name} has acceptd your proposal`;
+    notiDescription = `Your contract with ${req.user.name} has started`;
+    notificationObj = {
+      title: notiTitle,
+    };
+
+    let notiData = {
+      type: "Accepted",
+      adId: adId,
+      fromUser: req.user._id,
+      toUser: proposalToAccept.submittedBy._id,
+      description: notiDescription,
+    };
+
+    let notification = new Notification({
+      title: notiTitle,
+      content: notiDescription,
+      type: "Accepted",
+      data: JSON.stringify(notiData),
+      user_id: proposalToAccept.submittedBy._id,
+    });
+
+    await notification.save();
+    token =
+      "dKkSkqeITfCw8SPFEa46Y6:APA91bHp4T9kqGduMH2mUIeOuhXUkaRtedDOGYnxOD5rl0Gu4aXsAb9tGp2xHpq11E-8QOHN8hk4FdOjXduq6vOCcU20XjRIzxSBUAbFP6mkMh6KMZgLr8zLk2KH1ab6YJBRBfrFr_Kp";
+
+    await sendNotification(notiTitle, notiDescription, notiData, token);
 
     return response.success(res, "Proposal accepted successfully", {
       proposalToAccept,

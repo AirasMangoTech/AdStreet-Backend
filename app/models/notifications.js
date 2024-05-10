@@ -1,5 +1,6 @@
+// models/notification.js
+
 const mongoose = require('mongoose');
-const { ObjectId } = require("mongodb");
 
 const notificationSchema = new mongoose.Schema({
   title: {
@@ -15,7 +16,7 @@ const notificationSchema = new mongoose.Schema({
   },
   type: {
     type: String,
-},
+    },
   data: {
     type: Object,
     required: false
@@ -32,6 +33,12 @@ const notificationSchema = new mongoose.Schema({
     type: Boolean,
     default: false
   },
+  status: {
+    type: String,
+    required: true,
+    enum: ['pending', 'accepted', 'rejected'], // Enum to ensure status is one of the specified values
+    default: 'pending' // Default status when a notification is created
+  }
 }, { versionKey: false, timestamps: true } 
 );
 

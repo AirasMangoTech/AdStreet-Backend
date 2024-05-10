@@ -18,6 +18,7 @@ const createBlog = async (req, res) => {
     }
 
     const isApproved = req.user.role_id === ROLE_IDS.ADMIN; // Auto-approve if admin
+    const status = req.user.role_id === ROLE_IDS.ADMIN;
 
     const blog = new Blog({
       title,
@@ -27,7 +28,8 @@ const createBlog = async (req, res) => {
       image: req.body.image,
       category: categoryId,
       additional: additional ? additional : null,
-      isApproved: isApproved, // Set based on the user's role
+      isApproved: isApproved,
+      status // Set based on the user's role
     });
 
     await blog.save();
@@ -150,6 +152,7 @@ const createBlog = async (req, res) => {
 const getAllBlogs = async (req, res) => {
   try {
     let query = {};
+   
     if (req.query.category !== undefined) {
       const categories = req.query.category.split(",");
       const categoryObjectIDs = categories.map(

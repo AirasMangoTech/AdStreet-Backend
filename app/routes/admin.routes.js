@@ -13,4 +13,9 @@ admin_route.get('/getallblogs', [verifyToken], admin.getAllBlogs);
 //ADMIN stats
 admin_route.get('/getstats', [verifyToken], admin.getAdStreetStats);
 
+//ADMIN BLOG COUNTS
+
+admin_route.get('/getblogcounts', [verifyToken], admin.blogCounts);
+admin_route.patch('/approveBlog/:id', [verifyToken], admin.approveBlog)
+
 module.exports = admin_route;

@@ -4,7 +4,7 @@ const Proposal = require("../models/proposals");
 const User = require("../models/users");
 const Admeet = require("../models/admeet");
 const Interest = require("../models/interest");
-const Adpro = require("../models/adpro")
+const Adpro = require("../models/adpro");
 const response = require("../utils/responseHelpers");
 const { ROLE_IDS } = require("../utils/utility");
 const mongoose = require("mongoose");
@@ -26,8 +26,8 @@ const getAllAds = async (req, res) => {
       query._id = new mongoose.Types.ObjectId(req.query.adId);
     }
     if (req.query.roles) {
-      const usersWithRoles = await User.find({ roles: req.query.roles }, '_id');
-      const userIds = usersWithRoles.map(user => user._id);
+      const usersWithRoles = await User.find({ roles: req.query.roles }, "_id");
+      const userIds = usersWithRoles.map((user) => user._id);
       query.roles = { $in: userIds };
     }
     if (req.query.roles) {
@@ -81,8 +81,6 @@ const getAllAds = async (req, res) => {
     }
 
     let matchQuery = {};
-    
-
 
     const page = parseInt(req.query.page) || 1; // Default to page 1
     const limit = parseInt(req.query.limit) || 10; // Default limit to 10 items
@@ -152,10 +150,7 @@ const getAllAds = async (req, res) => {
       { $sort: { createdAt: -1 } },
       { $skip: skip },
       { $limit: limit },
-      
     ]);
-    
-    
 
     const totalAds = await Ad.countDocuments(query);
     const totalPages = Math.ceil(totalAds / limit);
@@ -171,155 +166,6 @@ const getAllAds = async (req, res) => {
     return response.serverError(res, "Error getting all ads");
   }
 };
-
-// const getAllAds = async (req, res) => {
-//   try {
-//     let query = { isApproved: false, };
-//     if (req.query.title) {
-//       query.title = { $regex: new RegExp(req.query.title, "i") };
-//     }
-
-//     if (req.query.user_id) {
-//       query.postedBy = new mongoose.Types.ObjectId(req.query.user_id);
-//     }
-//     if (req.query.adId) {
-//       query._id = new mongoose.Types.ObjectId(req.query.adId);
-//     }
-//     if (req.query.category !== undefined) {
-//       const categories = req.query.category.split(",");
-//       const categoryObjectIDs = categories.map(
-//         (category) => new mongoose.Types.ObjectId(category)
-//       );
-//       query.category = { $in: categoryObjectIDs };
-//     }
-//     const getStartOfDay = (date) => {
-//       return moment(date).startOf("day").toDate();
-//     };
-//     const getEndOfDay = (date) => {
-//       return moment(date).endOf("day").toDate();
-//     };
-//     if (req.query.valid_till_from && req.query.valid_till_to) {
-//       query.valid_till = {
-//         $gte: getStartOfDay(new Date(req.query.valid_till_from)),
-//         $lte: getEndOfDay(new Date(req.query.valid_till_to)),
-//       };
-//     } else if (req.query.valid_till_from) {
-//       query.valid_till = {
-//         $gte: getStartOfDay(new Date(req.query.valid_till_from)),
-//       };
-//     } else if (req.query.valid_till_to) {
-//       query.valid_till = {
-//         $lte: getEndOfDay(new Date(req.query.valid_till_to)),
-//       };
-//     }
-//     // Date range for createdAt
-//     if (req.query.created_at_from && req.query.created_at_to) {
-//       query.createdAt = {
-//         $gte: getStartOfDay(new Date(req.query.created_at_from)),
-//         $lte: getEndOfDay(new Date(req.query.created_at_to)),
-//       };
-//     } else if (req.query.created_at_from) {
-//       query.created_at = {
-//         $gte: getStartOfDay(new Date(req.query.created_at_from)),
-//       };
-//     } else if (req.query.created_at_to) {
-//       query.created_at = {
-//         $lte: getEndOfDay(new Date(req.query.created_at_to)),
-//       };
-//     }
-
-//     let userLookupPipeline = [
-//       {
-//         $match: {
-//           $expr: {
-//             $eq: ["$_id", "$$postedBy"],
-//           },
-//         },
-//       },
-//       {
-//         $project: {
-//           password: 0, // Exclude the password field
-//         },
-//       },
-//     ];
-//     if (req.query.role) {
-//       userLookupPipeline.unshift({
-//         $match: {
-//           roles: req.query.role, // Assumes roles field exists and contains the role
-//         },
-//       });
-//     }
-
-//     const page = parseInt(req.query.page) || 1; // Default to page 1
-//     const limit = parseInt(req.query.limit) || 10; // Default limit to 10 items
-//     const skip = (page - 1) * limit;
-
-//     const ads = await Ad.aggregate([
-//       {
-//         $match: query,
-//       },
-//       {
-//         $lookup: {
-//           from: "proposals",
-//           localField: "_id",
-//           foreignField: "adId",
-//           as: "proposals",
-//         },
-//       },
-//       {
-//         $lookup: {
-//           from: "users",
-//           let: { postedBy: "$postedBy" },
-//           pipeline: userLookupPipeline,
-//           as: "postedBy",
-//         },
-//       },
-//       {
-//         $lookup: {
-//           from: "categories", // Assuming the collection name is "categories" for categories data
-//           localField: "category",
-//           foreignField: "_id",
-//           as: "category",
-//         },
-//       },
-//       {
-//         $project: {
-//           _id: 1,
-//           title: 1,
-//           category: 1,
-//           links: 1,
-//           description: 1,
-//           budget: 1,
-//           jobDuration: 1,
-//           postedBy: { $arrayElemAt: ["$postedBy", 0] }, // unwind postedBy array if necessary
-//           createdAt: 1,
-//           image: 1,
-//           isApproved: 1,
-//           isHired: 1,
-//           isCompleted: 1,
-//           valid_till: 1,
-//           totalProposals: { $size: "$proposals" },
-//         },
-//       },
-//       { $sort: { createdAt: -1 } },
-//       { $skip: skip },
-//       { $limit: limit },
-//     ]);
-
-//     const totalAds = await Ad.countDocuments(query);
-//     const totalPages = Math.ceil(totalAds / limit);
-
-//     return response.success(res, "All ads retrieved successfully", {
-//       ads,
-//       totalAds,
-//       totalPages,
-//       currentPage: page,
-//     });
-//   } catch (error) {
-//     console.error(`Error getting all ads: ${error}`);
-//     return response.serverError(res, "Error getting all ads");
-//   }
-// };
 
 const approveAd = async (req, res) => {
   const { isApproved } = req.body;
@@ -349,6 +195,9 @@ const approveAd = async (req, res) => {
 const getAllBlogs = async (req, res) => {
   try {
     let query = {};
+    if(req.query.isApproved){
+      query.isApproved = req.query.isApproved;
+    }
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
     const skipIndex = (page - 1) * limit;
@@ -359,7 +208,7 @@ const getAllBlogs = async (req, res) => {
       .sort({ createdAt: -1 })
       .skip(skipIndex)
       .limit(limit);
-    const totalBlogs = await Blog.countDocuments();
+    const totalBlogs = await Blog.countDocuments(query);
     const totalPages = Math.ceil(totalBlogs / limit);
 
     return response.success(res, "All blogs retrieved successfully", {
@@ -375,90 +224,6 @@ const getAllBlogs = async (req, res) => {
     return response.authError(res, "something bad happened");
   }
 };
-
-// const getAdStreetStats = async (req, res) => {
-//   try {
-//     // Aggregation pipeline for Ads by Month
-//     const adsByMonth = await Ad.aggregate([
-//       {
-//         $project: {
-//           month: { $month: "$createdAt" },
-//         },
-//       },
-//       {
-//         $group: {
-//           _id: "$month",
-//           totalAds: { $sum: 1 },
-//         },
-//       },
-//       { $sort: { _id: 1 } },
-//     ]);
-
-//     // Aggregation pipeline for Proposals by Month
-//     const proposalsByMonth = await Proposal.aggregate([
-//       {
-//         $project: {
-//           month: { $month: "$createdAt" },
-//           adId: 1,
-//         },
-//       },
-//       {
-//         $group: {
-//           _id: { month: "$month", adId: "$adId" },
-//           totalProposals: { $sum: 1 },
-//         },
-//       },
-//       { $sort: { "_id.month": 1, "_id.adId": 1 } },
-//     ]);
-
-//     // Assuming ROLE_IDS constants are correctly set to match the database values
-//     const totalIndividuals = await User.countDocuments({ roles: "Individual" });
-//     const totalCompanies = await User.countDocuments({roles: "Service Provider"});
-//     const totalAgencies = await User.countDocuments({ roles: "Service Seeker" });
-
-//     // Total Users excluding admins
-//     // const adminRoleId = new mongoose.Types.ObjectId("yourAdminRoleId");
-//     const totalUsers = await User.countDocuments();
-
-//     // Total Proposals
-//     const totalProposals = await Proposal.countDocuments();
-
-//     // Total Ads
-//     const totalAds = await Ad.countDocuments();
-
-//   //  const totalAdleaks = await Adleak.countDocuments();
-//     const totalAdmeets = await Admeet.countDocuments();
-//     const totalAdPros = await Adpro.countDocuments();
-
-//     // Building response
-//     const responseData = {
-//       adsStatsByMonth: adsByMonth,
-//       proposalsStatsByMonth: proposalsByMonth,
-//       totalUsers,
-//       totalIndividuals,
-//       totalCompanies,
-//       totalAgencies,
-//       totalProposals,
-//       totalAds,
-//       totalAdmeets,
-//       totalAdPros
-//     };
-
-//     // Use the success method of your response utility
-//     response.success(
-//       res,
-//       "AdStreet statistics retrieved successfully",
-//       responseData
-//     );
-//   } catch (error) {
-//     console.error(`Error fetching AdStreet statistics: ${error}`);
-//     response.serverError(
-//       res,
-//       "Error fetching AdStreet statistics",
-//       error.message
-//     );
-//   }
-// };
 
 const getAdStreetStats = async (req, res) => {
   try {
@@ -497,26 +262,30 @@ const getAdStreetStats = async (req, res) => {
     // Aggregation for Admeets where interest is true
     const interestedAdmeetsByMonth = await Interest.aggregate([
       {
-        $match: { interest: true }
+        $match: { interest: true },
       },
       {
         $project: {
-          month: { $month: "$createdAt" }
-        }
+          month: { $month: "$createdAt" },
+        },
       },
       {
         $group: {
           _id: "$month",
-          totalInterested: { $sum: 1 }
-        }
+          totalInterested: { $sum: 1 },
+        },
       },
-      { $sort: { _id: 1 } }
+      { $sort: { _id: 1 } },
     ]);
 
     // Total counts for other entities
     const totalIndividuals = await User.countDocuments({ roles: "Individual" });
-    const totalCompanies = await User.countDocuments({ roles: "Service Provider" });
-    const totalAgencies = await User.countDocuments({ roles: "Service Seeker" });
+    const totalCompanies = await User.countDocuments({
+      roles: "Service Provider",
+    });
+    const totalAgencies = await User.countDocuments({
+      roles: "Service Seeker",
+    });
     const totalUsers = await User.countDocuments();
     const totalProposals = await Proposal.countDocuments();
     const totalAds = await Ad.countDocuments();
@@ -535,7 +304,7 @@ const getAdStreetStats = async (req, res) => {
       totalProposals,
       totalAds,
       totalAdmeets,
-      totalAdPros
+      totalAdPros,
     };
 
     // Use the success method of your response utility, if available
@@ -555,11 +324,54 @@ const getAdStreetStats = async (req, res) => {
   }
 };
 
+const blogCounts = async (req, res) => {
+  try {
+    const blogCounts = await Blog.aggregate([
+      {
+        $group: {
+          _id: "$type",
+          count: { $sum: 1 },
+        },
+      },
+    ]);
 
+    const countsByType = {};
+
+    blogCounts.forEach((entry) => {
+      if (entry._id) {
+        const type = entry._id.toLowerCase().trim();
+        const key = "total" + type;
+        countsByType[key] = entry.count;
+      }
+    });
+    return response.success(res, "Blog by type count", countsByType);
+  } catch (err) {
+    console.error("Failed to get blog counts", err);
+    return response.serverError(res, "Failed to get blog counts");
+  }
+};
+
+// approve blog function
+const approveBlog = async (req, res) => {
+  try {
+    const blog = await Blog.findById(req.params.id);
+    if (!blog) {
+      return response.notFound(res, "Blog not found");
+    }
+    blog.isApproved = true;
+    await blog.save();
+    return response.success(res, "Blog approved successfully", { blog });
+  } catch (error) {
+    console.error(`Error approving blog: ${error}`);
+    return response.serverError(res, "Error approving blog");
+  }
+};
 
 module.exports = {
   approveAd,
   getAllAds,
   getAllBlogs,
   getAdStreetStats,
+  blogCounts,
+  approveBlog
 };
