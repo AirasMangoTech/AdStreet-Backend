@@ -5,6 +5,8 @@ const User = require("../models/users");
 const Admeet = require("../models/admeet");
 const Interest = require("../models/interest");
 const Adpro = require("../models/adpro");
+const Notification = require("../models/notifications");
+const sendNotification = require('../utils/sendNotifications');
 const response = require("../utils/responseHelpers");
 const { ROLE_IDS } = require("../utils/utility");
 const mongoose = require("mongoose");
@@ -185,6 +187,25 @@ const approveAd = async (req, res) => {
     ad.isApproved = isApproved;
     await ad.save();
 
+    let notiData = {};
+    let notification = new Notification({
+      title: `Thank you for posting for Ad`,
+      content: `Thank you for posting for Ad, Your request is approved by the Admin`,
+      icon: "check-box",
+      data: JSON.stringify(notiData),
+      user_id: req.user.id,
+    });
+    await notification.save();
+    let notiTokens = await FcmToken.find({ user_id: req.user.id });
+    for (let i = 0; i < notiTokens.length; i++) {
+      const token = notiTokens[0];
+
+      await sendNotification(
+        `You've received a new notification "${req.body.name}"`,
+        notiData,
+        token.token
+      );}
+
     return response.success(res, "Ad approval status updated", { ad });
   } catch (error) {
     console.error(`Error updating ad: ${error}`);
@@ -360,6 +381,23 @@ const approveBlog = async (req, res) => {
     }
     blog.isApproved = true;
     await blog.save();
+    let notification = new Notification({
+      title: `Thank you for posting for Blog`,
+      content: `Thank you for posting for Blog, Your request is approved by the Admin`,
+      icon: "check-box",
+      data: JSON.stringify(notiData),
+      user_id: req.user.id,
+    });
+    await notification.save();
+    let notiTokens = await FcmToken.find({ user_id: req.user.id });
+    for (let i = 0; i < notiTokens.length; i++) {
+      const token = notiTokens[0];
+
+      await sendNotification(
+        `You've received a new notification "${req.body.name}"`,
+        notiData,
+        token.token
+      );}
     return response.success(res, "Blog approved successfully", { blog });
   } catch (error) {
     console.error(`Error approving blog: ${error}`);

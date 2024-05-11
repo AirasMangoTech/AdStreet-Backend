@@ -63,13 +63,13 @@ const postProposal = async (req, res) => {
       content: `${req.user.name} sent you a proposal on your job post`,
       icon: "note-pad",
       data: JSON.stringify(notiData),
-      user_id: req.user.id,
+      user_id: ad.postedBy,
     });
     await notification.save();
 
-    let party2Tokens = await FcmToken.find({ user_id: req.user.id });
-    for (let i = 0; i < party2Tokens.length; i++) {
-      const token = party2Tokens[i];
+    let notiTokens = await FcmToken.find({ user_id: ad.postedBy });
+    for (let i = 0; i < notiTokens.length; i++) {
+      const token = notiTokens[i];
 
       await sendNotification(
         `${req.user.name} sent a proposal`,
@@ -77,7 +77,6 @@ const postProposal = async (req, res) => {
         token.token
       );
     }
-    console.log(proposal);
     // Send a success response
     return response.success(res, "Proposal submitted successfully", {
       proposal,
@@ -87,76 +86,6 @@ const postProposal = async (req, res) => {
     return response.serverError(res, "An error has been occurred");
   }
 };
-// Get all proposals of an ad
-// const getAllProposals = async (req, res) => {
-//   try {
-//     let where = {};
-//     if (req.query.ad_id) {
-//       where.adId = req.query.ad_id;
-//     }
-//     // all proposals of the logged in users
-//     if (req.query.user_id) {
-//       where.submittedBy = new mongoose.Types.ObjectId(req.query.user_id);
-//     }
-//     if (req.query.status) {
-//       where.status = req.query.status;
-//     }
-//     if (req.query.roles) {
-//       where.roles = req.query.roles;
-//     }
-//     const page = parseInt(req.query.page, 10) || 1;
-//     const limit = parseInt(req.query.limit, 10) || 10;
-//     const skip = (page - 1) * limit;
-
-//     const proposals = await Proposal.find(where)
-//       .populate("submittedBy", "-password")
-//       .populate({
-//         path: "submittedBy",
-//         select: "-password",
-//         populate: [
-//           {
-//             path: "additional.services",
-//             model: "Service", // This should be the exact name of your Service model
-//             select: "name", // Add any other fields you need
-//           },
-//           {
-//             path: "additional.industry",
-//             model: "Industry", // This should be the exact name of your Industry model
-//             select: "name", // Add any other fields you need
-//           },
-//         ],
-//       })
-//       .populate({
-//         path: "adId",
-//         populate: [
-//           {
-//             path: "category",
-//             model: "Category", // This is optional if Mongoose can infer the model from the schema
-//             select: "_id name",
-//           },
-//           {
-//             path: "postedBy",
-//             select: "-password", // Assuming you want to omit the password from the results
-//           },
-//         ],
-//       })
-//       .sort({ createdAt: -1 })
-//       .skip(skip)
-//       .limit(limit);
-
-//     const totalProposals = await Proposal.countDocuments(where);
-
-//     return response.success(res, "All proposals retrieved successfully", {
-//       proposals,
-//       total: totalProposals,
-//       page,
-//       pages: Math.ceil(totalProposals / limit),
-//     });
-//   } catch (error) {
-//     console.error(`Error getting all proposals: ${error}`);
-//     return response.serverError(res, "Error getting all proposals");
-//   }
-// };
 
 const getAllProposals = async (req, res) => {
   try {

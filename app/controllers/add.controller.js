@@ -53,24 +53,24 @@ const postAd = async (req, res) => {
 
     await newAd.save();
     let notiData = {};
-    // let notification = new Notification({
-    //   title: `Thank you for listing`,
-    //   content: `Thank you for listing your servive, Thank you your listing has been approved`,
-    //   icon: "check-box",
-    //   data: JSON.stringify(notiData),
-    //   user_id: req.user.id,
-    // });
-    // await notification.save();
-    // let party2Tokens = await FcmToken.find({ user_id: req.user.id });
-    // for (let i = 0; i < party2Tokens.length; i++) {
-    //   const token = party2Tokens[i];
+    let notification = new Notification({
+      title: `Thank you for posting for Ad`,
+      content: `Thank you for posting for Ad, Your request willbe soon approved by the Admin`,
+      icon: "check-box",
+      data: JSON.stringify(notiData),
+      user_id: req.user.id,
+    });
+    await notification.save();
+    let notiTokens = await FcmToken.find({ user_id: req.user.id });
+    for (let i = 0; i < notiTokens.length; i++) {
+      const token = notiTokens[0];
 
-    //   await sendNotification(
-    //     `You've received a new notification "${req.body.name}"`,
-    //     notiData,
-    //     token.token
-    //   );
-    // }
+      await sendNotification(
+        `You've received a new notification "${req.body.name}"`,
+        notiData,
+        token.token
+      );
+    }
     return response.success(res, "Ad posted successfully", { newAd });
   } catch (error) {
     console.error(`Error posting ad: ${error}`);
@@ -326,10 +326,12 @@ const acceptProposal = async (req, res) => {
     });
 
     await notification.save();
-    token =
-      "dKkSkqeITfCw8SPFEa46Y6:APA91bHp4T9kqGduMH2mUIeOuhXUkaRtedDOGYnxOD5rl0Gu4aXsAb9tGp2xHpq11E-8QOHN8hk4FdOjXduq6vOCcU20XjRIzxSBUAbFP6mkMh6KMZgLr8zLk2KH1ab6YJBRBfrFr_Kp";
-
-    await sendNotification(notiTitle, notiDescription, notiData, token);
+    let notiToken = await FcmToken.find({ user_id: proposalToAccept.submittedBy._id });
+    if (notiToken.length > 0) {
+      const token = notiToken[0];
+      await sendNotification(notiTitle, notiDescription, notiData, token.token);
+    }
+    
 
     return response.success(res, "Proposal accepted successfully", {
       proposalToAccept,
@@ -475,7 +477,25 @@ const updateAdStatus = async (req, res) => {
     await ad.save();
 
     const adResponse = await AdResponse.findById(responseId);
-    console.log(adResponse.name);
+    let notiData = {};
+    let notification = new Notification({
+      title: `Ad status updated to completed`,
+      content: `Ad status updated to completed`,
+      icon: "check-box",
+      data: JSON.stringify(notiData),
+      user_id: req.user.id,
+    });
+    await notification.save();
+    let notiTokens = await FcmToken.find({ user_id: req.user.id });
+    for (let i = 0; i < notiTokens.length; i++) {
+      const token = notiTokens[0];
+
+      await sendNotification(
+        `You've received a new notification "${req.body.name}"`,
+        notiData,
+        token.token
+      );
+    }
 
     return response.success(res, "Ad status updated successfully", {
       ad,
