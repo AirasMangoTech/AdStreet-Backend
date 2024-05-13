@@ -483,7 +483,7 @@ const updateAdStatus = async (req, res) => {
       content: `Ad status updated to completed`,
       icon: "check-box",
       data: JSON.stringify(notiData),
-      user_id: req.user.id,
+      user_id: ad.hired_user
     });
     await notification.save();
     let notiTokens = await FcmToken.find({ user_id: req.user.id });

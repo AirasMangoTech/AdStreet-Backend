@@ -377,9 +377,9 @@ const createChat = async (req, res) => {
     }
 
     const data = await ChatModel.create({
-      groupName,
+    //  groupName,
       chatType,
-      groupImageUrl,
+    //  groupImageUrl,
       participants: participantIds.map((e) => ({
         userId: e,
         status: "active",

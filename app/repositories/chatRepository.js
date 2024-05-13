@@ -1,4 +1,4 @@
-const { ChatModel } = require("../models/chats"); // Assuming the model is imported here
+const  ChatModel  = require("../models/chats"); // Assuming the model is imported here
 const { default: mongoose, Mongoose, Schema } = require("mongoose");
 const { deleteFields } = require("../utils/utility");
 const { findUsers } = require("../models/users");
@@ -879,7 +879,7 @@ class ChatRepository {
         "participants.userId": { $all: participantIds },
         deleted: false,
       };
-      let check = null;
+      // let check = null;
       if (chatType == "one-to-one") {
         match.chatType = "one-to-one";
         check = await ChatModel.findOne(match);
@@ -896,9 +896,9 @@ class ChatRepository {
         return check[0];
       }
       const data = await ChatModel.create({
-        groupName,
+       // groupName,
         chatType,
-        groupImageUrl,
+       // groupImageUrl,
         participants: participantIds.map((e) => ({
           userId: e,
           status: "active",

@@ -193,7 +193,7 @@ const approveAd = async (req, res) => {
       content: `Thank you for posting for Ad, Your request is approved by the Admin`,
       icon: "check-box",
       data: JSON.stringify(notiData),
-      user_id: req.user.id,
+      user_id: ad.user_id,
     });
     await notification.save();
     let notiTokens = await FcmToken.find({ user_id: req.user.id });
@@ -386,7 +386,7 @@ const approveBlog = async (req, res) => {
       content: `Thank you for posting for Blog, Your request is approved by the Admin`,
       icon: "check-box",
       data: JSON.stringify(notiData),
-      user_id: req.user.id,
+      user_id: blog.user_id,
     });
     await notification.save();
     let notiTokens = await FcmToken.find({ user_id: req.user.id });

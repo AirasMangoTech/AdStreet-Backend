@@ -1,8 +1,8 @@
 const { deleteFields } = require("../utils/utility");
 //const mongoosePaginate = require("mongoose-paginate-v2");
 
-const mongoose = require('mongoose');
-//const { Schema, model, default: mongoose } = require("mongoose");
+//const mongoose = require('mongoose');
+const { Schema, model, default: mongoose } = require("mongoose");
 
 const chatSchema = new mongoose.Schema(
   {
