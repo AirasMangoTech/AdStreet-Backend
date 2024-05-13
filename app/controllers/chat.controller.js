@@ -266,8 +266,8 @@ const getChats = async (req, res) => {
 
 const getMessages = async(req,res) => {
   try{
-    chatId = req.body.chatId, 
-    userId= req.body.userId, 
+    chatId = req.query.chatId, 
+    userId= req.query.userId, 
     pageNumber= 1;
     pageSize = 20;
     const skip = (pageNumber - 1) * parseInt(pageSize);
