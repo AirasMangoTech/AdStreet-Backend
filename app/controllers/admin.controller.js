@@ -1,6 +1,7 @@
 const Ad = require("../models/ad");
 const Blog = require("../models/blogs");
 const Proposal = require("../models/proposals");
+const FcmToken = require("../models/fcmTokens");
 const User = require("../models/users");
 const Admeet = require("../models/admeet");
 const Interest = require("../models/interest");
@@ -345,51 +346,118 @@ const getAdStreetStats = async (req, res) => {
   }
 };
 
+// const blogCounts = async (req, res) => {
+//   try {
+//     const blogCounts = await Blog.aggregate([
+//       {
+//         $group: {
+//           _id: "$type",
+//           count: { $sum: 1 },
+//         },
+//       },
+//     ]);
+
+//     const countsByType = {};
+
+//     blogCounts.forEach((entry) => {
+//       if (entry._id) {
+//         const type = entry._id.toLowerCase().trim();
+//         const key = "total" + type;
+//         countsByType[key] = entry.count;
+//       }
+//     });
+//     return response.success(res, "Blog by type count", countsByType);
+//   } catch (err) {
+//     console.error("Failed to get blog counts", err);
+//     return response.serverError(res, "Failed to get blog counts");
+//   }
+// };
+
+
 const blogCounts = async (req, res) => {
   try {
-    const blogCounts = await Blog.aggregate([
+    // Get blog counts by type and month
+    const blogCountsByTypeAndMonth = await Blog.aggregate([
+      {
+        $group: {
+          _id: {
+            type: "$type",
+            month: { $month: "$createdAt" },
+            year: { $year: "$createdAt" }
+          },
+          count: { $sum: 1 }
+        }
+      }
+    ]);
+
+    // Get total count of each type of blog
+    const totalBlogCountsByType = await Blog.aggregate([
       {
         $group: {
           _id: "$type",
-          count: { $sum: 1 },
-        },
-      },
+          total: { $sum: 1 }
+        }
+      }
     ]);
 
-    const countsByType = {};
+    // Prepare the response object
+    const countsByTypeAndMonth = {};
+    const totalBlogCounts = {};
 
-    blogCounts.forEach((entry) => {
-      if (entry._id) {
-        const type = entry._id.toLowerCase().trim();
-        const key = "total" + type;
-        countsByType[key] = entry.count;
+    // Process blog counts by type and month
+    blogCountsByTypeAndMonth.forEach((entry) => {
+      if (entry._id.type) { // Add null check for _id.type
+        const type = entry._id.type.toLowerCase().trim();
+        const monthYear = `${entry._id.year}-${entry._id.month}`;
+        if (!countsByTypeAndMonth[type]) {
+          countsByTypeAndMonth[type] = {};
+        }
+        countsByTypeAndMonth[type][monthYear] = entry.count;
       }
     });
-    return response.success(res, "Blog by type count", countsByType);
+
+    // Process total count of each type of blog
+    totalBlogCountsByType.forEach((entry) => {
+      if (entry._id) { // Add null check for _id
+        const type = entry._id.toLowerCase().trim();
+        totalBlogCounts[type] = entry.total;
+      }
+    });
+
+    return response.success(res, "Blog counts by type and month", {
+      countsByTypeAndMonth,
+      totalBlogCounts
+    });
   } catch (err) {
     console.error("Failed to get blog counts", err);
     return response.serverError(res, "Failed to get blog counts");
   }
 };
 
+
 // approve blog function
+
+
 const approveBlog = async (req, res) => {
   try {
     const blog = await Blog.findById(req.params.id);
     if (!blog) {
       return response.notFound(res, "Blog not found");
     }
+    const userId = blog.user_id;
     blog.isApproved = true;
     await blog.save();
+    
+    let notiData = {};
     let notification = new Notification({
       title: `Thank you for posting for Blog`,
       content: `Thank you for posting for Blog, Your request is approved by the Admin`,
       icon: "check-box",
       data: JSON.stringify(notiData),
-      user_id: blog.user_id,
+      user_id: userId,
     });
     await notification.save();
-    let notiTokens = await FcmToken.find({ user_id: req.user.id });
+    let notiTokens = await FcmToken.find({ user_id: userId });
     for (let i = 0; i < notiTokens.length; i++) {
       const token = notiTokens[0];
 

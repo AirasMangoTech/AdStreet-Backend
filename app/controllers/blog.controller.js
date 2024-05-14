@@ -25,6 +25,7 @@ const createBlog = async (req, res) => {
       content,
       date,
       type,
+      user_id: req.user.id,
       image: req.body.image,
       category: categoryId,
       additional: additional ? additional : null,
