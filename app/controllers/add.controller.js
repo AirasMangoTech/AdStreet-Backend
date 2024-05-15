@@ -60,10 +60,10 @@ const postAd = async (req, res) => {
       content: `Thank you for posting for Ad, Your request willbe soon approved by the Admin`,
       icon: "check-box",
       data: JSON.stringify(notiData),
-      user_id: req.user.id,
+      user_id: postedBy,
     });
     await notification.save();
-    let notiTokens = await FcmToken.find({ user_id: req.user.id });
+    let notiTokens = await FcmToken.find({ user_id: postedBy });
     for (let i = 0; i < notiTokens.length; i++) {
       //const token = notiTokens[0];
 
