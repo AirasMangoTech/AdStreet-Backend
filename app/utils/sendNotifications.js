@@ -17,6 +17,7 @@ const sendNotification = async (title, body, data, token) => {
       })
       .catch((error) => {
       });
+      console.log("im running")
     return true;
     
   } catch (error) {
