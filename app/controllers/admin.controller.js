@@ -47,6 +47,9 @@ const getAllAds = async (req, res) => {
       );
       query.category = { $in: categoryObjectIDs };
     }
+    if(req.query.featured){
+      query.featured = true;
+    }
     const getStartOfDay = (date) => {
       return moment(date).startOf("day").toDate();
     };
@@ -140,6 +143,7 @@ const getAllAds = async (req, res) => {
           description: 1,
           budget: 1,
           jobDuration: 1,
+          featured: 1,
           postedBy: { $arrayElemAt: ["$postedBy", 0] }, // unwind postedBy array if necessary
           createdAt: 1,
           image: 1,
@@ -150,7 +154,7 @@ const getAllAds = async (req, res) => {
           totalProposals: { $size: "$proposals" },
         },
       },
-      { $sort: { createdAt: -1 } },
+      { $sort: { featured: -1, createdAt: -1 } },
       { $skip: skip },
       { $limit: limit },
     ]);
