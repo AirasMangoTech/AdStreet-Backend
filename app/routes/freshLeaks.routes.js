@@ -5,6 +5,7 @@ const verifyToken = require("../middleware/auth");
 
 fresh_router.post('/createfreshLeaks', freshLeaks.createFreshLeaks);
 fresh_router.get('/getAllfreshLeaks', freshLeaks.getAllFreshLeaks);
+fresh_router.get('/getAllLeaks', freshLeaks.getLeak);
 fresh_router.put("/updateStatus/:id",  freshLeaks.updateFreshLeaks );
 fresh_router.delete("/delete/:id", freshLeaks.deleteFreshLeaks );
 

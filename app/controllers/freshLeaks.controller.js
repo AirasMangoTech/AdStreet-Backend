@@ -16,7 +16,17 @@ exports.getAllFreshLeaks = async (req, res) => {
     if (req.query.blogId) {
       query.blogId = req.query.blogId;
     }
-    const freshLeaks = await FreshLeaks.findOne(query).populate('blogId');
+    const freshLeaks = await FreshLeaks.find(query).populate('blogId');
+    return response.success(res, "freshLeaks retrieved successfully", {freshLeaks});
+  } catch (error) {
+    return response.serverError(res, `Error retrieving promos: ${error}`);
+  }
+};
+
+exports.getLeak = async (req, res) => {
+  try {
+    
+    const freshLeaks = await FreshLeaks.find().populate('blogId');
     return response.success(res, "freshLeaks retrieved successfully", {freshLeaks});
   } catch (error) {
     return response.serverError(res, `Error retrieving promos: ${error}`);
