@@ -29,4 +29,7 @@ ad_route.put('/updateAdStatus', [verifyToken], ad.updateAdStatus);
 ad_route.post('/createResponse', [verifyToken], ad.createResponse);
 ad_route.get('/getResponses', [verifyToken], ad.getAllResponses);
 
+// updatinf deature status
+ad_route.put('/updateFeatureStatus', [verifyToken], ad.updateFeatureStatus);
+
 module.exports = ad_route;

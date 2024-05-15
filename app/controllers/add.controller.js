@@ -36,6 +36,7 @@ const postAd = async (req, res) => {
       imageUrl,
       links,
       valid_till,
+      featured,
     } = req.body;
     //const image = req.file.path; // Assuming file paths are sent from the frontend and you're using a middleware like multer for file handling
 
@@ -49,6 +50,7 @@ const postAd = async (req, res) => {
       jobDuration,
       postedBy: req.user.id,
       valid_till,
+      featured,
     });
 
     await newAd.save();
@@ -79,6 +81,7 @@ const postAd = async (req, res) => {
 };
 
 const getAllAds = async (req, res) => {
+
   try {
     let query = { isApproved: true, isHired: false, isCompleted: false };
 
@@ -203,6 +206,7 @@ const getAllAds = async (req, res) => {
           postedBy: { $arrayElemAt: ["$postedBy", 0] }, // unwind postedBy array if necessary
           createdAt: 1,
           image: 1,
+          featured: 1,
           isApproved: 1,
           isHired: 1,
           isCompleted: 1,
@@ -210,7 +214,7 @@ const getAllAds = async (req, res) => {
           totalProposals: { $size: "$proposals" },
         },
       },
-      { $sort: { createdAt: -1 } },
+      { $sort: {  featured: -1, createdAt: -1 } },
       { $skip: skip },
       { $limit: limit },
     ]);
@@ -243,11 +247,14 @@ const GetAdddetails = async (req, res) => {
     if (!adDetails) {
       return response.notFound(res, "Ad not found");
     }
+    const proposalCount = await Proposal.countDocuments({ adId: adDetails._id });
+
     const userId = new mongoose.Types.ObjectId(req.user.id);
     const proposal = await Proposal.findOne({
       submittedBy: userId,
       adId: adDetails._id,
     });
+    
     console.log(proposal);
     // Check if the user has already applied for this proposal
     let userApplied = false;
@@ -258,6 +265,7 @@ const GetAdddetails = async (req, res) => {
     const adDetailsWithAppliedFlag = {
       ...{ adDetails },
       applied: userApplied,
+      proposalCount: proposalCount, 
     };
     return response.success(res, "Ad details retrieved successfully", {
       adDetails: adDetailsWithAppliedFlag,
@@ -538,6 +546,51 @@ const getAllResponses = async (req, res) => {
   }
 };
 
+// const updateFeatureStatus = async (req, res) => {
+//   try {
+//     const { adId } = req.body;
+
+//     const ad = await Ad.findById(adId);
+//     if (!ad) {
+//       return response.notFound(res, "Ad not found");
+//     }
+
+//     ad.featured = true;
+//     await ad.save();
+
+//     return response.success(res, "Feature status updated successfully", {
+//       ad,
+//     });
+//   } catch (error) {
+//     console.error(`Error updating feature status: ${error}`);
+//     return response.serverError(res, "Error updating feature status");
+//   }
+// };
+
+const updateFeatureStatus = async (req, res) => {
+  try {
+    const { adId } = req.query; // Extract adId from query parameters
+    const { featured } = req.body; // Extract featured from request body
+
+    const ad = await Ad.findById(adId);
+    if (!ad) {
+      return response.notFound(res, "Ad not found");
+    }
+
+    ad.featured = featured; // Update featured status
+    await ad.save();
+
+    return response.success(res, "Feature status updated successfully", {
+      ad,
+    });
+  } catch (error) {
+    console.error(`Error updating feature status: ${error}`);
+    return response.serverError(res, "Error updating feature status");
+  }
+};
+
+
+
 console.log();
 module.exports = {
   postAd,
@@ -547,7 +600,7 @@ module.exports = {
   getHiredUser,
   getHiredUsersAndAds,
   updateAdStatus,
-  //handleAdStatus,
+  updateFeatureStatus,
   createResponse,
   getAllResponses,
 };
