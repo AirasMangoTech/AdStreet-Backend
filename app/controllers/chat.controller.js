@@ -9,7 +9,7 @@ const { findUsers } = require("../models/users");
 const getChats = async (req, res) => {
   try {
     let page = 1;
-    userId= req.body.userId;
+    userId= req.query.userId;
 
     pageSize = 20;
     chatSupport = false;
