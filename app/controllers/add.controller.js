@@ -67,12 +67,13 @@ const postAd = async (req, res) => {
     await notification.save();
     let notiTokens = await FcmToken.find({ user_id: postedBy });
     for (let i = 0; i < notiTokens.length; i++) {
-      //const token = notiTokens[0];
+      const token = notiTokens[0];
 
    //  let token = "f52kNgseRxmvAJmqluDkXd:APA91bEJllxd4DEFIZlilK9KjVp4Qk1i0rEHVLiEFtpKuL1dyPqOkoE6w24e0qCR6c1PUU9KQJfQH4ajTFE34p0PUNO9dr2HQ4ImupebmJr9944xQpXntJNUobHiMDe_oWhA69ETbmro"
       await sendNotification(
         `You've received a new notification "${req.body.name}"`,
         notiData,
+        "body",
         token.token
       );
     }
