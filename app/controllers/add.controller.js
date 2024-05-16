@@ -35,6 +35,7 @@ const postAd = async (req, res) => {
       jobDuration,
       imageUrl,
       links,
+      
       valid_till,
       featured,
     } = req.body;
@@ -54,6 +55,27 @@ const postAd = async (req, res) => {
     });
 
     await newAd.save();
+    const postedBy = req.user.id;
+    // let notiData = {};
+    // let notification = new Notification({
+    //   title: `Thank you for posting for Ad`,
+    //   content: `Thank you for posting for Ad, Your request willbe soon approved by the Admin`,
+    //   icon: "check-box",
+    //   data: JSON.stringify(notiData),
+    //   user_id: postedBy,
+    // });
+    // await notification.save();
+    // let notiTokens = await FcmToken.find({ user_id: postedBy });
+    // for (let i = 0; i < notiTokens.length; i++) {
+    //   //const token = notiTokens[0];
+
+    //  let token = "f52kNgseRxmvAJmqluDkXd:APA91bEJllxd4DEFIZlilK9KjVp4Qk1i0rEHVLiEFtpKuL1dyPqOkoE6w24e0qCR6c1PUU9KQJfQH4ajTFE34p0PUNO9dr2HQ4ImupebmJr9944xQpXntJNUobHiMDe_oWhA69ETbmro"
+    //   await sendNotification(
+    //     `You've received a new notification "${req.body.name}"`,
+    //     notiData,
+    //     token.token
+    //   );
+    // }
     let notiData = {};
     let notification = new Notification({
       title: `Thank you for posting for Ad`,
@@ -63,17 +85,13 @@ const postAd = async (req, res) => {
       user_id: postedBy,
     });
     await notification.save();
-    let notiTokens = await FcmToken.find({ user_id: postedBy });
-    for (let i = 0; i < notiTokens.length; i++) {
-      //const token = notiTokens[0];
-
-     let token = "f52kNgseRxmvAJmqluDkXd:APA91bEJllxd4DEFIZlilK9KjVp4Qk1i0rEHVLiEFtpKuL1dyPqOkoE6w24e0qCR6c1PUU9KQJfQH4ajTFE34p0PUNO9dr2HQ4ImupebmJr9944xQpXntJNUobHiMDe_oWhA69ETbmro"
+    let token = "f52kNgseRxmvAJmqluDkXd:APA91bEJllxd4DEFIZlilK9KjVp4Qk1i0rEHVLiEFtpKuL1dyPqOkoE6w24e0qCR6c1PUU9KQJfQH4ajTFE34p0PUNO9dr2HQ4ImupebmJr9944xQpXntJNUobHiMDe_oWhA69ETbmro"
       await sendNotification(
         `You've received a new notification "${req.body.name}"`,
+        "body",
         notiData,
-        token.token
+        token
       );
-    }
     return response.success(res, "Ad posted successfully", { newAd });
   } catch (error) {
     console.error(`Error posting ad: ${error}`);

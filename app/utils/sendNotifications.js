@@ -14,8 +14,11 @@ const sendNotification = async (title, body, data, token) => {
       .messaging()
       .send(payload)
       .then((response) => {
+        console.log(response)
       })
       .catch((error) => {
+        console.log(error)
+
       });
       console.log("im running")
     return true;

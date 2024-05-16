@@ -16,7 +16,7 @@ exports.getAllFreshLeaks = async (req, res) => {
     if (req.query.blogId) {
       query.blogId = req.query.blogId;
     }
-    const freshLeaks = await FreshLeaks.find(query).populate('blogId');
+    const freshLeaks = await FreshLeaks.find(query);
     return response.success(res, "freshLeaks retrieved successfully", {freshLeaks});
   } catch (error) {
     return response.serverError(res, `Error retrieving promos: ${error}`);
