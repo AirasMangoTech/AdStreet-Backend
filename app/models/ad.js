@@ -70,6 +70,10 @@ const adSchema = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
+  isActivated: {
+    type: Boolean,
+    default: false,
+  },
 });
 
 const Ad = mongoose.model("Ad", adSchema);
