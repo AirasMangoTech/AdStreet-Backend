@@ -7,6 +7,8 @@ const response = require("../utils/responseHelpers");
 const { ROLE_IDS } = require("../utils/utility");
 const mongoose = require("mongoose");
 const moment = require("moment");
+const crypto = require('crypto');
+
 
 const updatePaymentMethodStatus = async (req, res) => {
   try {
@@ -65,7 +67,53 @@ const getPaymentStatus = async (req, res) => {
   }
 };
 
+const getKPToken = async (req, res) => {
+  try {
+
+    const { adId } = req.query;
+
+    if (!adId) {
+      return response.badRequest(res, "Ad ID is required");
+    }
+
+    const ad = await Ad.findById(adId).populate('postedBy');
+
+    if (!ad) {
+      return response.notFound(res, "Ad not found");
+    }
+    
+    const message = "Gateway details loaded successfully";
+
+    return response.success(res, message, {
+      order_id: ad.id,
+      merchant_name: 'adsteet',
+      amount: ad.budget,
+      transaction_description: 'Activate the Job',
+      customer_email: ad.postedBy.email,
+      customer_mobile_number: ad.postedBy.phone_Number,
+      order_date: moment().format('YYYY-MM-DD'),
+      token: '',
+      gross_amount: ad.budget,
+      tax_amount: 0,
+      discount: 0,
+      signature: crypto.createHash('md5').update(process.env.INSTITUTION_ID + ad.id + ad.budget + process.env.KP_SECURED_KEY).digest('hex'),
+      institution_id: process.env.INSTITUTION_ID,
+      url: process.env.KP_REDIRECTION,
+    });
+  } catch (error) {
+    console.log(error);
+    return response.serverError(
+      res,
+      error.message,
+      "Failed to load Gateway details"
+    );
+  }
+};
+
+
+
 module.exports = {
   updatePaymentMethodStatus,
   getPaymentStatus,
+  getKPToken,
 };

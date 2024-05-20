@@ -15,4 +15,10 @@ pm_route.get(
   paymentMethod.getPaymentStatus
 );
 
+pm_route.get(
+  "/getKPToken",
+  [verifyToken],
+  paymentMethod.getKPToken
+);
+
 module.exports = pm_route;

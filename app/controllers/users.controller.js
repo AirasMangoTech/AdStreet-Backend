@@ -270,7 +270,7 @@ const getAllUsers = async (req, res) => {
 
 const getWalletHistory = async (req, res) => {
   try {
-    const { user_id } = req.params;
+    const { user_id } = req.query;
 
     // Fetch wallet history
     const walletHistory = await Wallet.find({ user: user_id })
