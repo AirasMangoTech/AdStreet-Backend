@@ -269,7 +269,8 @@ const { findUsers } = require("../models/users");
 const getMessages = async(req,res) => {
   try{
     chatId = req.query.chatId, 
-    userId= req.query.userId, 
+    userId= req.query.userId,
+    adId  = req.query.adId,
     pageNumber= 1;
     pageSize = 20;
     const skip = (pageNumber - 1) * parseInt(pageSize);
@@ -420,7 +421,7 @@ const getChats = async (req, res) => {
   try {
     let page = 1;
     userId = req.query.userId;
-
+    adId = req.query.adId
     pageSize = 20;
     chatSupport = false;
     chatId = req.body.chatId;
