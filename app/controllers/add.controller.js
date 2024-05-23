@@ -9,6 +9,7 @@ const response = require("../utils/responseHelpers");
 const { ROLE_IDS } = require("../utils/utility");
 const mongoose = require("mongoose");
 const moment = require("moment");
+const wallet = require("../models/wallet");
 
 const postAd = async (req, res) => {
   if (!req.user) {
@@ -232,6 +233,7 @@ const getAllAds = async (req, res) => {
           isCompleted: 1,
           valid_till: 1,
           totalProposals: { $size: "$proposals" },
+          isActivated: 1,
         },
       },
       { $sort: {  featured: -1, createdAt: -1 } },
@@ -359,7 +361,7 @@ const acceptProposal = async (req, res) => {
       const token = notiToken[0];
       await sendNotification(notiTitle, notiDescription, notiData, token.token);
     }
-    
+
 
     return response.success(res, "Proposal accepted successfully", {
       proposalToAccept,
@@ -486,7 +488,7 @@ const updateAdStatus = async (req, res) => {
       return response.badRequest(res, "Ad ID is required");
     }
 
-    const ad = await Ad.findById(adId);
+    const ad = await Ad.findById(adId).populate('hired_user');
 
     if (!ad) {
       return response.notFound(res, "Ad not found");
@@ -504,7 +506,41 @@ const updateAdStatus = async (req, res) => {
     ad.isCompleted = true;
     await ad.save();
 
+    if (ad.isCompleted && ad.isActivated) {
+      let user_wallet = new wallet({
+        user: ad.hired_user.id,
+        job: ad.id,
+        amount: ad.budget,
+        description: 'Amount credited for completing the job.',
+        status: 'CREDITED',
+      });
+
+      await user_wallet.save();
+
+      let notiData_user = {};
+      let notification_user = new Notification({
+        title: `Amount credited to your wallet for completing the job.`,
+        content: `Amount credited to your wallet for completing the job.`,
+        icon: "check-box",
+        data: JSON.stringify(notiData_user),
+        user_id: ad.hired_user.id
+      });
+      await notification_user.save();
+      let notiTokens_user = await FcmToken.find({ user_id: ad.hired_user.id });
+      for (let i = 0; i < notiTokens_user.length; i++) {
+        const token_user = notiTokens_user[0];
+  
+        await sendNotification(
+          `You've received a new notification "${req.body.name}"`,
+          notiData_user,
+          token_user.token
+        );
+      }
+
+    }
+
     const adResponse = await AdResponse.findById(responseId);
+
     let notiData = {};
     let notification = new Notification({
       title: `Ad status updated to completed`,

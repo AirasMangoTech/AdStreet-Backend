@@ -1,4 +1,5 @@
 const User = require("../models/users");
+const Wallet = require("../models/wallet");
 const { ROLE_IDS } = require("../utils/utility");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
@@ -61,7 +62,6 @@ const signup = async (req, res) => {
       await bcrypt.genSalt(10)
     );
 
-
     const newUser = new User({
       name,
       email,
@@ -101,12 +101,11 @@ const signup = async (req, res) => {
 
 const login = async (req, res) => {
   try {
-    let { phone_Number, email,  password, fcmToken } = req.body;
+    let { phone_Number, email, password, fcmToken } = req.body;
     phone_Number = phone_Number ? phone_Number.trim() : undefined;
 
     //const user = await User.findOne({ phone_Number: phone_Number });
     const user = await User.findOne({ email: email });
-
 
     if (!user) return response.notFound(res, "Invalid Credentials");
     if (await bcrypt.compare(password, user.password)) {
@@ -266,7 +265,51 @@ const getAllUsers = async (req, res) => {
   } catch (error) {
     console.error(`Error getting all users: ${error}`);
     return response.serverError(res, `Error getting all users: ${error}`);
-    
+  }
+};
+
+const getWalletHistory = async (req, res) => {
+  try {
+    const { user_id } = req.query;
+
+    // Fetch wallet history
+    const walletHistory = await Wallet.find({ user: user_id })
+      .select("user amount job description status createdAt")
+      .exec();
+
+    // Transform the fetched data
+    const transformedHistory = walletHistory.map((transaction) => ({
+      user: transaction.user,
+      amount: transaction.amount,
+      job: transaction.job,
+      narration: transaction.description,
+      type: transaction.status === "CREDITED" ? "CR" : "DR",
+      transaction_date: transaction.createdAt,
+    }));
+
+    // Calculate total balance
+    let totalBalance = 0;
+    transformedHistory.forEach((transaction) => {
+      if (transaction.type === "CR") {
+        totalBalance += transaction.amount;
+      } else if (transaction.type === "DR") {
+        totalBalance -= transaction.amount;
+      }
+    });
+
+    const message = "Wallet History loaded successfully";
+
+    return response.success(res, message, {
+      balance: totalBalance,
+      transactionHistory: transformedHistory,
+    });
+  } catch (error) {
+    console.log(error);
+    return response.serverError(
+      res,
+      error.message,
+      "Failed to load Payment Method"
+    );
   }
 };
 
@@ -274,4 +317,5 @@ module.exports = {
   signup,
   login,
   getAllUsers,
+  getWalletHistory,
 };
