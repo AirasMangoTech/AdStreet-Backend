@@ -15,10 +15,22 @@ pm_route.get(
   paymentMethod.getPaymentStatus
 );
 
-pm_route.get(
-  "/getKPToken",
+pm_route.post(
+  "/getGatewayToken",
   [verifyToken],
-  paymentMethod.getKPToken
+  paymentMethod.getGatewayToken
+);
+
+pm_route.post(
+  "/saveGatewayResponse",
+  [verifyToken],
+  paymentMethod.saveGatewayResponse
+);
+
+pm_route.get(
+  "/getescrowAccountLedger",
+  [verifyToken],
+  paymentMethod.getescrowAccountLedger
 );
 
 module.exports = pm_route;
