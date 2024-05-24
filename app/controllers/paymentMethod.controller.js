@@ -98,8 +98,7 @@ const getGatewayToken = async (req, res) => {
       merchant_name: process.env.MERCHANT_NAME,
       amount: ad.budget,
       transaction_description: 'Activate the Job',
-      customer_email: ad.posted.
-      By.email,
+      customer_email: ad.postedBy.email,
       customer_mobile_number: ad.postedBy.phone_Number,
       order_date: moment().format('YYYY-MM-DD'),
       token: tokenData.auth_token,
