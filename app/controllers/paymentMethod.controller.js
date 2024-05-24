@@ -98,7 +98,8 @@ const getGatewayToken = async (req, res) => {
       merchant_name: process.env.MERCHANT_NAME,
       amount: ad.budget,
       transaction_description: 'Activate the Job',
-      customer_email: ad.postedBy.email,
+      customer_email: ad.posted.
+      By.email,
       customer_mobile_number: ad.postedBy.phone_Number,
       order_date: moment().format('YYYY-MM-DD'),
       token: tokenData.auth_token,
@@ -123,32 +124,35 @@ const getGatewayToken = async (req, res) => {
 const saveGatewayResponse = async (req, res) => {
   try {
 
-    const { transactionId, orderId, responseCode, responseObject } = req.body;
+    //const { transactionId, orderId, responseCode, responseObject } = req.body;
 
-    if (!responseCode) {
+    const { TransactionId, OrderId, ResponseCode, ResponseMessage, Signature, amountPaid, discountAmount, responseObject } = req.body;
+    // {"OrderId": "664b183154b14730f13319b9", "ResponseCode": "00", "ResponseMessage": "Transaction%20completed%20successfully", "Signature": "8663b707d69d3196a256127582a29e69", "TransactionId": "2407240407476134", "amountPaid": "125.79", "discountAmount": "0"}
+
+    if (!ResponseCode) {
       return response.badRequest(res, "Response code is required");
     }
 
-    const ad = await Ad.findById(orderId).populate('postedBy').populate('hired_user');
+    const ad = await Ad.findById(OrderId).populate('postedBy').populate('hired_user');
 
     let log = new paymentlog({
       user: ad.postedBy.id,
       ad: ad.id,
-      amount: ad.budget,
-      transactionId: transactionId,
-      responseCode: responseCode,
+      amount: amountPaid,
+      transactionId: TransactionId,
+      responseCode: ResponseCode,
       response: responseObject
     });
 
     await log.save();
 
-    if (responseCode === '00') {
+    if (ResponseCode === '00') {
       let escrow = new escrowAccount({
         user: ad.postedBy.id,
         ad: ad.id,
-        cr: ad.budget,
+        cr: amountPaid,
         dr: 0,
-        description: 'Amount credited against job',
+        description: 'Amount credited - ' + ResponseMessage,
         type: 'DEPOSIT', // WITHDRAW  // REFUND // COMMISSION
       });
       await escrow.save();
