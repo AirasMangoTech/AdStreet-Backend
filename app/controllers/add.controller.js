@@ -175,13 +175,13 @@ const getAllAds = async (req, res) => {
         },
       },
     ];
-    if (req.query.role) {
-      userLookupPipeline.unshift({
-        $match: {
-          roles: req.query.role, // Assumes roles field exists and contains the role
-        },
-      });
-    }
+    // if (req.query.roles) {
+    //   userLookupPipeline.unshift({
+    //     $match: {
+    //       roles: req.query.role, // Assumes roles field exists and contains the role
+    //     },
+    //   });
+    // }
 
     const page = parseInt(req.query.page) || 1; // Default to page 1
     const limit = parseInt(req.query.limit) || 10; // Default limit to 10 items

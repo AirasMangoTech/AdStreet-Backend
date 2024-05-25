@@ -15,11 +15,7 @@ pm_route.get(
   paymentMethod.getPaymentStatus
 );
 
-pm_route.post(
-  "/getGatewayToken",
-  [verifyToken],
-  paymentMethod.getGatewayToken
-);
+pm_route.post("/getGatewayToken", [verifyToken], paymentMethod.getGatewayToken);
 
 pm_route.post(
   "/saveGatewayResponse",

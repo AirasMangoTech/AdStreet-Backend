@@ -1,7 +1,6 @@
 const RegistrationAdpro = require("../models/adpro");
 const response = require("../utils/responseHelpers");
 
-
 const adproRegister = async (req, res) => {
   try {
     const {
@@ -30,7 +29,7 @@ const adproRegister = async (req, res) => {
       timeline,
       details,
       links,
-      file:req.body.file,
+      file: req.body.file,
     });
     await newRegistrationAdpro.save();
 
@@ -53,8 +52,8 @@ const getAdpros = async (req, res) => {
       );
       query.category = { $in: categoryObjectIDs };
     }
-    if(req.query.status){
-      query = {status: req.query.status}
+    if (req.query.status) {
+      query = { status: req.query.status };
     }
     const getStartOfDay = (date) => {
       return moment(date).startOf("day").toDate();
@@ -76,16 +75,26 @@ const getAdpros = async (req, res) => {
         $lte: getEndOfDay(new Date(req.query.created_at_to)),
       };
     }
+    if(req.query.service){
+      query.service = req.query.service;
+    }
+    if(req.query.industry){
+      query.industry = req.query.industry;
+    }
     const page = parseInt(req.query.page) || 1; // Default to page 1 if not specified
     const limit = parseInt(req.query.limit) || 10; // Default limit to 10 items per page
     const skipIndex = (page - 1) * limit;
-    const adpros = await RegistrationAdpro.find()
+    const adpros = await RegistrationAdpro.find(query)
+      .populate("service", "name")
+      .populate("industry", "name")
       .sort({ createdAt: -1 })
       .skip(skipIndex)
       .limit(limit);
-    const totalAdpros = await RegistrationAdpro.countDocuments();
+
+
+
+    const totalAdpros = await RegistrationAdpro.countDocuments(query);
     const totalPages = Math.ceil(totalAdpros / limit);
-    
 
     // Check if adpros are found
     if (!adpros || adpros.length === 0) {
@@ -93,7 +102,11 @@ const getAdpros = async (req, res) => {
     }
 
     // Return adpros in the response
-    return response.success(res, "Adpros fetched successfully", { adpros, totalPages, totalAdpros});
+    return response.success(res, "Adpros fetched successfully", {
+      adpros,
+      totalPages,
+      totalAdpros,
+    });
   } catch (error) {
     console.log(error);
     return response.serverError(res, "Error in fetching adpros", error.message);

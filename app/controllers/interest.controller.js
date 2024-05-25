@@ -6,10 +6,8 @@ const toggleInterest = async (req, res) => {
     const { blogId } = req.params; 
     const userId = req.user.id;
 
-    // Find an existing interest record
     let interest = await Interest.findOne({ blog: blogId, user: userId });
 
-    // If there's no existing record, create one with expressedInterest set to true
     if (!interest) {
       interest = new Interest({
         blog: blogId,
@@ -17,7 +15,6 @@ const toggleInterest = async (req, res) => {
         expressedInterest: true,
       });
     } else {
-      // If there is a record, toggle the expressedInterest value
       interest.expressedInterest = !interest.expressedInterest;
       interest.updatedAt = Date.now(); // Update the timestamp
     }

@@ -13,166 +13,166 @@ const { ROLE_IDS } = require("../utils/utility");
 const mongoose = require("mongoose");
 const moment = require("moment");
 
-const getAllAds = async (req, res) => {
-  try {
-    if (req.user.role_id !== ROLE_IDS.ADMIN)
-      return response.forbidden(
-        res,
-        "You don't have permission to perform this action"
-      );
-    let query = {};
-    let userLookupPipeline = [];
-    if (req.query.user_id) {
-      query.postedBy = new mongoose.Types.ObjectId(req.query.user_id);
-    }
-    if (req.query.adId) {
-      query._id = new mongoose.Types.ObjectId(req.query.adId);
-    }
-    if (req.query.roles) {
-      const usersWithRoles = await User.find({ roles: req.query.roles }, "_id");
-      const userIds = usersWithRoles.map((user) => user._id);
-      query.roles = { $in: userIds };
-    }
-    if (req.query.roles) {
-      userLookupPipeline.unshift({
-        $match: {
-          roles: req.query.roles, // Assumes roles field exists and contains the role
-        },
-      });
-    }
-    if (req.query.category !== undefined) {
-      const categories = req.query.category.split(",");
-      const categoryObjectIDs = categories.map(
-        (category) => new mongoose.Types.ObjectId(category)
-      );
-      query.category = { $in: categoryObjectIDs };
-    }
-    if(req.query.featured){
-      query.featured = true;
-    }
-    const getStartOfDay = (date) => {
-      return moment(date).startOf("day").toDate();
-    };
-    const getEndOfDay = (date) => {
-      return moment(date).endOf("day").toDate();
-    };
-    if (req.query.valid_till_from && req.query.valid_till_to) {
-      query.valid_till = {
-        $gte: getStartOfDay(new Date(req.query.valid_till_from)),
-        $lte: getEndOfDay(new Date(req.query.valid_till_to)),
-      };
-    } else if (req.query.valid_till_from) {
-      query.valid_till = {
-        $gte: getStartOfDay(new Date(req.query.valid_till_from)),
-      };
-    } else if (req.query.valid_till_to) {
-      query.valid_till = {
-        $lte: getEndOfDay(new Date(req.query.valid_till_to)),
-      };
-    }
-    // Date range for createdAt
-    if (req.query.created_at_from && req.query.created_at_to) {
-      query.createdAt = {
-        $gte: getStartOfDay(new Date(req.query.created_at_from)),
-        $lte: getEndOfDay(new Date(req.query.created_at_to)),
-      };
-    } else if (req.query.created_at_from) {
-      query.created_at = {
-        $gte: getStartOfDay(new Date(req.query.created_at_from)),
-      };
-    } else if (req.query.created_at_to) {
-      query.created_at = {
-        $lte: getEndOfDay(new Date(req.query.created_at_to)),
-      };
-    }
+// const getAllAds = async (req, res) => {
+//   try {
+//     if (req.user.role_id !== ROLE_IDS.ADMIN)
+//       return response.forbidden(
+//         res,
+//         "You don't have permission to perform this action"
+//       );
+//     let query = {};
+//     let userLookupPipeline = [];
+//     if (req.query.user_id) {
+//       query.postedBy = new mongoose.Types.ObjectId(req.query.user_id);
+//     }
+//     if (req.query.adId) {
+//       query._id = new mongoose.Types.ObjectId(req.query.adId);
+//     }
+//     if (req.query.roles) {
+//       const usersWithRoles = await User.find({ roles: req.query.roles }, "_id");
+//       const userIds = usersWithRoles.map((user) => user._id);
+//       query.roles = { $in: userIds };
+//     }
+//     if (req.query.roles) {
+//       userLookupPipeline.unshift({
+//         $match: {
+//           roles: req.query.roles, // Assumes roles field exists and contains the role
+//         },
+//       });
+//     }
+//     if (req.query.category !== undefined) {
+//       const categories = req.query.category.split(",");
+//       const categoryObjectIDs = categories.map(
+//         (category) => new mongoose.Types.ObjectId(category)
+//       );
+//       query.category = { $in: categoryObjectIDs };
+//     }
+//     if(req.query.featured){
+//       query.featured = true;
+//     }
+//     const getStartOfDay = (date) => {
+//       return moment(date).startOf("day").toDate();
+//     };
+//     const getEndOfDay = (date) => {
+//       return moment(date).endOf("day").toDate();
+//     };
+//     if (req.query.valid_till_from && req.query.valid_till_to) {
+//       query.valid_till = {
+//         $gte: getStartOfDay(new Date(req.query.valid_till_from)),
+//         $lte: getEndOfDay(new Date(req.query.valid_till_to)),
+//       };
+//     } else if (req.query.valid_till_from) {
+//       query.valid_till = {
+//         $gte: getStartOfDay(new Date(req.query.valid_till_from)),
+//       };
+//     } else if (req.query.valid_till_to) {
+//       query.valid_till = {
+//         $lte: getEndOfDay(new Date(req.query.valid_till_to)),
+//       };
+//     }
+//     // Date range for createdAt
+//     if (req.query.created_at_from && req.query.created_at_to) {
+//       query.createdAt = {
+//         $gte: getStartOfDay(new Date(req.query.created_at_from)),
+//         $lte: getEndOfDay(new Date(req.query.created_at_to)),
+//       };
+//     } else if (req.query.created_at_from) {
+//       query.created_at = {
+//         $gte: getStartOfDay(new Date(req.query.created_at_from)),
+//       };
+//     } else if (req.query.created_at_to) {
+//       query.created_at = {
+//         $lte: getEndOfDay(new Date(req.query.created_at_to)),
+//       };
+//     }
 
-    let matchQuery = {};
+//     let matchQuery = {};
 
-    const page = parseInt(req.query.page) || 1; // Default to page 1
-    const limit = parseInt(req.query.limit) || 10; // Default limit to 10 items
-    const skip = (page - 1) * limit;
-    userLookupPipeline.push(
-      {
-        $match: {
-          $expr: {
-            $eq: ["$_id", "$$postedBy"],
-          },
-        },
-      },
-      {
-        $project: {
-          password: 0, // Exclude the password field
-        },
-      }
-    );
+//     const page = parseInt(req.query.page) || 1; // Default to page 1
+//     const limit = parseInt(req.query.limit) || 10; // Default limit to 10 items
+//     const skip = (page - 1) * limit;
+//     userLookupPipeline.push(
+//       {
+//         $match: {
+//           $expr: {
+//             $eq: ["$_id", "$$postedBy"],
+//           },
+//         },
+//       },
+//       {
+//         $project: {
+//           password: 0, // Exclude the password field
+//         },
+//       }
+//     );
 
-    const ads = await Ad.aggregate([
-      {
-        $match: query,
-      },
-      {
-        $lookup: {
-          from: "proposals",
-          localField: "_id",
-          foreignField: "adId",
-          as: "proposals",
-        },
-      },
-      {
-        $lookup: {
-          from: "users",
-          let: { postedBy: "$postedBy" },
-          pipeline: userLookupPipeline,
-          as: "postedBy",
-        },
-      },
-      {
-        $lookup: {
-          from: "categories", // Assuming the collection name is "categories" for categories data
-          localField: "category",
-          foreignField: "_id",
-          as: "category",
-        },
-      },
-      {
-        $project: {
-          _id: 1,
-          title: 1,
-          category: 1, // unwind category array if necessary
-          // images: 1,
-          description: 1,
-          budget: 1,
-          jobDuration: 1,
-          featured: 1,
-          postedBy: { $arrayElemAt: ["$postedBy", 0] }, // unwind postedBy array if necessary
-          createdAt: 1,
-          image: 1,
-          isApproved: 1,
-          isHired: 1,
-          isCompleted: 1,
-          valid_till: 1,
-          totalProposals: { $size: "$proposals" },
-        },
-      },
-      { $sort: { featured: -1, createdAt: -1 } },
-      { $skip: skip },
-      { $limit: limit },
-    ]);
+//     const ads = await Ad.aggregate([
+//       {
+//         $match: query,
+//       },
+//       {
+//         $lookup: {
+//           from: "proposals",
+//           localField: "_id",
+//           foreignField: "adId",
+//           as: "proposals",
+//         },
+//       },
+//       {
+//         $lookup: {
+//           from: "users",
+//           let: { postedBy: "$postedBy" },
+//           pipeline: userLookupPipeline,
+//           as: "postedBy",
+//         },
+//       },
+//       {
+//         $lookup: {
+//           from: "categories", // Assuming the collection name is "categories" for categories data
+//           localField: "category",
+//           foreignField: "_id",
+//           as: "category",
+//         },
+//       },
+//       {
+//         $project: {
+//           _id: 1,
+//           title: 1,
+//           category: 1, // unwind category array if necessary
+//           // images: 1,
+//           description: 1,
+//           budget: 1,
+//           jobDuration: 1,
+//           featured: 1,
+//           postedBy: { $arrayElemAt: ["$postedBy", 0] }, // unwind postedBy array if necessary
+//           createdAt: 1,
+//           image: 1,
+//           isApproved: 1,
+//           isHired: 1,
+//           isCompleted: 1,
+//           valid_till: 1,
+//           totalProposals: { $size: "$proposals" },
+//         },
+//       },
+//       { $sort: { featured: -1, createdAt: -1 } },
+//       { $skip: skip },
+//       { $limit: limit },
+//     ]);
 
-    const totalAds = await Ad.countDocuments(query);
-    const totalPages = Math.ceil(totalAds / limit);
-    console.log(query);
-    return response.success(res, "All ads retrieved successfully", {
-      ads,
-      totalAds,
-      totalPages,
-      currentPage: page,
-    });
-  } catch (error) {
-    console.error(`Error getting all ads: ${error}`);
-    return response.serverError(res, "Error getting all ads");
-  }
-};
+//     const totalAds = await Ad.countDocuments(query);
+//     const totalPages = Math.ceil(totalAds / limit);
+//     console.log(query);
+//     return response.success(res, "All ads retrieved successfully", {
+//       ads,
+//       totalAds,
+//       totalPages,
+//       currentPage: page,
+//     });
+//   } catch (error) {
+//     console.error(`Error getting all ads: ${error}`);
+//     return response.serverError(res, "Error getting all ads");
+//   }
+// };
 
 const approveAd = async (req, res) => {
   const { isApproved } = req.body;
@@ -350,37 +350,8 @@ const getAdStreetStats = async (req, res) => {
   }
 };
 
-// const blogCounts = async (req, res) => {
-//   try {
-//     const blogCounts = await Blog.aggregate([
-//       {
-//         $group: {
-//           _id: "$type",
-//           count: { $sum: 1 },
-//         },
-//       },
-//     ]);
-
-//     const countsByType = {};
-
-//     blogCounts.forEach((entry) => {
-//       if (entry._id) {
-//         const type = entry._id.toLowerCase().trim();
-//         const key = "total" + type;
-//         countsByType[key] = entry.count;
-//       }
-//     });
-//     return response.success(res, "Blog by type count", countsByType);
-//   } catch (err) {
-//     console.error("Failed to get blog counts", err);
-//     return response.serverError(res, "Failed to get blog counts");
-//   }
-// };
-
-
 const blogCounts = async (req, res) => {
   try {
-    // Get blog counts by type and month
     const blogCountsByTypeAndMonth = await Blog.aggregate([
       {
         $group: {
@@ -394,7 +365,6 @@ const blogCounts = async (req, res) => {
       }
     ]);
 
-    // Get total count of each type of blog
     const totalBlogCountsByType = await Blog.aggregate([
       {
         $group: {
@@ -404,11 +374,9 @@ const blogCounts = async (req, res) => {
       }
     ]);
 
-    // Prepare the response object
     const countsByTypeAndMonth = {};
     const totalBlogCounts = {};
 
-    // Process blog counts by type and month
     blogCountsByTypeAndMonth.forEach((entry) => {
       if (entry._id.type) { // Add null check for _id.type
         const type = entry._id.type.toLowerCase().trim();
@@ -437,9 +405,6 @@ const blogCounts = async (req, res) => {
     return response.serverError(res, "Failed to get blog counts");
   }
 };
-
-
-// approve blog function
 
 
 const approveBlog = async (req, res) => {
@@ -476,6 +441,170 @@ const approveBlog = async (req, res) => {
     return response.serverError(res, "Error approving blog");
   }
 };
+
+
+const getAllAds = async (req, res) => {
+  try {
+    if (req.user.role_id !== ROLE_IDS.ADMIN)
+      return response.forbidden(
+        res,
+        "You don't have permission to perform this action"
+      );
+
+    let query = {};
+
+    if (req.query.user_id) {
+      query.postedBy = new mongoose.Types.ObjectId(req.query.user_id);
+    }
+
+    if (req.query.adId) {
+      query._id = new mongoose.Types.ObjectId(req.query.adId);
+    }
+
+    if (req.query.category !== undefined) {
+      const categories = req.query.category.split(",");
+      const categoryObjectIDs = categories.map(
+        (category) => new mongoose.Types.ObjectId(category)
+      );
+      query.category = { $in: categoryObjectIDs };
+    }
+
+    if (req.query.featured) {
+      query.featured = true;
+    }
+
+    const getStartOfDay = (date) => {
+      return moment(date).startOf("day").toDate();
+    };
+
+    const getEndOfDay = (date) => {
+      return moment(date).endOf("day").toDate();
+    };
+
+    if (req.query.valid_till_from && req.query.valid_till_to) {
+      query.valid_till = {
+        $gte: getStartOfDay(new Date(req.query.valid_till_from)),
+        $lte: getEndOfDay(new Date(req.query.valid_till_to)),
+      };
+    } else if (req.query.valid_till_from) {
+      query.valid_till = {
+        $gte: getStartOfDay(new Date(req.query.valid_till_from)),
+      };
+    } else if (req.query.valid_till_to) {
+      query.valid_till = {
+        $lte: getEndOfDay(new Date(req.query.valid_till_to)),
+      };
+    }
+
+    if (req.query.created_at_from && req.query.created_at_to) {
+      query.createdAt = {
+        $gte: getStartOfDay(new Date(req.query.created_at_from)),
+        $lte: getEndOfDay(new Date(req.query.created_at_to)),
+      };
+    } else if (req.query.created_at_from) {
+      query.createdAt = {
+        $gte: getStartOfDay(new Date(req.query.created_at_from)),
+      };
+    } else if (req.query.created_at_to) {
+      query.createdAt = {
+        $lte: getEndOfDay(new Date(req.query.created_at_to)),
+      };
+    }
+
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
+
+    const userLookupPipeline = [
+      {
+        $match: {
+          $expr: {
+            $eq: ["$_id", "$$postedBy"],
+          },
+        },
+      },
+      {
+        $project: {
+          password: 0,
+        },
+      },
+    ];
+
+    if (req.query.roles) {
+      userLookupPipeline.unshift({
+        $match: {
+          roles: req.query.roles,
+        },
+      });
+    }
+
+    const ads = await Ad.aggregate([
+      {
+        $match: query,
+      },
+      {
+        $lookup: {
+          from: "proposals",
+          localField: "_id",
+          foreignField: "adId",
+          as: "proposals",
+        },
+      },
+      {
+        $lookup: {
+          from: "users",
+          let: { postedBy: "$postedBy" },
+          pipeline: userLookupPipeline,
+          as: "postedBy",
+        },
+      },
+      {
+        $lookup: {
+          from: "categories",
+          localField: "category",
+          foreignField: "_id",
+          as: "category",
+        },
+      },
+      {
+        $project: {
+          _id: 1,
+          title: 1,
+          category: 1,
+          description: 1,
+          budget: 1,
+          jobDuration: 1,
+          featured: 1,
+          postedBy: { $arrayElemAt:["$postedBy", 0] },
+          createdAt: 1,
+          image: 1,
+          isApproved: 1,
+          isHired: 1,
+          isCompleted: 1,
+          valid_till: 1,
+          totalProposals: { $size: "$proposals" },
+        },
+      },
+      { $sort: { featured: -1, createdAt: -1 } },
+      { $skip: skip },
+      { $limit: limit },
+    ]);
+
+    const totalAds = await Ad.countDocuments(query);
+    const totalPages = Math.ceil(totalAds / limit);
+
+    return response.success(res, "All ads retrieved successfully", {
+      ads,
+      totalAds,
+      totalPages,
+      currentPage: page,
+    });
+  } catch (error) {
+    console.error(`Error getting all ads: ${error}`);
+    return response.serverError(res, "Error getting all ads");
+  }
+};
+
 
 module.exports = {
   approveAd,
