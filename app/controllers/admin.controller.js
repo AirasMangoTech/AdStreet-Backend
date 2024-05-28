@@ -473,6 +473,18 @@ const getAllAds = async (req, res) => {
       query.featured = true;
     }
 
+    if (req.query.isCompleted) {
+      query.isCompleted = true;
+    }
+
+    if (req.query.isApproved) {
+      query.isApproved = true;
+    }
+
+    if (req.query.isHired) {
+      query.isHired = true;
+    }
+
     const getStartOfDay = (date) => {
       return moment(date).startOf("day").toDate();
     };

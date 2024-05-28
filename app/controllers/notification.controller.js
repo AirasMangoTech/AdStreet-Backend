@@ -1,8 +1,11 @@
-const { Notification } = require("../models/notifications");
+const Notification = require("../models/notifications");
 const response = require("../utils/responseHelpers");
 const { ObjectId } = require("mongodb");
 const logger = require("../logger");
 require("dotenv").config();
+const FcmToken = require("../models/fcmTokens");
+
+const sendNotification = require("../utils/sendNotifications");
 
 module.exports.getNotifications = async (req, res) => {
   try {
@@ -72,6 +75,37 @@ module.exports.updateNotificationStatus = async (req, res) => {
 
     return response.success(res, "Notification status updated successfully", {
       notification,
+    });
+  } catch (error) {
+    console.log(error);
+    logger.error(
+      `ip: ${req.ip}, url: ${req.url}, error: ${JSON.stringify(error.stack)}`
+    );
+    return response.serverError(
+      res,
+      "An error occurred while updating the notification status"
+    );
+  }
+};
+
+module.exports.sendNotification = async (req, res) => {
+  try {
+    
+    let notiData = {};
+    
+    let notiTokens = await FcmToken.find({ user_id: req.user.id });
+   
+    let token = "e2hnwYxeSz7m--c0LjdHry:APA91bEHD8kSyK6beGloSM2XOrmmhw-4ukVQAk1KSd_5bb-8CXB0sYc2ywraJqNFU1hk8ykG9hTWy8EX6i75yyB0X6jLg3-JnbMKZOuWhZDvb7cUQ5b5ogTcpZVAwvhDYZ3x8mTNfBeI";
+    
+    await sendNotification(
+      `You've received a new notification`,
+      notiData,
+      "body",
+      token
+    );
+
+    return response.success(res, "Notification send successfully", {
+      'notification' : '',
     });
   } catch (error) {
     console.log(error);
