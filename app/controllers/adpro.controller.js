@@ -15,7 +15,7 @@ const adproRegister = async (req, res) => {
       budget,
       details,
       links,
-      breifFile,
+      briefFile,
     } = req.body;
 
     const newRegistrationAdpro = new RegistrationAdpro({
@@ -30,7 +30,7 @@ const adproRegister = async (req, res) => {
       timeline,
       details,
       links,
-      file: req.body.briefFile,
+      file: briefFile,
     });
     await newRegistrationAdpro.save();
 
