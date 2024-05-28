@@ -12,8 +12,26 @@ exports.createPromo = async (req, res) => {
 
 exports.getAllPromos = async (req, res) => {
   try {
-    const promos = await Promo.find();
-    return response.success(res, "Promos retrieved successfully", {promos});
+
+    let query = {};
+
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
+
+    const promos = await Promo.find(query)
+    .skip(skip)
+    .limit(limit);
+
+    const totalPromos = await FreshLeaks.countDocuments(query);
+    const totalPages = Math.ceil(totalPromos / limit);
+
+    return response.success(res, "Promos retrieved successfully", {
+      promos,
+      totalPromos,
+      totalPages,
+      currentPage: page,
+    });
   } catch (error) {
     return response.serverError(res, `Error retrieving promos: ${error}`);
   }

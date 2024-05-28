@@ -16,8 +16,24 @@ exports.getAllFreshLeaks = async (req, res) => {
     if (req.query.blogId) {
       query.blogId = req.query.blogId;
     }
-    const freshLeaks = await FreshLeaks.find(query);
-    return response.success(res, "freshLeaks retrieved successfully", {freshLeaks});
+
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
+
+    const freshLeaks = await FreshLeaks.find(query) 
+    .skip(skip)
+    .limit(limit);
+
+    const totalLeaks = await FreshLeaks.countDocuments(query);
+    const totalPages = Math.ceil(totalLeaks / limit);
+
+    return response.success(res, "freshLeaks retrieved successfully", {
+      freshLeaks,
+      totalLeaks,
+      totalPages,
+      currentPage: page,
+    });
   } catch (error) {
     return response.serverError(res, `Error retrieving promos: ${error}`);
   }
