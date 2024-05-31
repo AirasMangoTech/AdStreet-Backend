@@ -268,6 +268,55 @@ const getAllUsers = async (req, res) => {
   }
 };
 
+const getUser = async (req, res) => {
+  try {
+    
+    const { user_id } = req.query;
+
+    const user = await User.findById(user_id).select('name email phone_Number roles about');
+    
+    if (!user) {
+      return response.notFound(
+        res,
+        `User not found`
+      );
+    }
+
+    return response.success(res, "User retrieved successfully", {
+      user,
+    });
+  } catch (error) {
+    console.error(`Error getting all users: ${error}`);
+    return response.serverError(res, `Error getting all users: ${error}`);
+  }
+};
+
+const updateUser = async (req, res) => {
+  try {
+    
+    const { id } = req.body;
+
+    const user = await User.findByIdAndUpdate(id, req.body, {
+      new: true,
+    }).select('name email phone_Number roles about');
+    
+    if (!user) {
+      return response.notFound(
+        res,
+        `User not found`
+      );
+    }
+
+    return response.success(res, "User retrieved successfully", {
+      user,
+    });
+  } catch (error) {
+    console.error(`Error getting user: ${error}`);
+    return response.serverError(res, `Error getting user: ${error}`);
+  }
+};
+
+
 const getWalletHistory = async (req, res) => {
   try {
     const { user_id } = req.query;
@@ -318,4 +367,6 @@ module.exports = {
   login,
   getAllUsers,
   getWalletHistory,
+  getUser,
+  updateUser,
 };

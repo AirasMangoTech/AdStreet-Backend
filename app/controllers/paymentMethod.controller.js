@@ -149,7 +149,7 @@ const saveGatewayResponse = async (req, res) => {
       let escrow = new escrowAccount({
         user: ad.postedBy.id,
         ad: ad.id,
-        cr: amountPaid,
+        cr: ad.budget,
         dr: 0,
         description: 'Amount credited - ' + ResponseMessage,
         type: 'DEPOSIT', // WITHDRAW  // REFUND // COMMISSION

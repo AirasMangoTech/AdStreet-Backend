@@ -19,6 +19,7 @@ const createPortfolio = async (req, res) => {
     });
 
     await newPortfolio.save();
+    
     return response.success(res, 'Portfolio created successfully', {newPortfolio});
   } catch (error) {
         console.error(`Error creating portfolio: ${error}`);    
@@ -26,6 +27,48 @@ const createPortfolio = async (req, res) => {
   }
 };
 
+const getAllPortfolio = async (req, res) => {
+  try {
+    const { user_id } = req.query;
+
+    const portfolios = await Portfolio.find({ userId: user_id });
+
+    return response.success(res, "All portfolios retrieved successfully", {
+      portfolios,
+    });
+  } catch (error) {
+    console.error(`Error getting all portfolios: ${error}`);
+    return response.serverError(res, `Error getting all portfolios: ${error}`);
+  }
+};
+
+
+const updatePortfolio = async (req, res) => {
+  try {
+
+    const portfolio = await Portfolio.findByIdAndUpdate(req.params.id, req.body, {
+      new: true,
+    });
+    
+    if (!portfolio) {
+      return response.notFound(
+        res,
+        `No portfolio was found with the id of ${req.params.id}`
+      );
+    }
+
+    return response.success(res, "All portfolios retrieved successfully", {
+      portfolio,
+    });
+  } catch (error) {
+    console.error(`Error getting all portfolios: ${error}`);
+    return response.serverError(res, `Error getting all portfolios: ${error}`);
+  }
+};
+
+
 module.exports = {
-  createPortfolio
+  createPortfolio,
+  getAllPortfolio,
+  updatePortfolio,
 };

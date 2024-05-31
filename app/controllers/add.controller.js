@@ -517,6 +517,16 @@ const updateAdStatus = async (req, res) => {
 
       await user_wallet.save();
 
+      let escrow = new escrowAccount({
+        user: ad.postedBy.id,
+        ad: ad.id,
+        cr: 0,
+        dr: ad.budget,
+        description: 'Amount debited to wallet',
+        type: 'WITHDRAW', // DEPOSIT // WITHDRAW  // REFUND // COMMISSION
+      });
+      await escrow.save();
+
       let notiData_user = {};
       let notification_user = new Notification({
         title: `Amount credited to your wallet for completing the job.`,
