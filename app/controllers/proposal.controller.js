@@ -57,25 +57,29 @@ const postProposal = async (req, res) => {
     });
     await proposal.save();
 
-    let notiData = {};
+    let notiTitle = `New Proposal`;
+    let notiDescription = `${req.user.name} sent you a proposal on your job post`;
+ 
+    let notiData = {
+      id: proposal.id,
+      pagename: 'proposal',
+      title: notiTitle,
+      body: notiDescription
+    };
+
     let notification = new Notification({
-      title: `${req.user.name} sent you a proposal`,
-      content: `${req.user.name} sent you a proposal on your job post`,
+      title: notiTitle,
+      content: notiDescription,
       icon: "note-pad",
       data: JSON.stringify(notiData),
-      user_id: ad.postedBy,
+      user_id: Ad.postedBy.id,
     });
+
     await notification.save();
-
-    let notiTokens = await FcmToken.find({ user_id: ad.postedBy });
-    for (let i = 0; i < notiTokens.length; i++) {
-      const token = notiTokens[i];
-
-      await sendNotification(
-        `${req.user.name} sent a proposal`,
-        notiData,
-        token.token
-      );
+    let notiToken = await FcmToken.find({ user_id: Ad.postedBy.id });
+    if (notiToken.length > 0) {
+      const tokenList = notiToken.map(tokenDoc => tokenDoc.token);
+      await sendNotification(notiTitle, notiDescription, notiData, tokenList);
     }
     // Send a success response
     return response.success(res, "Proposal submitted successfully", {

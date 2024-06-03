@@ -42,6 +42,20 @@ const postAd = async (req, res) => {
     } = req.body;
     //const image = req.file.path; // Assuming file paths are sent from the frontend and you're using a middleware like multer for file handling
 
+    const paymentMethodStatus = await paymentMethod.findOne();
+    let paymentstatus = false;
+
+    if (!paymentMethodStatus) {
+      let pmstatus = new paymentMethod({
+        isMandatory: paymentstatus,
+      });
+      await pmstatus.save();
+
+    } else {
+      paymentstatus = paymentMethodStatus.isMandatory;
+    }
+
+
     const newAd = new Ad({
       title,
       category,
@@ -53,6 +67,7 @@ const postAd = async (req, res) => {
       postedBy: req.user.id,
       valid_till,
       featured,
+      isActivated: !paymentstatus
     });
 
     await newAd.save();
@@ -73,18 +88,7 @@ const postAd = async (req, res) => {
     if (admins.length > 0) {
       const adminIds = admins.map(admin => admin._id);
       if (adminIds.length > 0) {
-        // for (const adminId of adminIds) {
-        //   const notification = new Notification({
-        //     title: notiTitle,
-        //     content: notiDescription,
-        //     icon: "check-box",
-        //     data: JSON.stringify(notiData),
-        //     user_id: adminId,
-        //   });
-        //   // Save the notification
-        //   await notification.save();
-        // }
-
+       
         const notifications = adminIds.map(adminId => ({
           title: notiTitle,
           content: notiDescription,
@@ -113,46 +117,6 @@ const postAd = async (req, res) => {
         }
       }
     }
-
-
-    // let notification = new Notification({
-    //   title: `Thank you for posting for Ad`,
-    //   content: `Thank you for posting for Ad, Your request willbe soon approved by the Admin`,
-    //   icon: "check-box",
-    //   data: JSON.stringify(notiData),
-    //   user_id: postedBy,
-    // });
-    // await notification.save();
-
-
-    // let notiTokens = await FcmToken.find({ user_id: postedBy });
-    // for (let i = 0; i < notiTokens.length; i++) {
-    //   const token = notiTokens[0];
-
-    //   await sendNotification(
-    //     `You've received a new notification "${req.body.name}"`,
-    //     notiData,
-    //     "body",
-    //     token.token
-    //   );
-    // }
-    // let notiData = {};
-    // let notification = new Notification({
-    //   title: `Thank you for posting for Ad`,
-    //   content: `Thank you for posting for Ad, Your request willbe soon approved by the Admin`,
-    //   icon: "check-box",
-    //   data: JSON.stringify(notiData),
-    //   user_id: postedBy,
-    // });
-    // await notification.save();
-    // let token = "f52kNgseRxmvAJmqluDkXd:APA91bEJllxd4DEFIZlilK9KjVp4Qk1i0rEHVLiEFtpKuL1dyPqOkoE6w24e0qCR6c1PUU9KQJfQH4ajTFE34p0PUNO9dr2HQ4ImupebmJr9944xQpXntJNUobHiMDe_oWhA69ETbmro"
-    //   await sendNotification(
-    //     `You've received a new notification "${req.body.name}"`,
-    //     "body",
-    //     notiData,
-    //     token
-    //   );
-
 
     return response.success(res, "Ad posted successfully", { newAd });
   } catch (error) {
@@ -393,20 +357,9 @@ const acceptProposal = async (req, res) => {
     ad.isHired = true;
     await ad.save();
 
-    notiTitle = `Admin has accepted your proposal`;
-    notiDescription = `Your contract with ${req.user.name} has started`;
-    // notificationObj = {
-    //   title: notiTitle,
-    // };
-
-    // let notiData = {
-    //   type: "Accepted",
-    //   adId: adId,
-    //   fromUser: req.user._id,
-    //   toUser: proposalToAccept.submittedBy._id,
-    //   description: notiDescription,
-    // };
-
+    let notiTitle = `Admin has accepted your proposal`;
+    let notiDescription = `Your contract with ${req.user.name} has started`;
+ 
     let notiData = {
       id: adId,
       pagename: '',

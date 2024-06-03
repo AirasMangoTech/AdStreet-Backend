@@ -34,6 +34,51 @@ const createBlog = async (req, res) => {
     });
 
     await blog.save();
+
+    const notiTitle = 'New Blog';
+    const notiDescription = req.user.name + ' posted a new blog';
+
+    let notiData = {
+      id: blog.id,
+      pagename: type,
+      title: notiTitle,
+      body: notiDescription
+    };
+
+    const admins = await Users.find({ roles: 'ADMIN' }).select('_id');
+    if (admins.length > 0) {
+      const adminIds = admins.map(admin => admin._id);
+      if(adminIds.length > 0)
+        {
+          const notifications = adminIds.map(adminId => ({
+            title: notiTitle,
+            content: notiDescription,
+            icon: "check-box",
+            data: JSON.stringify(notiData),
+            user_id: adminId,
+          }));
+
+          await Notification.insertMany(notifications);
+
+          const tokens = await FcmToken.find({ user_id: { $in: adminIds } }).select('token');
+  
+          if (tokens.length > 0) {
+            const tokenList = tokens.map(tokenDoc => tokenDoc.token);
+  
+            if (tokenList.length > 0) {
+              await sendNotification(
+                notiTitle,
+                notiDescription,
+                notiData,
+                tokenList
+              );
+            }
+  
+          }
+
+        }
+    }
+
     const message = isApproved
       ? "Blog created and approved successfully"
       : "Blog created and pending approval";

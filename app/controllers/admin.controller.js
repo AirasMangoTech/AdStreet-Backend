@@ -192,24 +192,47 @@ const approveAd = async (req, res) => {
     ad.isApproved = isApproved;
     await ad.save();
 
-    let notiData = {};
-    let notification = new Notification({
-      title: `Thank you for posting for Ad`,
-      content: `Thank you for posting for Ad, Your request is approved by the Admin`,
-      icon: "check-box",
-      data: JSON.stringify(notiData),
-      user_id: ad.user_id,
-    });
-    await notification.save();
-    let notiTokens = await FcmToken.find({ user_id: req.user.id });
-    for (let i = 0; i < notiTokens.length; i++) {
-      const token = notiTokens[0];
+    let notiTitle_user = 'Job Approved';
+    let notiDescription_user = 'Thank you for posting the job. Your request has been approved by the admin.';
 
-      await sendNotification(
-        `You've received a new notification "${req.body.name}"`,
-        notiData,
-        token.token
-      );}
+    if(!isApproved)
+      {
+        notiTitle_user = 'Job Rejected';
+        notiDescription_user = 'Your request to post a job has been rejected by the admin.';
+      }
+
+    let notiData_user = {
+      id: ad.id,
+      pagename: '',
+      title: notiTitle_user,
+      body: notiDescription_user
+    };
+
+    let notification_user = new Notification({
+      title: notiTitle_user,
+      content: notiDescription_user,
+      icon: "check-box",
+      data: JSON.stringify(notiData_user),
+      user_id: ad.postedBy.id
+    });
+    await notification_user.save();
+
+    let notiTokens_user = await FcmToken.find({ user_id: ad.postedBy.id });
+
+    if (notiTokens_user.length > 0) {
+
+      const tokenList_user = notiTokens_user.map(tokenDoc => tokenDoc.token);
+
+      if (tokenList_user.length > 0) {
+        await sendNotification(
+          notiTitle_user,
+          notiDescription_user,
+          notiData_user,
+          tokenList_user
+        );
+      }
+
+    }
 
     return response.success(res, "Ad approval status updated", { ad });
   } catch (error) {
@@ -413,28 +436,55 @@ const approveBlog = async (req, res) => {
     if (!blog) {
       return response.notFound(res, "Blog not found");
     }
+
+    const { isApproved } = req.body;
+
     const userId = blog.user_id;
-    blog.isApproved = true;
+    blog.isApproved = isApproved;
     await blog.save();
     
-    let notiData = {};
-    let notification = new Notification({
-      title: `Thank you for posting for Blog`,
-      content: `Thank you for posting for Blog, Your request is approved by the Admin`,
-      icon: "check-box",
-      data: JSON.stringify(notiData),
-      user_id: userId,
-    });
-    await notification.save();
-    let notiTokens = await FcmToken.find({ user_id: userId });
-    for (let i = 0; i < notiTokens.length; i++) {
-      const token = notiTokens[0];
+    let notiTitle_user = 'Job Approved';
+    let notiDescription_user = 'Thank you for posting the blog. Your request has been approved by the admin.';
 
-      await sendNotification(
-        `You've received a new notification "${req.body.name}"`,
-        notiData,
-        token.token
-      );}
+    if(!isApproved)
+      {
+        notiTitle_user = 'Job Rejected';
+        notiDescription_user = 'Your request to post a blog has been rejected by the admin.';
+      }
+      
+      let notiData_user = {
+        id: blog.id,
+        pagename: '',
+        title: notiTitle_user,
+        body: notiDescription_user
+      };
+  
+      let notification_user = new Notification({
+        title: notiTitle_user,
+        content: notiDescription_user,
+        icon: "check-box",
+        data: JSON.stringify(notiData_user),
+        user_id: userId
+      });
+      await notification_user.save();
+  
+      let notiTokens_user = await FcmToken.find({ user_id: userId });
+  
+      if (notiTokens_user.length > 0) {
+  
+        const tokenList_user = notiTokens_user.map(tokenDoc => tokenDoc.token);
+  
+        if (tokenList_user.length > 0) {
+          await sendNotification(
+            notiTitle_user,
+            notiDescription_user,
+            notiData_user,
+            tokenList_user
+          );
+        }
+  
+      }
+
     return response.success(res, "Blog approved successfully", { blog });
   } catch (error) {
     console.error(`Error approving blog: ${error}`);

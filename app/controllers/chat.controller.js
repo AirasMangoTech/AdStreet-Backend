@@ -271,8 +271,8 @@ const getMessages = async(req,res) => {
     chatId = req.query.chatId, 
     userId= req.query.userId,
     adId  = req.query.adId,
-    pageNumber= 1;
-    pageSize = 20;
+    pageNumber= parseInt(req.query.pageNumber) || 1;
+    pageSize = parseInt(req.query.pageSize) || 20;
     const skip = (pageNumber - 1) * parseInt(pageSize);
 
     const result = await ChatModel.aggregate([
@@ -606,24 +606,31 @@ const getChats = async (req, res) => {
       { $unwind: { path: "$sender", preserveNullAndEmptyArrays: true } }, // Unwind the sender array
       {
         $addFields: {
-          "lastMessage.firstName": {
+          // "lastMessage.firstName": {
+          //   $cond: [
+          //     { $ne: ["$sender", null] },
+          //     { $concat: ["$sender.firstName"] },
+          //     "Unknown User",
+          //   ],
+          // },
+          // "lastMessage.lastName": {
+          //   $cond: [
+          //     { $ne: ["$sender", null] },
+          //     { $concat: ["$sender.lastName"] },
+          //     "Unknown User",
+          //   ],
+          // },
+          "lastMessage.Name": {
             $cond: [
               { $ne: ["$sender", null] },
-              { $concat: ["$sender.firstName"] },
-              "Unknown User",
-            ],
-          },
-          "lastMessage.lastName": {
-            $cond: [
-              { $ne: ["$sender", null] },
-              { $concat: ["$sender.lastName"] },
+              { $concat: ["$sender.name"] },
               "Unknown User",
             ],
           },
           "lastMessage.photo": {
             $cond: [
               { $ne: ["$sender", null] },
-              { $concat: ["$sender.photo"] },
+              { $concat: ["$sender.image"] },
               "Unknown User",
             ],
           },

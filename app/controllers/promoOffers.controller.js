@@ -23,7 +23,7 @@ exports.getAllPromos = async (req, res) => {
     .skip(skip)
     .limit(limit);
 
-    const totalPromos = await FreshLeaks.countDocuments(query);
+    const totalPromos = await Promo.countDocuments(query);
     const totalPages = Math.ceil(totalPromos / limit);
 
     return response.success(res, "Promos retrieved successfully", {
