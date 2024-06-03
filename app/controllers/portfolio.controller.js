@@ -10,7 +10,7 @@ const createPortfolio = async (req, res) => {
     }
 
     const newPortfolio = new Portfolio({
-      userId: req.user._id,
+      userId,
       projectUrl,
       image: req.body.imageUrl,
       title,

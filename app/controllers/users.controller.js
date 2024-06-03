@@ -153,6 +153,25 @@ const login = async (req, res) => {
   }
 };
 
+const logout = async (req, res) => {
+  try {
+    const { fcmToken, user_id } = req.body;
+    
+    const deletedToken = await FcmToken.deleteMany({ 
+      token: fcmToken, 
+      user_id: user_id 
+    });
+
+    return response.success(res, "Logout Successful", { });
+    
+  } catch (error) {
+    // Log the error and return a server error response
+    console.log(error);
+    logger.error(`ip: ${req.ip},url: ${req.url},error:${error.stack}`);
+    return response.serverError(res, "Something bad happened! Try Again Later");
+  }
+};
+
 // const retrieveDataForRole = async (req, res) => {
 //   try {
 //     const user = await User.findById(req.user.id);
@@ -273,7 +292,7 @@ const getUser = async (req, res) => {
     
     const { user_id } = req.query;
 
-    const user = await User.findById(user_id).select('name email phone_Number roles about');
+    const user = await User.findById(user_id).select('name email phone_Number roles about image');
     
     if (!user) {
       return response.notFound(
@@ -298,7 +317,7 @@ const updateUser = async (req, res) => {
 
     const user = await User.findByIdAndUpdate(id, req.body, {
       new: true,
-    }).select('name email phone_Number roles about');
+    }).select('name email phone_Number roles about image');
     
     if (!user) {
       return response.notFound(
@@ -365,6 +384,7 @@ const getWalletHistory = async (req, res) => {
 module.exports = {
   signup,
   login,
+  logout,
   getAllUsers,
   getWalletHistory,
   getUser,
