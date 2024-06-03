@@ -4,6 +4,7 @@ const { ObjectId } = require("mongodb");
 const logger = require("../logger");
 require("dotenv").config();
 const FcmToken = require("../models/fcmTokens");
+const Users = require("../models/users");
 
 const sendNotification = require("../utils/sendNotifications");
 
@@ -90,13 +91,16 @@ module.exports.updateNotificationStatus = async (req, res) => {
 
 module.exports.sendNotification = async (req, res) => {
   try {
-    
+
     let notiData = {};
-    
+
+    const Admins = await Users.find({ roles: 'ADMIN' });
+    const adminIds = Admins.map(admin => admin._id);
+
     let notiTokens = await FcmToken.find({ user_id: req.user.id });
-   
-    let token = ["fowWJsMhR5CrpvuxR7m7mp:APA91bFxUI-S74kexX4Xc1SqBTL_8PbXq8JIq1KJsAQILTpvYC1NfukWuF5KmH2c3KgUZ_gBD53bA2B3T6lg38yo94TIXhZalcC7alMphDcB8WbM8Jp0eQ-Y7jqcyuu9VMbVW-Wy3JwJ"];
-    
+
+    let token = "fowWJsMhR5CrpvuxR7m7mp:APA91bFxUI-S74kexX4Xc1SqBTL_8PbXq8JIq1KJsAQILTpvYC1NfukWuF5KmH2c3KgUZ_gBD53bA2B3T6lg38yo94TIXhZalcC7alMphDcB8WbM8Jp0eQ-Y7jqcyuu9VMbVW-Wy3JwJ";
+
     await sendNotification(
       `You've received a new notification`,
       "body",
@@ -105,7 +109,7 @@ module.exports.sendNotification = async (req, res) => {
     );
 
     return response.success(res, "Notification send successfully", {
-      'notification' : '',
+      'notification': '',
     });
   } catch (error) {
     console.log(error);

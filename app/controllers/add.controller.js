@@ -36,7 +36,7 @@ const postAd = async (req, res) => {
       jobDuration,
       imageUrl,
       links,
-      
+
       valid_till,
       featured,
     } = req.body;
@@ -56,28 +56,86 @@ const postAd = async (req, res) => {
     });
 
     await newAd.save();
-    const postedBy = req.user.id;
-    let notiData = {};
-    let notification = new Notification({
-      title: `Thank you for posting for Ad`,
-      content: `Thank you for posting for Ad, Your request willbe soon approved by the Admin`,
-      icon: "check-box",
-      data: JSON.stringify(notiData),
-      user_id: postedBy,
-    });
-    await notification.save();
-    let notiTokens = await FcmToken.find({ user_id: postedBy });
-    for (let i = 0; i < notiTokens.length; i++) {
-      const token = notiTokens[0];
 
-   //  let token = "f52kNgseRxmvAJmqluDkXd:APA91bEJllxd4DEFIZlilK9KjVp4Qk1i0rEHVLiEFtpKuL1dyPqOkoE6w24e0qCR6c1PUU9KQJfQH4ajTFE34p0PUNO9dr2HQ4ImupebmJr9944xQpXntJNUobHiMDe_oWhA69ETbmro"
-      await sendNotification(
-        `You've received a new notification "${req.body.name}"`,
-        notiData,
-        "body",
-        token.token
-      );
+    const postedBy = req.user.name;
+
+    const notiTitle = 'New Job';
+    const notiDescription = postedBy + ' posted a new job';
+
+    let notiData = {
+      id: newAd.id,
+      pagename: '',
+      title: notiTitle,
+      body: notiDescription
+    };
+
+    const admins = await Users.find({ roles: 'ADMIN' }).select('_id');
+    if (admins.length > 0) {
+      const adminIds = admins.map(admin => admin._id);
+      if (adminIds.length > 0) {
+        // for (const adminId of adminIds) {
+        //   const notification = new Notification({
+        //     title: notiTitle,
+        //     content: notiDescription,
+        //     icon: "check-box",
+        //     data: JSON.stringify(notiData),
+        //     user_id: adminId,
+        //   });
+        //   // Save the notification
+        //   await notification.save();
+        // }
+
+        const notifications = adminIds.map(adminId => ({
+          title: notiTitle,
+          content: notiDescription,
+          icon: "check-box",
+          data: JSON.stringify(notiData),
+          user_id: adminId,
+        }));
+
+        await Notification.insertMany(notifications);
+
+        const tokens = await FcmToken.find({ user_id: { $in: adminIds } }).select('token');
+
+        if (tokens.length > 0) {
+          
+          const tokenList = tokens.map(tokenDoc => tokenDoc.token);
+
+          if (tokenList.length > 0) {
+            await sendNotification(
+              notiTitle,
+              notiDescription,
+              notiData,
+              tokenList
+            );
+          }
+
+        }
+      }
     }
+
+
+    // let notification = new Notification({
+    //   title: `Thank you for posting for Ad`,
+    //   content: `Thank you for posting for Ad, Your request willbe soon approved by the Admin`,
+    //   icon: "check-box",
+    //   data: JSON.stringify(notiData),
+    //   user_id: postedBy,
+    // });
+    // await notification.save();
+
+
+    // let notiTokens = await FcmToken.find({ user_id: postedBy });
+    // for (let i = 0; i < notiTokens.length; i++) {
+    //   const token = notiTokens[0];
+
+    //   await sendNotification(
+    //     `You've received a new notification "${req.body.name}"`,
+    //     notiData,
+    //     "body",
+    //     token.token
+    //   );
+    // }
     // let notiData = {};
     // let notification = new Notification({
     //   title: `Thank you for posting for Ad`,
@@ -94,6 +152,8 @@ const postAd = async (req, res) => {
     //     notiData,
     //     token
     //   );
+
+
     return response.success(res, "Ad posted successfully", { newAd });
   } catch (error) {
     console.error(`Error posting ad: ${error}`);
@@ -236,7 +296,7 @@ const getAllAds = async (req, res) => {
           isActivated: 1,
         },
       },
-      { $sort: {  featured: -1, createdAt: -1 } },
+      { $sort: { featured: -1, createdAt: -1 } },
       { $skip: skip },
       { $limit: limit },
     ]);
@@ -276,7 +336,7 @@ const GetAdddetails = async (req, res) => {
       submittedBy: userId,
       adId: adDetails._id,
     });
-    
+
     console.log(proposal);
     // Check if the user has already applied for this proposal
     let userApplied = false;
@@ -287,7 +347,7 @@ const GetAdddetails = async (req, res) => {
     const adDetailsWithAppliedFlag = {
       ...{ adDetails },
       applied: userApplied,
-      proposalCount: proposalCount, 
+      proposalCount: proposalCount,
     };
     return response.success(res, "Ad details retrieved successfully", {
       adDetails: adDetailsWithAppliedFlag,
@@ -339,12 +399,19 @@ const acceptProposal = async (req, res) => {
       title: notiTitle,
     };
 
+    // let notiData = {
+    //   type: "Accepted",
+    //   adId: adId,
+    //   fromUser: req.user._id,
+    //   toUser: proposalToAccept.submittedBy._id,
+    //   description: notiDescription,
+    // };
+
     let notiData = {
-      type: "Accepted",
-      adId: adId,
-      fromUser: req.user._id,
-      toUser: proposalToAccept.submittedBy._id,
-      description: notiDescription,
+      id: adId,
+      pagename: '',
+      title: notiTitle,
+      body: notiDescription
     };
 
     let notification = new Notification({
@@ -539,7 +606,7 @@ const updateAdStatus = async (req, res) => {
       let notiTokens_user = await FcmToken.find({ user_id: ad.hired_user.id });
       for (let i = 0; i < notiTokens_user.length; i++) {
         const token_user = notiTokens_user[0];
-  
+
         await sendNotification(
           `You've received a new notification "${req.body.name}"`,
           notiData_user,

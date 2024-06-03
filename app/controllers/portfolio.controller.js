@@ -58,7 +58,7 @@ const updatePortfolio = async (req, res) => {
       );
     }
 
-    return response.success(res, "All portfolios retrieved successfully", {
+    return response.success(res, "Portfolio updated successfully", {
       portfolio,
     });
   } catch (error) {
