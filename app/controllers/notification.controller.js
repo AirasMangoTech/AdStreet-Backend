@@ -95,12 +95,12 @@ module.exports.sendNotification = async (req, res) => {
     
     let notiTokens = await FcmToken.find({ user_id: req.user.id });
    
-    let token = "e2hnwYxeSz7m--c0LjdHry:APA91bEHD8kSyK6beGloSM2XOrmmhw-4ukVQAk1KSd_5bb-8CXB0sYc2ywraJqNFU1hk8ykG9hTWy8EX6i75yyB0X6jLg3-JnbMKZOuWhZDvb7cUQ5b5ogTcpZVAwvhDYZ3x8mTNfBeI";
+    let token = ["fowWJsMhR5CrpvuxR7m7mp:APA91bFxUI-S74kexX4Xc1SqBTL_8PbXq8JIq1KJsAQILTpvYC1NfukWuF5KmH2c3KgUZ_gBD53bA2B3T6lg38yo94TIXhZalcC7alMphDcB8WbM8Jp0eQ-Y7jqcyuu9VMbVW-Wy3JwJ"];
     
     await sendNotification(
       `You've received a new notification`,
-      notiData,
       "body",
+      notiData,
       token
     );
 

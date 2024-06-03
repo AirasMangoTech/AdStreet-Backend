@@ -7,22 +7,28 @@ const sendNotification = async (title, body, data, token) => {
         title: title,
         body: body,
       },
-      token: token,
+      //token: token,
       data: { obj: JSON.stringify(data) },
     };
-    await firebase
-      .messaging()
-      .send(payload)
-      .then((response) => {
-        console.log(response)
-      })
-      .catch((error) => {
-        console.log(error)
-
-      });
-      console.log("im running")
-    return true;
     
+    
+    // await firebase
+    //   .messaging()
+    //   .send(payload)
+    //   .then((response) => {
+    //     console.log('FireBase Response: ' + response)
+    //   })
+    //   .catch((error) => {
+    //     console.log(error)
+
+    //   });
+
+    const response = await firebase.messaging().sendToDevice(token, payload);
+    console.log('Firebase Response:', response);
+
+    console.log("im running")
+    return true;
+
   } catch (error) {
     return error;
   }

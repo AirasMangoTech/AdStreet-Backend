@@ -45,15 +45,16 @@ const getAllPortfolio = async (req, res) => {
 
 const updatePortfolio = async (req, res) => {
   try {
+    const { id } = req.body;
 
-    const portfolio = await Portfolio.findByIdAndUpdate(req.params.id, req.body, {
+    const portfolio = await Portfolio.findByIdAndUpdate(id, req.body, {
       new: true,
     });
     
     if (!portfolio) {
       return response.notFound(
         res,
-        `No portfolio was found with the id of ${req.params.id}`
+        `Portfolio not found`
       );
     }
 
