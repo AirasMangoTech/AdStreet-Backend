@@ -98,7 +98,7 @@ const postAd = async (req, res) => {
         const tokens = await FcmToken.find({ user_id: { $in: adminIds } }).select('token');
 
         if (tokens.length > 0) {
-          
+
           const tokenList = tokens.map(tokenDoc => tokenDoc.token);
 
           if (tokenList.length > 0) {
@@ -393,11 +393,11 @@ const acceptProposal = async (req, res) => {
     ad.isHired = true;
     await ad.save();
 
-    notiTitle = `${req.user.name} has acceptd your proposal`;
+    notiTitle = `Admin has accepted your proposal`;
     notiDescription = `Your contract with ${req.user.name} has started`;
-    notificationObj = {
-      title: notiTitle,
-    };
+    // notificationObj = {
+    //   title: notiTitle,
+    // };
 
     // let notiData = {
     //   type: "Accepted",
@@ -417,7 +417,8 @@ const acceptProposal = async (req, res) => {
     let notification = new Notification({
       title: notiTitle,
       content: notiDescription,
-      type: "Accepted",
+      //type: "Accepted",
+      icon: "check-box",
       data: JSON.stringify(notiData),
       user_id: proposalToAccept.submittedBy._id,
     });
@@ -425,10 +426,12 @@ const acceptProposal = async (req, res) => {
     await notification.save();
     let notiToken = await FcmToken.find({ user_id: proposalToAccept.submittedBy._id });
     if (notiToken.length > 0) {
-      const token = notiToken[0];
-      await sendNotification(notiTitle, notiDescription, notiData, token.token);
-    }
+      //const token = notiToken[0];
 
+      const tokenList = notiToken.map(tokenDoc => tokenDoc.token);
+
+      await sendNotification(notiTitle, notiDescription, notiData, tokenList);
+    }
 
     return response.success(res, "Proposal accepted successfully", {
       proposalToAccept,
@@ -585,7 +588,7 @@ const updateAdStatus = async (req, res) => {
       await user_wallet.save();
 
       let escrow = new escrowAccount({
-        user: ad.postedBy.id,
+        user: ad.hired_user.id,
         ad: ad.id,
         cr: 0,
         dr: ad.budget,
@@ -594,50 +597,89 @@ const updateAdStatus = async (req, res) => {
       });
       await escrow.save();
 
-      let notiData_user = {};
+      const notiTitle_user = 'Amount credited';
+      const notiDescription_user = 'Amount credited to your wallet for completing the job.';
+
+      let notiData_user = {
+        id: adId,
+        pagename: '',
+        title: notiTitle_user,
+        body: notiDescription_user
+      };
+
       let notification_user = new Notification({
-        title: `Amount credited to your wallet for completing the job.`,
-        content: `Amount credited to your wallet for completing the job.`,
+        title: notiTitle_user,
+        content: notiDescription_user,
         icon: "check-box",
         data: JSON.stringify(notiData_user),
         user_id: ad.hired_user.id
       });
       await notification_user.save();
+
       let notiTokens_user = await FcmToken.find({ user_id: ad.hired_user.id });
-      for (let i = 0; i < notiTokens_user.length; i++) {
-        const token_user = notiTokens_user[0];
 
-        await sendNotification(
-          `You've received a new notification "${req.body.name}"`,
-          notiData_user,
-          token_user.token
-        );
+      if (notiTokens_user.length > 0) {
+
+        const tokenList_user = notiTokens_user.map(tokenDoc => tokenDoc.token);
+
+        if (tokenList_user.length > 0) {
+          await sendNotification(
+            notiTitle_user,
+            notiDescription_user,
+            notiData_user,
+            tokenList_user
+          );
+        }
+
       }
-
     }
 
     const adResponse = await AdResponse.findById(responseId);
+    const notiTitle = 'Job Completed';
+    const notiDescription = 'Job status updated to completed';
 
-    let notiData = {};
-    let notification = new Notification({
-      title: `Ad status updated to completed`,
-      content: `Ad status updated to completed`,
-      icon: "check-box",
-      data: JSON.stringify(notiData),
-      user_id: ad.hired_user
-    });
-    await notification.save();
-    let notiTokens = await FcmToken.find({ user_id: req.user.id });
-    for (let i = 0; i < notiTokens.length; i++) {
-      const token = notiTokens[0];
+    let notiData = {
+      id: adId,
+      pagename: '',
+      title: notiTitle,
+      body: notiDescription
+    };
 
-      await sendNotification(
-        `You've received a new notification "${req.body.name}"`,
-        notiData,
-        token.token
-      );
+    const admins = await Users.find({ roles: 'ADMIN' }).select('_id');
+    if (admins.length > 0) {
+      const adminIds = admins.map(admin => admin._id);
+      if(adminIds.length > 0)
+        {
+          const notifications = adminIds.map(adminId => ({
+            title: notiTitle,
+            content: notiDescription,
+            icon: "check-box",
+            data: JSON.stringify(notiData),
+            user_id: adminId,
+          }));
+
+          await Notification.insertMany(notifications);
+
+          const tokens = await FcmToken.find({ user_id: { $in: adminIds } }).select('token');
+  
+          if (tokens.length > 0) {
+  
+            const tokenList = tokens.map(tokenDoc => tokenDoc.token);
+  
+            if (tokenList.length > 0) {
+              await sendNotification(
+                notiTitle,
+                notiDescription,
+                notiData,
+                tokenList
+              );
+            }
+  
+          }
+
+        }
     }
-
+    
     return response.success(res, "Ad status updated successfully", {
       ad,
       responseMessage: adResponse.name,
