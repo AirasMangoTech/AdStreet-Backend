@@ -10,6 +10,7 @@ const { ROLE_IDS } = require("../utils/utility");
 const mongoose = require("mongoose");
 const moment = require("moment");
 const wallet = require("../models/wallet");
+const paymentMethod = require("../models/paymentMethod");
 
 const postAd = async (req, res) => {
   if (!req.user) {
