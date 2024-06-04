@@ -16,18 +16,20 @@ const postAd = async (req, res) => {
   if (!req.user) {
     return response.forbidden(res, "User not authenticated", user);
   }
-  const user = await Users.findById(req.user.id);
-  if (
-    !user ||
-    (req.user.role_id !== ROLE_IDS.BRAND_COMPANY &&
-      req.user.role_id !== ROLE_IDS.AGENCY)
-  ) {
-    return response.forbidden(
-      res,
-      "Only users with the role of company or agency can post Ads",
-      403
-    );
-  }
+  
+  // const user = await Users.findById(req.user.id);
+  // if (
+  //   !user ||
+  //   (req.user.role_id !== ROLE_IDS.BRAND_COMPANY &&
+  //     req.user.role_id !== ROLE_IDS.AGENCY)
+  // ) {
+  //   return response.forbidden(
+  //     res,
+  //     "Only users with the role of company or agency can post Ads",
+  //     403
+  //   );
+  // }
+
   try {
     const {
       title,

@@ -23,19 +23,19 @@ const postProposal = async (req, res) => {
       );
     }
 
-    const user = await Users.findById(req.user.id);
-    //console.log(req.user.role_id !== ROLE_IDS.INDIVIDUAL);
-    console.log(user.roles);
-    if (
-      !user ||
-      (user.roles !== ROLE_IDS.INDIVIDUAL && user.roles !== ROLE_IDS.AGENCY)
-    ) {
-      return response.forbidden(
-        res,
-        "Only users with the role of individual or agency can post proposals",
-        403
-      );
-    }
+    // const user = await Users.findById(req.user.id);
+    // //console.log(req.user.role_id !== ROLE_IDS.INDIVIDUAL);
+    // console.log(user.roles);
+    // if (
+    //   !user ||
+    //   (user.roles !== ROLE_IDS.INDIVIDUAL && user.roles !== ROLE_IDS.AGENCY)
+    // ) {
+    //   return response.forbidden(
+    //     res,
+    //     "Only users with the role of individual or agency can post proposals",
+    //     403
+    //   );
+    // }
 
     if (!req.body.content || !req.body.budget || !req.body.jobDuration) {
       return response.badRequest(res, "Missing required fields", 400);
