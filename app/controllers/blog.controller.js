@@ -84,8 +84,9 @@ const createBlog = async (req, res) => {
     }
 
     const message = isApproved
-      ? "Blog created and approved successfully"
-      : "Blog created and pending approval";
+      //? "Blog created and approved successfully"
+      ? "Your blog has been approved."
+      : "You will be notified once your blog has been approved.";
     return response.success(res, message, { blog });
   } catch (error) {
     console.error(error); // Logging the error for debugging
@@ -292,8 +293,6 @@ const getAllBlogs = async (req, res) => {
     return response.authError(res, "Something bad happened");
   }
 };
-
-
 
 const updateBlog = async (req, res) => {
   try {

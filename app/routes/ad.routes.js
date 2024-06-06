@@ -2,13 +2,15 @@ const express = require("express");
 const verifyToken = require("../middleware/auth");
 const ad = require("../controllers/add.controller");
 const ad_route = express.Router();
-const { handleImageUpload, handleFileUpload } = require('../controllers/app.controller');
+const { handleImageUpload, handleFileUpload, downloadFile } = require('../controllers/app.controller');
 const {upload} = require('../utils/imageUpload');
 const {uploadFiles}= require('../utils/fileUpload');
 
 ad_route.post('/uploadImage',[ upload.single('image')], handleImageUpload);
 //upload file
-ad_route.post('/uploadFiles',[uploadFiles.single('file')], handleFileUpload);        
+ad_route.post('/uploadFiles',[uploadFiles.single('file')], handleFileUpload);
+//download file
+ad_route.get('/download', downloadFile);
 //create an add
 ad_route.post('/postAd', [verifyToken], ad.postAd);
 // filter of user, title and category

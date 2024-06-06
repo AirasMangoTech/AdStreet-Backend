@@ -2,6 +2,7 @@ const Ad = require("../models/ad");
 const Proposal = require("../models/proposals");
 const Notification = require("../models/notifications");
 const AdResponse = require("../models/responseAd");
+const AdPermission = require("../models/adPermission");
 const Users = require("../models/users");
 const sendNotification = require("../utils/sendNotifications");
 const FcmToken = require("../models/fcmTokens");
@@ -16,7 +17,7 @@ const postAd = async (req, res) => {
   if (!req.user) {
     return response.forbidden(res, "User not authenticated", user);
   }
-  
+
   // const user = await Users.findById(req.user.id);
   // if (
   //   !user ||
@@ -91,7 +92,7 @@ const postAd = async (req, res) => {
     if (admins.length > 0) {
       const adminIds = admins.map(admin => admin._id);
       if (adminIds.length > 0) {
-       
+
         const notifications = adminIds.map(adminId => ({
           title: notiTitle,
           content: notiDescription,
@@ -362,7 +363,7 @@ const acceptProposal = async (req, res) => {
 
     let notiTitle = `Admin has accepted your proposal`;
     let notiDescription = `Your contract with ${req.user.name} has started`;
- 
+
     let notiData = {
       id: adId,
       pagename: '',
@@ -604,38 +605,37 @@ const updateAdStatus = async (req, res) => {
     const admins = await Users.find({ roles: 'ADMIN' }).select('_id');
     if (admins.length > 0) {
       const adminIds = admins.map(admin => admin._id);
-      if(adminIds.length > 0)
-        {
-          const notifications = adminIds.map(adminId => ({
-            title: notiTitle,
-            content: notiDescription,
-            icon: "check-box",
-            data: JSON.stringify(notiData),
-            user_id: adminId,
-          }));
+      if (adminIds.length > 0) {
+        const notifications = adminIds.map(adminId => ({
+          title: notiTitle,
+          content: notiDescription,
+          icon: "check-box",
+          data: JSON.stringify(notiData),
+          user_id: adminId,
+        }));
 
-          await Notification.insertMany(notifications);
+        await Notification.insertMany(notifications);
 
-          const tokens = await FcmToken.find({ user_id: { $in: adminIds } }).select('token');
-  
-          if (tokens.length > 0) {
-  
-            const tokenList = tokens.map(tokenDoc => tokenDoc.token);
-  
-            if (tokenList.length > 0) {
-              await sendNotification(
-                notiTitle,
-                notiDescription,
-                notiData,
-                tokenList
-              );
-            }
-  
+        const tokens = await FcmToken.find({ user_id: { $in: adminIds } }).select('token');
+
+        if (tokens.length > 0) {
+
+          const tokenList = tokens.map(tokenDoc => tokenDoc.token);
+
+          if (tokenList.length > 0) {
+            await sendNotification(
+              notiTitle,
+              notiDescription,
+              notiData,
+              tokenList
+            );
           }
 
         }
+
+      }
     }
-    
+
     return response.success(res, "Ad status updated successfully", {
       ad,
       responseMessage: adResponse.name,
@@ -720,7 +720,28 @@ const updateFeatureStatus = async (req, res) => {
   }
 };
 
+const getPermissions = async (req, res) => {
 
+  try {
+    const role = req.query.role;
+
+    const permission = await AdPermission.find({ role: role });
+    if (!permission) {
+      
+    }
+  else{
+    return response.success(res, "All ads retrieved successfully", {
+      ads,
+      totalAds,
+      totalPages,
+      currentPage: page,
+    });
+  }
+  } catch (error) {
+    console.error(`Error getting all ads: ${error}`);
+    return response.serverError(res, "Error getting all ads");
+  }
+};
 
 console.log();
 module.exports = {
@@ -734,4 +755,5 @@ module.exports = {
   updateFeatureStatus,
   createResponse,
   getAllResponses,
+  getPermissions,
 };

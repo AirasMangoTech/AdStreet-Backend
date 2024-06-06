@@ -12,6 +12,7 @@ const response = require("../utils/responseHelpers");
 const { ROLE_IDS } = require("../utils/utility");
 const mongoose = require("mongoose");
 const moment = require("moment");
+const RegistrationAdpro = require("../models/adpro");
 
 // const getAllAds = async (req, res) => {
 //   try {
@@ -213,11 +214,11 @@ const approveAd = async (req, res) => {
       content: notiDescription_user,
       icon: "check-box",
       data: JSON.stringify(notiData_user),
-      user_id: ad.postedBy.id
+      user_id: ad.postedBy
     });
     await notification_user.save();
 
-    let notiTokens_user = await FcmToken.find({ user_id: ad.postedBy.id });
+    let notiTokens_user = await FcmToken.find({ user_id: ad.postedBy });
 
     if (notiTokens_user.length > 0) {
 
@@ -668,6 +669,24 @@ const getAllAds = async (req, res) => {
   }
 };
 
+const updateAdPro = async (req, res) => {
+  try {
+    const adpro = await RegistrationAdpro.findById(req.params.id);
+    if (!adpro) {
+      return response.notFound(res, "AdPro not found");
+    }
+
+    const { isContacted } = req.body;
+
+    adpro.isContacted = isContacted;
+    await adpro.save();
+    
+    return response.success(res, "AdPro updated successfully", { adpro });
+  } catch (error) {
+    console.error(`Error approving blog: ${error}`);
+    return response.serverError(res, "Error approving blog");
+  }
+};
 
 module.exports = {
   approveAd,
@@ -675,5 +694,6 @@ module.exports = {
   getAllBlogs,
   getAdStreetStats,
   blogCounts,
-  approveBlog
+  approveBlog,
+  updateAdPro
 };

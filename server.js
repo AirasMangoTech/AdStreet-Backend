@@ -20,6 +20,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 app.use("/uploadFiles", express.static(path.join(__dirname, "uploadFiles")));
 //app.use('/uploads', express.static('uploads'));
+
 app.use(
   cors({
     origin: [
