@@ -87,7 +87,8 @@ const blogSchema = new mongoose.Schema({
   },
   isApproved: {
     type: Boolean,
-    default: false,
+    default: null,
+    required: false,
   },
   createdAt: {
     type: Date,

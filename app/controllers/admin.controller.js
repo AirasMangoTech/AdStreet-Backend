@@ -441,6 +441,7 @@ const approveBlog = async (req, res) => {
 
     const userId = blog.user_id;
     blog.isApproved = isApproved;
+    blog.status = isApproved;
     await blog.save();
     
     let notiTitle_user = 'Job Approved';
