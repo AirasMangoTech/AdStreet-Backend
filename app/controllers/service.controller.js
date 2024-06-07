@@ -68,7 +68,7 @@ const getAllServiceTypes = async (req, res) => {
       service.length === 0
         ? "No services found"
         : "services loaded successfully";
-    return response.success(res, message, { service, totalPages, currentPage: page });
+    return response.success(res, message, { service, totalPages, totalServices, currentPage: page });
   } catch (error) {
     console.log(error);
     return response.serverError(res, error.message, "Failed to load Services");

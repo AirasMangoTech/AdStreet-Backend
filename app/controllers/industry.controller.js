@@ -64,7 +64,7 @@ const getAllIndustry = async (req, res) => {
     const totalPages = Math.ceil(totalIndustry / limit);
     
     const message = industry.length === 0 ? "No industry found" : "industry loaded successfully";
-    return response.success(res, message, { industry, totalPages, currentPage: page});
+    return response.success(res, message, { industry, totalPages, totalIndustry, currentPage: page});
     
   } catch (error) {
     console.log(error);
