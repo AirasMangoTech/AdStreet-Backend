@@ -13,6 +13,10 @@ const pSchema = new mongoose.Schema({
     type: Boolean,
     default: true,
   },
+  updatedAt: {
+    type: Date,
+    default: Date.now,
+  },
 });
 
 const AdPermission = mongoose.model("AdPermission", pSchema);

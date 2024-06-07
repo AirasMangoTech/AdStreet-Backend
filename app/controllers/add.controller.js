@@ -723,20 +723,46 @@ const updateFeatureStatus = async (req, res) => {
 const getPermissions = async (req, res) => {
 
   try {
-    const role = req.query.role;
-
-    const permission = await AdPermission.find({ role: role });
-    if (!permission) {
-      
+    let query = {};
+    if (req.query.role) {
+      query.role = req.query.role
     }
-  else{
-    return response.success(res, "All ads retrieved successfully", {
-      ads,
-      totalAds,
-      totalPages,
-      currentPage: page,
+    const permission = await AdPermission.find(query);
+    if (!permission) {
+      return response.notFound(res, "Permission not found");
+    }
+
+    return response.success(res, "Permission details retrieved successfully", {
+      permission
     });
+
+  } catch (error) {
+    console.error(`Error getting all ads: ${error}`);
+    return response.serverError(res, "Error getting all ads");
   }
+};
+
+const updatePermissions = async (req, res) => {
+  try {
+    const { role, isPost, isApply } = req.body;
+
+    if (!role) {
+      return response.notFound(res, "role not found");
+    }
+
+    const permission = await AdPermission.findOne({ role: role });
+    if (!permission) {
+      return response.notFound(res, "Permission not found");
+    }
+
+    permission.isPost = isPost;
+    permission.isApply = isApply;
+    permission.save();
+
+    return response.success(res, "Permission updated successfully", {
+      permission
+    });
+
   } catch (error) {
     console.error(`Error getting all ads: ${error}`);
     return response.serverError(res, "Error getting all ads");
@@ -756,4 +782,5 @@ module.exports = {
   createResponse,
   getAllResponses,
   getPermissions,
+  updatePermissions,
 };
