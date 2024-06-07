@@ -9,7 +9,7 @@ const leaksSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  blogId:{
+  blogId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Blog",
   },
@@ -17,9 +17,13 @@ const leaksSchema = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
-  url:{
-        type: String,
-       // required: true,
+  url: {
+    type: String,
+    // required: true,
+  },
+  isActive: {
+    type: Boolean,
+    default: true
   }
 });
 
