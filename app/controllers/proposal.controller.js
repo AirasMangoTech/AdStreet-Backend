@@ -72,11 +72,11 @@ const postProposal = async (req, res) => {
       content: notiDescription,
       icon: "note-pad",
       data: JSON.stringify(notiData),
-      user_id: Ad.postedBy.id,
+      user_id: Ad.postedBy,
     });
 
     await notification.save();
-    let notiToken = await FcmToken.find({ user_id: Ad.postedBy.id });
+    let notiToken = await FcmToken.find({ user_id: Ad.postedBy });
     if (notiToken.length > 0) {
       const tokenList = notiToken.map(tokenDoc => tokenDoc.token);
       await sendNotification(notiTitle, notiDescription, notiData, tokenList);
