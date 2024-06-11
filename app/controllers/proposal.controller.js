@@ -45,13 +45,12 @@ const postProposal = async (req, res) => {
       return response.notFound(res, "Ad not found", 404);
     }
 
-    const postedBy = Ad.postedBy;
+    const postedBy = ad.postedBy.toString();
     const proposal = new Proposal({
       content: req.body.content,
       budget: req.body.budget,
       jobDuration: req.body.jobDuration,
       submittedBy: req.user.id,
-      postedBy: postedBy,
       adId: adId,
       image: req.body.imageUrl,
     });
@@ -72,11 +71,11 @@ const postProposal = async (req, res) => {
       content: notiDescription,
       icon: "note-pad",
       data: JSON.stringify(notiData),
-      user_id: Ad.postedBy,
+      user_id: ad.postedBy,
     });
 
     await notification.save();
-    let notiToken = await FcmToken.find({ user_id: Ad.postedBy });
+    let notiToken = await FcmToken.find({ user_id: ad.postedBy });
     if (notiToken.length > 0) {
       const tokenList = notiToken.map(tokenDoc => tokenDoc.token);
       await sendNotification(notiTitle, notiDescription, notiData, tokenList);
