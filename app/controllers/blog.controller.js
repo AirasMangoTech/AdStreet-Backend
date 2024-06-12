@@ -202,7 +202,7 @@ const createBlog = async (req, res) => {
 
 const getAllBlogs = async (req, res) => {
   try {
-    let query = {};
+    let query = { status: true };
    
     if (req.query.category !== undefined) {
       const categories = req.query.category.split(",");
