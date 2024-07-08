@@ -73,6 +73,7 @@ const signup = async (req, res) => {
       city: city ? city : null,
       state: state ? state : null,
       additional: additional ? additional : null,
+      user_type: 'normal',
     });
     await newUser.save();
 
@@ -221,7 +222,7 @@ const logout = async (req, res) => {
 
 const getAllUsers = async (req, res) => {
   try {
-    let query = {};
+    let query = { user_type: 'normal' }; 
 
     if (req.query.city) {
       query.city = { $regex: new RegExp(req.query.city, "i") };

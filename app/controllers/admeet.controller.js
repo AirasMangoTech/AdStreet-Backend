@@ -21,6 +21,7 @@ const register = async (req, res) => {
         industry,
         blogId,
         roles: "Individual",
+        user_type: 'admeet',
         expressedInterest
       });
       await newRegistration.save();
@@ -57,7 +58,8 @@ const getAllRegistrations = async (req, res) => {
     if(req.query.blogId){
       query = {blogId: req.query.blogId}
     }
-    const registrations = await Registration.find(query);
+    //const registrations = await Registration.find(query);
+    const registrations = await Interest.find(query);
     return response.success(res, "Registrations fetched successfully", {
       registrations,
     });

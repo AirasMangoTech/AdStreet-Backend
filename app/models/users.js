@@ -91,6 +91,9 @@ const UserSchema = new mongoose.Schema({
     type: String, 
     required: false, 
   },
+  user_type: {
+    type: String,  
+  },
 
   updated_at: Date,
 });
