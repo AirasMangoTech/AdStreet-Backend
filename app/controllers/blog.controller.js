@@ -11,7 +11,7 @@ const sendNotification = require("../utils/sendNotifications");
 
 const createBlog = async (req, res) => {
   try {
-    const { title, content, date, category, type, additional } = req.body;
+    const { title, content, date, category, type, budget, event_type, additional } = req.body;
     // const blogCategory = await BlogCategory.findById(blogId);
     // if (!blogCategory) {
     //   return response.notFound(res, "Invalid Category Id");
@@ -34,7 +34,9 @@ const createBlog = async (req, res) => {
       category: categoryId,
       additional: additional ? additional : null,
       isApproved: isApproved,
-      status // Set based on the user's role
+      status, // Set based on the user's role
+      budget,
+      event_type
     });
 
     await blog.save();
@@ -203,6 +205,10 @@ const createBlog = async (req, res) => {
 const getAllBlogs = async (req, res) => {
   try {
     let query = { status: true };
+
+    if (req.query.id) {
+      query._id = new mongoose.Types.ObjectId(req.query.id);
+    }
    
     if (req.query.category !== undefined) {
       const categories = req.query.category.split(",");
@@ -217,6 +223,11 @@ const getAllBlogs = async (req, res) => {
     if (req.query.type) {
       query.type = { $regex: new RegExp(req.query.type, "i") };
     }
+
+    if (req.query.event_type) {
+      query.event_type = { $regex: new RegExp(req.query.event_type, "i") };
+    }
+
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
     const skipIndex = (page - 1) * limit;

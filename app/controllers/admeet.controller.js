@@ -56,14 +56,21 @@ const getAllRegistrations = async (req, res) => {
   try {
     let query = {}
     if(req.query.blogId){
-      query = {blogId: req.query.blogId}
+      query = {blog: req.query.blogId}
     }
     //const registrations = await Registration.find(query);
-    const registrations = await Interest.find(query);
+    const registrations = await Interest.find(query).populate({
+      path: 'user',
+      select: 'name email phone_Number'
+    });
     return response.success(res, "Registrations fetched successfully", {
       registrations,
     });
   } catch (error) {
+  console.log("🚀 ~ getAllRegistrations ~ error:", error)
+
+    
+
     return response.serverError(
       res,
       "Error fetching registrations",

@@ -16,6 +16,10 @@ const blogSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  budget: {
+    type: Number,
+    required: false,
+  },
   category: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Category",
@@ -40,6 +44,9 @@ const blogSchema = new mongoose.Schema({
   type: {
     type: String,
     required: true,
+  },
+  event_type: {
+    type: String,
   },
   additional: {
     name:{
