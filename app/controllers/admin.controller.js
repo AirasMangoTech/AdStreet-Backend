@@ -248,6 +248,31 @@ const getAllBlogs = async (req, res) => {
     if(req.query.isApproved){
       query.isApproved = req.query.isApproved;
     }
+
+
+    if (req.query.id) {
+      query._id = new mongoose.Types.ObjectId(req.query.id);
+    }
+   
+    if (req.query.category !== undefined) {
+      const categories = req.query.category.split(",");
+      const categoryObjectIDs = categories.map(
+        (category) => new mongoose.Types.ObjectId(category)
+      );
+      query.category = { $in: categoryObjectIDs };
+    }
+    if (req.query.title) {
+      query.title = { $regex: new RegExp(req.query.title, "i") };
+    }
+    if (req.query.type) {
+      query.type = { $regex: new RegExp(req.query.type, "i") };
+    }
+
+    if (req.query.event_type) {
+      query.event_type = { $regex: new RegExp(req.query.event_type, "i") };
+    }
+
+    
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
     const skipIndex = (page - 1) * limit;
@@ -445,12 +470,12 @@ const approveBlog = async (req, res) => {
     blog.status = isApproved;
     await blog.save();
     
-    let notiTitle_user = 'Job Approved';
+    let notiTitle_user = 'Blog Approved';
     let notiDescription_user = 'Thank you for posting the blog. Your request has been approved by the admin.';
 
     if(!isApproved)
       {
-        notiTitle_user = 'Job Rejected';
+        notiTitle_user = 'Blog Rejected';
         notiDescription_user = 'Your request to post a blog has been rejected by the admin.';
       }
       
