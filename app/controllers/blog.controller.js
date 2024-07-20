@@ -206,6 +206,8 @@ const getAllBlogs = async (req, res) => {
   try {
     let query = { status: true };
 
+    const userId = req.user.id;
+
     if (req.query.id) {
       query._id = new mongoose.Types.ObjectId(req.query.id);
     }
@@ -245,7 +247,8 @@ const getAllBlogs = async (req, res) => {
                 "$expr": { 
                   "$and": [ 
                     { "$eq": ["$blog", "$$blogId"] }, 
-                    { "$eq": ["$expressedInterest", true] } 
+                    { "$eq": ["$expressedInterest", true] },
+                    { "$eq": ["$user", userId] }
                   ] 
                 } 
               } 
