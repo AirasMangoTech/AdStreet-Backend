@@ -308,6 +308,110 @@ const getAllBlogs = async (req, res) => {
   }
 };
 
+const getAllBlogsWEB = async (req, res) => {
+  try {
+    let query = { status: true };
+
+
+    if (req.query.id) {
+      query._id = new mongoose.Types.ObjectId(req.query.id);
+    }
+   
+    if (req.query.category !== undefined) {
+      const categories = req.query.category.split(",");
+      const categoryObjectIDs = categories.map(
+        (category) => new mongoose.Types.ObjectId(category)
+      );
+      query.category = { $in: categoryObjectIDs };
+    }
+    if (req.query.title) {
+      query.title = { $regex: new RegExp(req.query.title, "i") };
+    }
+    if (req.query.type) {
+      query.type = { $regex: new RegExp(req.query.type, "i") };
+    }
+
+    if (req.query.event_type) {
+      query.event_type = { $regex: new RegExp(req.query.event_type, "i") };
+    }
+
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skipIndex = (page - 1) * limit;
+
+    // Modify this part to include aggregation for counting interested users
+    const blogsAggregate = await Blog.aggregate([
+      { $match: query },
+      {
+        "$lookup": {
+          "from": "interests",
+          "let": { "blogId": "$_id" },
+          "pipeline": [
+            { 
+              "$match": { 
+                "$expr": { 
+                  "$and": [ 
+                    { "$eq": ["$blog", "$$blogId"] }, 
+                    { "$eq": ["$expressedInterest", true] }
+                  ] 
+                } 
+              } 
+            },
+            { 
+              "$group": { 
+                "_id": "$blog", 
+                "interestCount": { "$sum": 1 } 
+              } 
+            }
+          ],
+          "as": "interestData"
+        }
+      },      
+      {
+        $addFields: {
+          interestCount: { $ifNull: [{ $arrayElemAt: ["$interestData.interestCount", 0] }, 0] }
+        }
+      },
+      {
+        $addFields: {
+          // Projecting the interest boolean value
+          expressedInterest: { $cond: { if: { $gt: ["$interestCount", 0] }, then: true, else: false } }
+        }
+      },
+      { $sort: { createdAt: -1 } },
+      { $skip: skipIndex },
+      { $limit: limit },
+      {
+        $lookup: {
+          from: "categories", 
+          localField: "category",
+          foreignField: "_id",
+          as: "category"
+        }
+      },
+    ]);
+    
+    blogsAggregate.forEach(blog => delete blog.interestData);
+    
+
+    const totalBlogs = await Blog.countDocuments(query);
+    const totalPages = Math.ceil(totalBlogs / limit);
+
+    return response.success(res, "All blogs retrieved successfully", {
+      blogs: blogsAggregate,
+      pageInfo: {
+        currentPage: page,
+        totalPages,
+        totalBlogs,
+        limit,
+      },
+    });
+  } catch (error) {
+    console.error(`Error getting all blogs: ${error}`);
+    return response.authError(res, "Something bad happened");
+  }
+};
+
 const updateBlog = async (req, res) => {
   try {
     const categoryId = req.params.id;
@@ -346,6 +450,7 @@ const deleteBlog = async (req, res) => {
 module.exports = {
   createBlog,
   getAllBlogs,
+  getAllBlogsWEB
   updateBlog,
   deleteBlog,
 };
