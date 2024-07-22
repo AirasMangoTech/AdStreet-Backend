@@ -33,6 +33,8 @@ app.use(
       "http://192.168.18.66:3002",
       "https://adstreet.mangotech-api.com",
       "http://adstreet.axsonstech.com",
+      "http://adstreet.com.pk",
+      "https://adstreet.com.pk",
     ],
   })
 );
