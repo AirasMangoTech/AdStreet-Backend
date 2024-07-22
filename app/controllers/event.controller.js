@@ -6,7 +6,7 @@ const response = require("../utils/responseHelpers");
 // For Event Dragon
 const createEventDragon = async (req, res) => {
     try {
-        const { name, email, phoneNumber, companyName, noOfTables, category, price } = req.body;
+        const { name, email, phoneNumber, companyName, noOfTables, noOfSeats, category, price } = req.body;
 
         const event = new eventDragon({
             name,
@@ -14,6 +14,7 @@ const createEventDragon = async (req, res) => {
             phoneNumber,
             companyName,
             noOfTables,
+            noOfSeats,
             category,
             price
         });
@@ -73,7 +74,6 @@ const deleteEventDragon = async (req, res) => {
         return response.badRequest(res, error.message);
     }
 };
-
 
 
 

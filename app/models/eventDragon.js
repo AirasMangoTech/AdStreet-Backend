@@ -16,6 +16,9 @@ const eventDragonSchema = new mongoose.Schema({
     companyName: {
         type: String,
     },
+    noOfSeats: {
+        type: Number,
+    },
     noOfTables: {
         type: Number,
     },
