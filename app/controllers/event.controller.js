@@ -1,7 +1,7 @@
 const eventDragon = require("../models/eventDragon");
 const eventAdvision = require("../models/eventAdvision");
 const response = require("../utils/responseHelpers");
-
+const { sendEventEmail } = require("../utils/sendEventEmail");
 
 // For Event Dragon
 const createEventDragon = async (req, res) => {
@@ -20,6 +20,9 @@ const createEventDragon = async (req, res) => {
         });
 
         await event.save();
+
+        var resp = await sendEventEmail(email, name, "eventDragon");
+
         return response.success(res, "The Event Dragon is successfully created", {
             event,
         });
@@ -93,6 +96,9 @@ const createEventAdvision = async (req, res) => {
         });
 
         await event.save();
+
+        var resp = await sendEventEmail(email, name, "eventAdvision");
+
         return response.success(res, "The Event Advision is successfully created", {
             event,
         });
