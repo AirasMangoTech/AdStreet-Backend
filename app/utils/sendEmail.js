@@ -6,7 +6,8 @@ const sendEmail = async (toEmail ,subject, body) => {
         const info = await transporter.sendMail({
             from: `"ADSTREET" <info@adstreet.com.pk>`,
             to: toEmail,
-            cc: 'sshashmi@adstreet.com.pk', 
+            //cc: 'sshashmi@adstreet.com.pk', 
+            cc: 'sajid.mangotech@gmail.com',
             subject: subject,
             text: subject,
             html: body,
