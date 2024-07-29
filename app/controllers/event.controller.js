@@ -39,7 +39,9 @@ const getAllEventDragon = async (req, res) => {
         const limit = parseInt(req.query.limit) || 10;
         const skip = (page - 1) * limit;
 
-        const events = await eventDragon.find({ isDelete: false }).skip(skip)
+        const events = await eventDragon.find({ isDelete: false })
+        .sort({ createdAt: -1 })
+        .skip(skip)
         .limit(limit);
 
 
@@ -115,7 +117,9 @@ const getAllEventAdvision = async (req, res) => {
         const limit = parseInt(req.query.limit) || 10;
         const skip = (page - 1) * limit;
 
-        const events = await eventAdvision.find({ isDelete: false }).skip(skip)
+        const events = await eventAdvision.find({ isDelete: false })
+        .sort({ createdAt: -1 })
+        .skip(skip)
         .limit(limit);
 
 
