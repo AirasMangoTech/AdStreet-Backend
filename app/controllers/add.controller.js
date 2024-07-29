@@ -146,6 +146,7 @@ const getAllAds = async (req, res) => {
     if (req.query.adId) {
       query._id = new mongoose.Types.ObjectId(req.query.adId);
     }
+    
     if (req.query.category !== undefined) {
       const categories = req.query.category.split(",");
       const categoryObjectIDs = categories.map(
