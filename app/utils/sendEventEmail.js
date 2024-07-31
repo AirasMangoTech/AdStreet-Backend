@@ -49,8 +49,11 @@ const getEmailTemplate = async (event, customerName) => {
                                 <tr>
                                     <td width="30" style="width:30px;"></td>
                                     <td>
-                                        <img src="https://adstreet.mangotech-api.com/uploads/image-1722004805906.png"
-                                            width="200" alt="" style="display: block; border: 0;">
+                                         <img src="https://adstreet.mangotech-api.com/uploads/image-1722004805906.png"
+                                            width="200" alt="" style="display: block; border: 0; float: left;">
+                                            
+                                        <img src="https://adstreet.mangotech-api.com/uploads/image-1722426674263.png"
+                                            width="150" alt="" style="display: block; border: 0; float: right;">
 
                                     </td>
                                     <td width="30" style="width:30px;"></td>
@@ -69,7 +72,7 @@ const getEmailTemplate = async (event, customerName) => {
                                             We are thrilled to extend our heartfelt gratitude to you for registering for
                                             our upcoming award show Dragons of Pakistan on Friday 30th August 2024 at
                                             Pearl Continental Hotel Karachi. The event is staged by AdStreet the
-                                            official Advertising and marketing partners for Dragons of Asia.
+                                            official Advertising and marketing partners for Dragons of Pakistan.
 
                                         <p
                                             style="font-family:'Segoe UI',Roboto,'Helvetica Neue',Arial,'Noto Sans',sans-serif,'Apple Color Emoji','Segoe UI Emoji','Segoe UI Symbol','Noto Color Emoji'; font-size:16px; margin: 0; margin-bottom: 20px; color:#000000;">
