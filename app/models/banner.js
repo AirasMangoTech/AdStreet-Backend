@@ -18,6 +18,10 @@ const bannerSchema = new mongoose.Schema({
     //enum: ["home", "category", "product"],
     default: "home",
   },
+  url: {
+    type: String,
+    // required: true,
+  },
   blog: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Blog",

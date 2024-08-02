@@ -10,6 +10,8 @@ const createBanner = async (req, res) => {
     const banner = new Banner({
       imageUrl: req.body.imageUrl,
       type: req.body.type,
+      url: req.body.url,
+      blog: req.body.blogId,
     });
     await banner.save();
     return response.success(res, "Banner created successfully", { banner });
@@ -25,7 +27,7 @@ const getAllBanners = async (req, res) => {
     if (req.query.type) {
       query.type = req.query.type;
     }
-    const banners = await Banner.find(query);
+    const banners = await Banner.find(query).populate("blog");
     return response.success(res, "Banners retrieved successfully", { banners });
   } catch (err) {
     console.log(err);
@@ -48,7 +50,6 @@ const updateBanner = async (req, res) => {
     return response.serverError(res, `Error updating banner: ${err}`);
   }
 };
-
 // delete banner
 const deleteBanner = async (req, res) => {
   try {
