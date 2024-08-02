@@ -186,7 +186,7 @@ const getEmailTemplate = async (event, customerName) => {
                                             prestige of the evening.
                                             <br /><br />Our team has meticulously planned an agenda that includes thought-provoking keynote sessions, and panel talks, and ample networking opportunities. 
                                             <br /><br />We are confident that your experience will be both inspiring and enriching.
-                                            <br /><br />We are thrilled to host you and look forward to seeing you on July 29th at Pearl Continental Grand Ballroom  starting from 10 am - 2.30 
+                                            <br /><br />We are thrilled to host you and look forward to seeing you on August 29th at Pearl Continental Grand Ballroom  starting from 10:00 am - 2:30 pm. 
 
 
                                             <br /><br /> Should you have any questions or require further assistance, please do not hesitate to reach out to us at [<a style="text-decoration: none; color: #000000;" href="mailto:info@adstreet.com.pk">info@adstreet.com.pk</a>].
