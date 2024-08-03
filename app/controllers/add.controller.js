@@ -531,10 +531,20 @@ const updateAdStatus = async (req, res) => {
       );
     }
 
+    const adResponse = await AdResponse.findById(responseId);
+
+    if(!adResponse)
+    {
+      return response.notFound(res, "Response not found");
+    }
+
+    ad.response = responseId;
     ad.isCompleted = true;
     await ad.save();
 
-    if (ad.isCompleted && ad.isActivated) {
+    const isComplete = adResponse.name.toLowerCase().includes('complete');
+
+    if (ad.isCompleted && ad.isActivated && isComplete) {
       let user_wallet = new wallet({
         user: ad.hired_user.id,
         job: ad.id,
@@ -592,7 +602,7 @@ const updateAdStatus = async (req, res) => {
       }
     }
 
-    const adResponse = await AdResponse.findById(responseId);
+    
     const notiTitle = 'Job Completed';
     const notiDescription = 'Job status updated to completed';
 

@@ -9,7 +9,7 @@ const UserSchema = new mongoose.Schema({
   },
   email: {
     type: String,
-    required: true,
+    //required: true,
     unique: true,
     lowercase: true,
     trim: true,
@@ -77,7 +77,21 @@ const UserSchema = new mongoose.Schema({
       type: String,
     },
   },
-
+  isSocialLogin: {
+    type: Boolean,
+    default: false
+  },
+  socialLogin: {
+    google: {
+      token: String
+    },
+    facebook: {
+      token: String
+    },
+    apple: {
+      token: String
+    }
+  },
   country: {
     type: String,
   },

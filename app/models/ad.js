@@ -66,6 +66,10 @@ const adSchema = new mongoose.Schema({
     ref: "users",
     required: true,
   },
+  response: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "AdResponse",
+  },
   valid_till: {
     type: Date,
     //default: () => moment().endOf('day').toDate();

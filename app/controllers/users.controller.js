@@ -24,6 +24,8 @@ const signup = async (req, res) => {
       city,
       state,
       additional,
+      isSocialLogin,
+      socialLogin,
     } = req.body;
 
     // Validate and process inputs
