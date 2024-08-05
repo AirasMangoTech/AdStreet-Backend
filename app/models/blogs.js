@@ -37,6 +37,12 @@ const blogSchema = new mongoose.Schema({
   date: {
     type: Date,
   },
+  time: {
+    type: String,
+  },
+  venue: {
+    type: String,
+  },
   status: {
     type: Boolean,
     //default: true,
@@ -46,6 +52,9 @@ const blogSchema = new mongoose.Schema({
     required: true,
   },
   event_type: {
+    type: String,
+  },
+  offered_by: {
     type: String,
   },
   additional: {

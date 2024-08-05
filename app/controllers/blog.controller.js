@@ -11,7 +11,7 @@ const sendNotification = require("../utils/sendNotifications");
 
 const createBlog = async (req, res) => {
   try {
-    const { title, content, date, category, type, budget, event_type, additional } = req.body;
+    const { title, content, date, time, category, type, budget, event_type, additional } = req.body;
     // const blogCategory = await BlogCategory.findById(blogId);
     // if (!blogCategory) {
     //   return response.notFound(res, "Invalid Category Id");
@@ -28,6 +28,7 @@ const createBlog = async (req, res) => {
       title,
       content,
       date,
+      time,
       type,
       user_id: req.user.id,
       image: req.body.image,
@@ -36,7 +37,9 @@ const createBlog = async (req, res) => {
       isApproved: isApproved,
       status, // Set based on the user's role
       budget,
-      event_type
+      event_type,
+      offered_by: req.body.offered_by,
+      venue: req.body.venue,
     });
 
     await blog.save();
