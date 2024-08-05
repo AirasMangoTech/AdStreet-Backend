@@ -30,10 +30,10 @@ const signup = async (req, res) => {
     } = req.body;
 
     // Validate and process inputs
-    if (!email || !password || !phoneNumber || !roles || !fcm_token) {
+    if (!email || !phoneNumber || !roles || !fcm_token) {
       return response.badRequest(
         res,
-        "Email, Password, fcmToken, and Phone Number are required"
+        "Email, fcmToken, and Phone Number are required"
       );
     }
 
@@ -60,11 +60,16 @@ const signup = async (req, res) => {
     }
 
     // Encrypt the password and create new user
-    const encryptedPassword = await bcrypt.hash(
-      password,
-      await bcrypt.genSalt(10)
-    );
 
+    let encryptedPassword = "";
+    if (password)
+    {
+      encryptedPassword = await bcrypt.hash(
+        password,
+        await bcrypt.genSalt(10)
+      );
+    }
+    
     const newUser = new User({
       name,
       email,
@@ -76,6 +81,8 @@ const signup = async (req, res) => {
       city: city ? city : null,
       state: state ? state : null,
       additional: additional ? additional : null,
+      isSocialLogin,
+      socialLogin,
       user_type: 'normal',
     });
     await newUser.save();
@@ -159,15 +166,15 @@ const login = async (req, res) => {
 
 const socialLogin = async (req, res) => {
   try {
-    const { socialType, id, token } = req.body;
+    const { socialType, id, access_token } = req.body;
 
     let userData;
 
     if (socialType === 'google') {
-      userData = await verifyGoogleToken(token);
+      userData = await verifyGoogleToken(access_token);
       if (userData.sub !== id) throw new Error('Google user ID does not match');
     } else if (socialType === 'facebook') {
-      userData = await verifyFacebookToken(token, id);
+      userData = await verifyFacebookToken(access_token, id);
       if (userData.id !== id) throw new Error('Facebook user ID does not match');
     } else {
       return response.badRequest(res, "Invalid social type");
