@@ -7,6 +7,7 @@ const response = require("../utils/responseHelpers");
 const logger = require("../logger");
 const FcmToken = require("../models/fcmTokens");
 const auth = require("../middleware/auth");
+const { verifyGoogleToken, verifyFacebookToken } = require('../utils/verifyToken');
 require("dotenv").config();
 const mongoose = require("mongoose");
 
@@ -152,6 +153,69 @@ const login = async (req, res) => {
     // Log the error and return a server error response
     console.log(error);
     logger.error(`ip: ${req.ip},url: ${req.url},error:${error.stack}`);
+    return response.serverError(res, "Something bad happened! Try Again Later");
+  }
+};
+
+const socialLogin = async (req, res) => {
+  try {
+    const { socialType, id, token } = req.body;
+
+    let userData;
+
+    if (socialType === 'google') {
+      userData = await verifyGoogleToken(token);
+      if (userData.sub !== id) throw new Error('Google user ID does not match');
+    } else if (socialType === 'facebook') {
+      userData = await verifyFacebookToken(token, id);
+      if (userData.id !== id) throw new Error('Facebook user ID does not match');
+    } else {
+      return response.badRequest(res, "Invalid social type");
+    }
+
+    // Check if the user exists
+    let user = await User.findOne({ [`socialLogin.${socialType}.id`]: id });
+
+    // If the user doesn't exist, create a new user
+    if (!user) {
+      return response.success(res, "Registration Required", { registration_required: true });
+    }
+
+    // Generate JWT token for the user
+    const jwt_token = jwt.sign(
+      {
+        name: user.name,
+        phoneNumber: user.phone_Number,
+        email: user.email,
+        id: user._id,
+        role_id: user.roles,
+      },
+      process.env.SECRET_KEY
+    );
+    //res.json({ token });
+    // Create object to send as response
+    let userShallow = user.toJSON();
+    delete userShallow.password;
+    const obj = {
+      ...userShallow,
+      //roles: user.ROLE_IDS,
+      token: jwt_token,
+      //fcmToken:  user.fcmToken,
+    };
+
+    let fcmObj = {
+      user_id: user._id,
+      device_uid: req.headers.deviceid,
+      token: req.body.fcmToken,
+    };
+    let fcm = new FcmToken(fcmObj);
+    await fcm.save();
+
+    return response.success(res, "Login Successful", { user: obj });
+
+  } catch (error) {
+    console.log(error.message);
+    logger.error(`ip: ${req.ip}, url: ${req.url}, error: ${error.stack}`);
     return response.serverError(res, "Something bad happened! Try Again Later");
   }
 };
@@ -387,6 +451,7 @@ const getWalletHistory = async (req, res) => {
 module.exports = {
   signup,
   login,
+  socialLogin,
   logout,
   getAllUsers,
   getWalletHistory,

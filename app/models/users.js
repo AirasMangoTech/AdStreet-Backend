@@ -83,12 +83,15 @@ const UserSchema = new mongoose.Schema({
   },
   socialLogin: {
     google: {
+      id: String,
       token: String
     },
     facebook: {
+      id: String,
       token: String
     },
     apple: {
+      id: String,
       token: String
     }
   },
