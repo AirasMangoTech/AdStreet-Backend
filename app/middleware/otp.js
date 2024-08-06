@@ -4,6 +4,7 @@ const moment = require("moment");
 const jwt = require("jsonwebtoken");
 const response = require("../utils/responseHelpers");
 const config = process.env;
+const { sendEmail } = require("../utils/sendOTPEmail");
 
 const GenerateOTP = (length) => {
   let OTP = generator.generate({
@@ -18,6 +19,11 @@ const GenerateOTP = (length) => {
 
 const verifyOTP = async (req, res, next) => {
   try {
+
+    if (req.body.isSocialLogin) {
+      next();
+    }
+
     if (req.body.otp_token) {
       try {
         const decoded = jwt.verify(req.body.otp_token, config.SECRET_KEY);
@@ -75,6 +81,11 @@ const verifyOTP = async (req, res, next) => {
       }
       // Send the OTP to the user's phone
       //SMS.sendSMS(`Your OTP is: ${newOtpCode}`, phoneNumber);
+
+      if (req.body.email) {
+        var resp = await sendEmail(req.body.email, newOtpCode);
+      }
+
       return response.success(res, "OTP sent", { otp: newOtpCode });
 
       // return res

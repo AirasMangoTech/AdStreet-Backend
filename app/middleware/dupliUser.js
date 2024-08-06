@@ -3,18 +3,23 @@ const response = require("../utils/responseHelpers");
 
 const dupliUser = async (req, res, next) => {
   try {
-    let email = await Users.findOne({
-      email: req.body.email,
-    });
-    if (email) {
-      return response.badRequest(res, "This Email already exists");
+
+    if(!req.body.isSocialLogin)
+    {
+      let email = await Users.findOne({
+        email: req.body.email,
+      });
+      if (email) {
+        return response.badRequest(res, "This Email already exists");
+      }
+      let phone = await Users.findOne({
+        phone_Number: req.body.phoneNumber,
+      });
+      if (phone) {
+        return response.badRequest(res, "This Phone Number already exists");
+      }
     }
-    let phone = await Users.findOne({
-      phone_Number: req.body.phoneNumber,
-    });
-    if (phone) {
-      return response.badRequest(res, "This Phone Number already exists");
-    }
+    
 
     next();
   } catch (error) {

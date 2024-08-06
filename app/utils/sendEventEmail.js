@@ -1,5 +1,4 @@
-const { LEGAL_TCP_SOCKET_OPTIONS } = require("mongodb");
-const { sendEmail } = require("../utils/sendEmail");
+const { sendEventEmailWithCC } = require("../utils/sendEmail");
 
 const sendEventEmail = async (toEmail, name, event) => {
     try {
@@ -17,17 +16,15 @@ const sendEventEmail = async (toEmail, name, event) => {
             subject = "Thank You for Registering for AdVision 2024!";
         }
 
-        var resp = await sendEmail(toEmail, subject, body);
+        var resp = await sendEventEmailWithCC(toEmail, subject, body);
 
         return resp;
-        
+
     } catch (error) {
         console.log(error)
         return error;
     }
 }
-
-
 
 const getEmailTemplate = async (event, customerName) => {
     try {

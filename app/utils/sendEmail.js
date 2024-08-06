@@ -1,6 +1,6 @@
-const transporter=require("../config/email")
+const { transporter, transporterOTP } = require("../config/email")
 
-const sendEmail = async (toEmail ,subject, body) => {
+const sendEventEmailWithCC = async (toEmail ,subject, body) => {
     try {
         
         const info = await transporter.sendMail({
@@ -20,4 +20,25 @@ const sendEmail = async (toEmail ,subject, body) => {
     }
 }
 
-module.exports = {sendEmail}
+const sendOTPEmail = async (toEmail ,subject, body) => {
+    try {
+        
+        const info = await transporterOTP.sendMail({
+            from: `"ADSTREET" <info@adstreet.com.pk>`,
+            to: toEmail, 
+            subject: subject,
+            text: subject,
+            html: body,
+          });
+          console.log(info)
+          return info;
+    } catch (error) {
+        console.log(error)
+       return error;  
+    }
+}
+
+module.exports = {
+    sendEventEmailWithCC,
+    sendOTPEmail,
+}

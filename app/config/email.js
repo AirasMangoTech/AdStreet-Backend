@@ -12,5 +12,19 @@ const transporter = nodemailer.createTransport({
     pass: process.env.SMTP_PASS,
   },
 });
+
+
+const transporterOTP = nodemailer.createTransport({
+  host: process.env.SMTP_HOST,
+  port: process.env.SMTP_PORT,
+  secure: true,
+  auth: {
+    user: process.env.SMTP_USER_OTP,
+    pass: process.env.SMTP_PASS,
+  },
+});
   
-  module.exports = transporter;
+  module.exports = {
+    transporter,
+    transporterOTP,
+  };
