@@ -318,7 +318,7 @@ const getAllBlogs = async (req, res) => {
               } 
             },
             { 
-              "$limit": 1
+              "$limit": 1 // Only need to know if there's at least one match
             }
           ],
           "as": "userInterestData"
@@ -343,7 +343,10 @@ const getAllBlogs = async (req, res) => {
       },
     ]);
     
-    blogsAggregate.forEach(blog => delete blog.interestData);
+    blogsAggregate.forEach(blog => {
+      delete blog.interestData;
+      delete blog.userInterestData;
+    });
     
 
     const totalBlogs = await Blog.countDocuments(query);
