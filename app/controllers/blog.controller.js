@@ -294,8 +294,7 @@ const getAllBlogs = async (req, res) => {
             { 
               "$group": { 
                 "_id": "$blog", 
-                "interestCount": { "$sum": 1 },
-                "userInterestExists": { "$max": { "$cond": [{ "$eq": ["$user", userId] }, 1, 0] } }
+                "interestCount": { "$sum": 1 }
               } 
             }
           ],
@@ -303,9 +302,32 @@ const getAllBlogs = async (req, res) => {
         }
       },
       {
+        "$lookup": {
+          "from": "interests",
+          "let": { "blogId": "$_id" },
+          "pipeline": [
+            { 
+              "$match": { 
+                "$expr": { 
+                  "$and": [ 
+                    { "$eq": ["$blog", "$$blogId"] }, 
+                    { "$eq": ["$user", userId] },
+                    { "$eq": ["$expressedInterest", true] }
+                  ] 
+                } 
+              } 
+            },
+            { 
+              "$limit": 1
+            }
+          ],
+          "as": "userInterestData"
+        }
+      },
+      {
         $addFields: {
           interestCount: { $ifNull: [{ $arrayElemAt: ["$interestData.interestCount", 0] }, 0] },
-          expressedInterest: { $cond: { if: { $eq: [{ $arrayElemAt: ["$interestData.userInterestExists", 0] }, 1] }, then: true, else: false } }
+          expressedInterest: { $cond: { if: { $gt: [{ $size: "$userInterestData" }, 0] }, then: true, else: false } }
         }
       },
       { $sort: { createdAt: -1 } },
