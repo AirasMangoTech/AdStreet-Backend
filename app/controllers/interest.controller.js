@@ -41,6 +41,26 @@ const toggleInterest = async (req, res) => {
   }
 };
 
+const gettoggleInterest = async (req, res) => {
+  try {
+
+    const { blogId } = req.params; 
+
+    let interest = await Interest.find({ blog: blogId });
+    return response.success(res, message, {
+      interest
+    });
+  } catch (error) {
+    console.log(error);
+    return response.serverError(
+      res,
+      error.message,
+      "Failed to load Payment Method"
+    );
+  }
+};
+
 module.exports = {
   toggleInterest,
+  gettoggleInterest,
 };
