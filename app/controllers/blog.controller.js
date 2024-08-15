@@ -295,7 +295,7 @@ const getAllBlogs = async (req, res) => {
               "$group": { 
                 "_id": "$blog", 
                 "interestCount": { "$sum": 1 },
-                "userInterestExists": { "$sum": { "$cond": [{ "$eq": ["$user", userId] }, 1, 0] } }
+                "userInterestExists": { "$max": { "$cond": [{ "$eq": ["$user", userId] }, 1, 0] } }
               } 
             }
           ],
@@ -305,7 +305,7 @@ const getAllBlogs = async (req, res) => {
       {
         $addFields: {
           interestCount: { $ifNull: [{ $arrayElemAt: ["$interestData.interestCount", 0] }, 0] },
-          expressedInterest: { $cond: { if: { $gt: [{ $arrayElemAt: ["$interestData.userInterestExists", 0] }, 0] }, then: true, else: false } }
+          expressedInterest: { $cond: { if: { $eq: [{ $arrayElemAt: ["$interestData.userInterestExists", 0] }, 1] }, then: true, else: false } }
         }
       },
       { $sort: { createdAt: -1 } },
