@@ -211,10 +211,6 @@ const getAllBlogs = async (req, res) => {
 
     const userId = req.user.id;
 
-    return response.success(res, "All blogs retrieved successfully", {
-      userId
-    });
-
     if (req.query.id) {
       query._id = new mongoose.Types.ObjectId(req.query.id);
     }
