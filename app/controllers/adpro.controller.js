@@ -82,8 +82,9 @@ const getAdpros = async (req, res) => {
     if(req.query.industry){
       query.industry = req.query.industry;
     }
-    
-    query.isContacted = req.query.isContacted;
+    if(req.query.isContacted){
+      query.isContacted = req.query.isContacted;
+    }
 
     const page = parseInt(req.query.page) || 1; // Default to page 1 if not specified
     const limit = parseInt(req.query.limit) || 10; // Default limit to 10 items per page

@@ -240,6 +240,42 @@ const getAllBlogs = async (req, res) => {
     // Modify this part to include aggregation for counting interested users
     const blogsAggregate = await Blog.aggregate([
       { $match: query },
+      // {
+      //   "$lookup": {
+      //     "from": "interests",
+      //     "let": { "blogId": "$_id" },
+      //     "pipeline": [
+      //       { 
+      //         "$match": { 
+      //           "$expr": { 
+      //             "$and": [ 
+      //               { "$eq": ["$blog", "$$blogId"] }, 
+      //               { "$eq": ["$expressedInterest", true] },
+      //               { "$eq": ["$user", userId] }
+      //             ] 
+      //           } 
+      //         } 
+      //       },
+      //       { 
+      //         "$group": { 
+      //           "_id": "$blog", 
+      //           "interestCount": { "$sum": 1 } 
+      //         } 
+      //       }
+      //     ],
+      //     "as": "interestData"
+      //   }
+      // },      
+      // {
+      //   $addFields: {
+      //     interestCount: { $ifNull: [{ $arrayElemAt: ["$interestData.interestCount", 0] }, 0] }
+      //   }
+      // },
+      // {
+      //   $addFields: {
+      //     expressedInterest: { $cond: { if: { $gt: ["$interestCount", 0] }, then: true, else: false } }
+      //   }
+      // },
       {
         "$lookup": {
           "from": "interests",
@@ -250,8 +286,7 @@ const getAllBlogs = async (req, res) => {
                 "$expr": { 
                   "$and": [ 
                     { "$eq": ["$blog", "$$blogId"] }, 
-                    { "$eq": ["$expressedInterest", true] },
-                    { "$eq": ["$user", userId] }
+                    { "$eq": ["$expressedInterest", true] }
                   ] 
                 } 
               } 
@@ -259,22 +294,18 @@ const getAllBlogs = async (req, res) => {
             { 
               "$group": { 
                 "_id": "$blog", 
-                "interestCount": { "$sum": 1 } 
+                "interestCount": { "$sum": 1 },
+                "userInterestExists": { "$sum": { "$cond": [{ "$eq": ["$user", userId] }, 1, 0] } }
               } 
             }
           ],
           "as": "interestData"
         }
-      },      
-      {
-        $addFields: {
-          interestCount: { $ifNull: [{ $arrayElemAt: ["$interestData.interestCount", 0] }, 0] }
-        }
       },
       {
         $addFields: {
-          // Projecting the interest boolean value
-          expressedInterest: { $cond: { if: { $gt: ["$interestCount", 0] }, then: true, else: false } }
+          interestCount: { $ifNull: [{ $arrayElemAt: ["$interestData.interestCount", 0] }, 0] },
+          expressedInterest: { $cond: { if: { $gt: [{ $arrayElemAt: ["$interestData.userInterestExists", 0] }, 0] }, then: true, else: false } }
         }
       },
       { $sort: { createdAt: -1 } },
