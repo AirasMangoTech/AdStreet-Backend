@@ -211,6 +211,10 @@ const getAllBlogs = async (req, res) => {
 
     const userId = req.user.id;
 
+    return response.success(res, "All blogs retrieved successfully", {
+      userId
+    });
+
     if (req.query.id) {
       query._id = new mongoose.Types.ObjectId(req.query.id);
     }
@@ -343,10 +347,10 @@ const getAllBlogs = async (req, res) => {
       },
     ]);
     
-    blogsAggregate.forEach(blog => {
-      delete blog.interestData;
-      delete blog.userInterestData;
-    });
+    // blogsAggregate.forEach(blog => {
+    //   delete blog.interestData;
+    //   delete blog.userInterestData;
+    // });
     
 
     const totalBlogs = await Blog.countDocuments(query);
