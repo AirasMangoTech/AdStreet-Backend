@@ -240,42 +240,6 @@ const getAllBlogs = async (req, res) => {
     // Modify this part to include aggregation for counting interested users
     const blogsAggregate = await Blog.aggregate([
       { $match: query },
-      // {
-      //   "$lookup": {
-      //     "from": "interests",
-      //     "let": { "blogId": "$_id" },
-      //     "pipeline": [
-      //       { 
-      //         "$match": { 
-      //           "$expr": { 
-      //             "$and": [ 
-      //               { "$eq": ["$blog", "$$blogId"] }, 
-      //               { "$eq": ["$expressedInterest", true] },
-      //               { "$eq": ["$user", userId] }
-      //             ] 
-      //           } 
-      //         } 
-      //       },
-      //       { 
-      //         "$group": { 
-      //           "_id": "$blog", 
-      //           "interestCount": { "$sum": 1 } 
-      //         } 
-      //       }
-      //     ],
-      //     "as": "interestData"
-      //   }
-      // },      
-      // {
-      //   $addFields: {
-      //     interestCount: { $ifNull: [{ $arrayElemAt: ["$interestData.interestCount", 0] }, 0] }
-      //   }
-      // },
-      // {
-      //   $addFields: {
-      //     expressedInterest: { $cond: { if: { $gt: ["$interestCount", 0] }, then: true, else: false } }
-      //   }
-      // },
       {
         "$lookup": {
           "from": "interests",
@@ -309,14 +273,14 @@ const getAllBlogs = async (req, res) => {
       {
         "$lookup": {
           "from": "interests",
-          "let": { "blogId": "$_id" },
+          "let": { "blogId": "$_id", "userId": userId },  // Pass userId explicitly
           "pipeline": [
             { 
               "$match": { 
                 "$expr": { 
                   "$and": [ 
                     { "$eq": ["$blog", "$$blogId"] }, 
-                    { "$eq": ["$user", userId] },
+                    { "$eq": ["$user", "$$userId"] },  // Use $$userId
                     { "$eq": ["$expressedInterest", true] }
                   ] 
                 } 
