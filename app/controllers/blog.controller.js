@@ -273,14 +273,14 @@ const getAllBlogs = async (req, res) => {
       {
         "$lookup": {
           "from": "interests",
-          "let": { "blogId": "$_id", "userId": mongoose.Types.ObjectId(userId) },  // Pass userId explicitly
+          "let": { "blogId": "$_id" },  // Pass userId explicitly
           "pipeline": [
             { 
               "$match": { 
                 "$expr": { 
                   "$and": [ 
                     { "$eq": ["$blog", "$$blogId"] }, 
-                    { "$eq": ["$user", "$$userId"] }, 
+                    { "$eq": ["$user", new mongoose.Types.ObjectId(userId)] }, 
                     { "$eq": ["$expressedInterest", true] }
                   ] 
                 } 
