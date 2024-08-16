@@ -328,6 +328,7 @@ const getAllBlogs = async (req, res) => {
 
     return response.success(res, "All blogs retrieved successfully", {
       blogs: blogsAggregate,
+      userId,
       pageInfo: {
         currentPage: page,
         totalPages,
