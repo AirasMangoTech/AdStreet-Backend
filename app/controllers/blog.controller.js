@@ -273,7 +273,7 @@ const getAllBlogs = async (req, res) => {
       {
         "$lookup": {
           "from": "interests",
-          "let": { "blogId": "$_id", "userId": userId },  // Pass userId explicitly
+          "let": { "blogId": "$_id", "userId": mongoose.Types.ObjectId(userId) },  // Pass userId explicitly
           "pipeline": [
             { 
               "$match": { 
