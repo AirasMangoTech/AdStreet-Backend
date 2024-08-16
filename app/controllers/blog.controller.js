@@ -281,7 +281,7 @@ const getAllBlogs = async (req, res) => {
                   "$and": [ 
                     { "$eq": ["$blog", "$$blogId"] }, 
                     { "$eq": ["$user", "$$userId"] },  // Use $$userId
-                    { "$eq": ["$expressedInterest", true] }
+                    //{ "$eq": ["$expressedInterest", true] }
                   ] 
                 } 
               } 
