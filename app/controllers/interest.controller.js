@@ -6,6 +6,18 @@ const toggleInterest = async (req, res) => {
     const { blogId } = req.params; 
     const userId = req.user.id;
 
+    const interestRecord = await Interest.findOne({ 
+      blog: blogId, 
+      user: userId, 
+      expressedInterest: true 
+    });
+    console.log(interestRecord);
+
+
+    return response.success(res, "All blogs retrieved successfully", {
+      interestRecord
+    });
+
     // var deleteall = await Interest.deleteMany({});
     // return response.success(res, "Delete all interest successfully", {});
 
