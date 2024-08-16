@@ -387,7 +387,7 @@ const getAllBlogs = async (req, res) => {
     });
   } catch (error) {
     console.error(`Error getting all blogs: ${error}`);
-    return response.authError(res, "Something bad happened");
+    return response.authError(res, "Something bad happened" + error);
   }
 };
 
