@@ -301,6 +301,11 @@ const getAllBlogs = async (req, res) => {
           "as": "interestData"
         }
       },
+      
+      // Debug: Add interestData field to see its content
+      { $addFields: { debugInterestData: "$interestData" } },
+      
+      // Second lookup: Check if the specific user expressed interest
       {
         "$lookup": {
           "from": "interests",
@@ -324,6 +329,11 @@ const getAllBlogs = async (req, res) => {
           "as": "userInterestData"
         }
       },
+      
+      // Debug: Add userInterestData field to see its content
+      { $addFields: { debugUserInterestData: "$userInterestData" } },
+      
+      // Add calculated fields
       {
         $addFields: {
           interestCount: { $ifNull: [{ $arrayElemAt: ["$interestData.interestCount", 0] }, 0] },
