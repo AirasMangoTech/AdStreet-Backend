@@ -237,7 +237,6 @@ const getAllBlogs = async (req, res) => {
     const limit = parseInt(req.query.limit) || 10;
     const skipIndex = (page - 1) * limit;
 
-    // Modify this part to include aggregation for counting interested users
     const blogsAggregate = await Blog.aggregate([
       { $match: query },
       {
@@ -265,11 +264,6 @@ const getAllBlogs = async (req, res) => {
           "as": "interestData"
         }
       },
-      
-      // Debug: Add interestData field to see its content
-      { $addFields: { debugInterestData: "$interestData" } },
-      
-      // Second lookup: Check if the specific user expressed interest
       {
         "$lookup": {
           "from": "interests",
@@ -287,17 +281,12 @@ const getAllBlogs = async (req, res) => {
               } 
             },
             { 
-              "$limit": 1 // Only need to know if there's at least one match
+              "$limit": 1
             }
           ],
           "as": "userInterestData"
         }
       },
-      
-      // Debug: Add userInterestData field to see its content
-      { $addFields: { debugUserInterestData: "$userInterestData" } },
-      
-      // Add calculated fields
       {
         $addFields: {
           interestCount: { $ifNull: [{ $arrayElemAt: ["$interestData.interestCount", 0] }, 0] },
@@ -317,10 +306,10 @@ const getAllBlogs = async (req, res) => {
       },
     ]);
     
-    // blogsAggregate.forEach(blog => {
-    //   delete blog.interestData;
-    //   delete blog.userInterestData;
-    // });
+    blogsAggregate.forEach(blog => {
+      delete blog.interestData;
+      delete blog.userInterestData;
+    });
     
 
     const totalBlogs = await Blog.countDocuments(query);
