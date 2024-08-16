@@ -211,6 +211,14 @@ const getAllBlogs = async (req, res) => {
 
     const userId = req.user.id;
 
+
+    const interestRecord = await Interest.findOne({ 
+      blog: req.query.id, 
+      user: userId, 
+      expressedInterest: true 
+    });
+    console.log(interestRecord);
+
     if (req.query.id) {
       query._id = new mongoose.Types.ObjectId(req.query.id);
     }
