@@ -219,6 +219,12 @@ const getAllBlogs = async (req, res) => {
     });
     console.log(interestRecord);
 
+
+    return response.success(res, "All blogs retrieved successfully", {
+      interestRecord
+    });
+
+
     if (req.query.id) {
       query._id = new mongoose.Types.ObjectId(req.query.id);
     }
