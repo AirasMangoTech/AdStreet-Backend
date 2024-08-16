@@ -280,8 +280,8 @@ const getAllBlogs = async (req, res) => {
                 "$expr": { 
                   "$and": [ 
                     { "$eq": ["$blog", "$$blogId"] }, 
-                    { "$eq": ["$user", userId] },  // Use $$userId
-                    { "$eq": ["$expressedInterest", true] }
+                    //{ "$eq": ["$user", "$$userId"] },  // Use $$userId
+                    //{ "$eq": ["$expressedInterest", true] }
                   ] 
                 } 
               } 
