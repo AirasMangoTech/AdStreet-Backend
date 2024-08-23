@@ -29,13 +29,102 @@ const getAllBanners = async (req, res) => {
     }
     const banners = await Banner.find(query).populate("blog").lean();
 
-    const modifiedBanners = banners.map(banner => {
-      return {
-        ...banner,
-        blogId: banner.blog, // Assign the blog data to blogId
-        blog: undefined // Remove the original blog field
-      };
-    });
+    // const modifiedBanners = banners.map(banner => {
+    //   return {
+    //     ...banner,
+    //     blogId: banner.blog, // Assign the blog data to blogId
+    //     blog: undefined // Remove the original blog field
+    //   };
+    // });
+
+    const modifiedBanners = await Promise.all(
+      banners.map(async (banner) => {
+        if (banner.blog) {
+          const blogId = banner.blog._id;
+    
+          // Perform the aggregation only if blog exists
+          const [blogData] = await Blog.aggregate([
+            { $match: { _id: blogId } },
+            {
+              $lookup: {
+                from: "interests",
+                let: { blogId: "$_id" },
+                pipeline: [
+                  {
+                    $match: {
+                      $expr: {
+                        $and: [
+                          { $eq: ["$blog", "$$blogId"] },
+                          { $eq: ["$expressedInterest", true] }
+                        ]
+                      }
+                    }
+                  },
+                  {
+                    $group: {
+                      _id: "$blog",
+                      interestCount: { $sum: 1 }
+                    }
+                  }
+                ],
+                as: "interestData"
+              }
+            },
+            {
+              $lookup: {
+                from: "interests",
+                let: { blogId: "$_id" },
+                pipeline: [
+                  {
+                    $match: {
+                      $expr: {
+                        $and: [
+                          { $eq: ["$blog", "$$blogId"] },
+                          { $eq: ["$user", new mongoose.Types.ObjectId(userId)] },
+                          { $eq: ["$expressedInterest", true] }
+                        ]
+                      }
+                    }
+                  },
+                  { $limit: 1 }
+                ],
+                as: "userInterestData"
+              }
+            },
+            {
+              $addFields: {
+                interestCount: { $ifNull: [{ $arrayElemAt: ["$interestData.interestCount", 0] }, 0] },
+                expressedInterest: {
+                  $cond: {
+                    if: { $gt: [{ $size: "$userInterestData" }, 0] },
+                    then: true,
+                    else: false
+                  }
+                }
+              }
+            }
+          ]);
+    
+          // Merge the aggregated fields into the banner
+          return {
+            ...banner,
+            blogId: {
+              ...banner.blog,
+              interestCount: blogData?.interestCount || 0,
+              expressedInterest: blogData?.expressedInterest || false,
+            },
+            blog: undefined // Optionally remove the original blog field
+          };
+        } else {
+          // If no blog, just return the banner with blogId set to null
+          return {
+            ...banner,
+            blogId: null,
+            blog: undefined
+          };
+        }
+      })
+    );
 
     return response.success(res, "Banners retrieved successfully", { banners: modifiedBanners });
   } catch (err) {
