@@ -1,6 +1,7 @@
 const Banner = require("../models/banner");
 const Blog = require("../models/blogs");
 const response = require("../utils/responseHelpers");
+const mongoose = require("mongoose");
 
 // Create and Save a new Banner
 const createBanner = async (req, res) => {
