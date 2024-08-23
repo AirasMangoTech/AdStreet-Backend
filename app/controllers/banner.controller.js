@@ -29,6 +29,9 @@ const getAllBanners = async (req, res) => {
     if (req.query.type) {
       query.type = req.query.type;
     }
+
+    const userId = req.user.id;
+    
     const banners = await Banner.find(query).populate("blog").lean();
 
     // const modifiedBanners = banners.map(banner => {
@@ -134,6 +137,31 @@ const getAllBanners = async (req, res) => {
     return response.serverError(res, `Error retrieving banners: ${err}`);
   }
 };
+
+// Retrieve all Banners from the database.
+const getAllWebBanners = async (req, res) => {
+  try {
+    let query = {};
+    if (req.query.type) {
+      query.type = req.query.type;
+    }
+    const banners = await Banner.find(query).populate("blog").lean();
+
+    const modifiedBanners = banners.map(banner => {
+      return {
+        ...banner,
+        blogId: banner.blog, // Assign the blog data to blogId
+        blog: undefined // Remove the original blog field
+      };
+    });
+
+    return response.success(res, "Banners retrieved successfully", { banners: modifiedBanners });
+  } catch (err) {
+    console.log(err);
+    return response.serverError(res, `Error retrieving banners: ${err}`);
+  }
+};
+
 //update banner
 const updateBanner = async (req, res) => {
   try {
@@ -168,6 +196,7 @@ const deleteBanner = async (req, res) => {
 module.exports = {
   createBanner,
   getAllBanners,
+  getAllWebBanners,
   updateBanner,
   deleteBanner,
 };
