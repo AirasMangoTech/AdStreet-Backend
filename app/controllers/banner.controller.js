@@ -1,4 +1,5 @@
 const Banner = require("../models/banner");
+const Blog = require("../models/blogs");
 const response = require("../utils/responseHelpers");
 
 // Create and Save a new Banner
