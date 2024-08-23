@@ -27,8 +27,17 @@ const getAllBanners = async (req, res) => {
     if (req.query.type) {
       query.type = req.query.type;
     }
-    const banners = await Banner.find(query).populate("blog");
-    return response.success(res, "Banners retrieved successfully", { banners });
+    const banners = await Banner.find(query).populate("blog").lean();
+
+    const modifiedBanners = banners.map(banner => {
+      return {
+        ...banner,
+        blogId: banner.blog, // Assign the blog data to blogId
+        blog: undefined // Remove the original blog field
+      };
+    });
+
+    return response.success(res, "Banners retrieved successfully", { banners: modifiedBanners });
   } catch (err) {
     console.log(err);
     return response.serverError(res, `Error retrieving banners: ${err}`);

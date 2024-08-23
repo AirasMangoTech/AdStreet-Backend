@@ -409,7 +409,6 @@ const updateUser = async (req, res) => {
   }
 };
 
-
 const getWalletHistory = async (req, res) => {
   try {
     const { user_id } = req.query;
