@@ -102,7 +102,17 @@ const signup = async (req, res) => {
       { expiresIn: "30d" }
     );
 
-    return response.success(res, "Signup Successful", { user: newUser, token });
+
+    let userShallow = newUser.toJSON();
+    delete userShallow.password;
+    const obj = {
+      ...userShallow,
+      //roles: user.ROLE_IDS,
+      token: token,
+      //fcmToken:  user.fcmToken,
+    };
+
+    return response.success(res, "Signup Successful", { user: obj, token });
   } catch (error) {
     console.log(error.message);
     logger.error(`ip: ${req.ip}, url: ${req.url}, error: ${error.stack}`);

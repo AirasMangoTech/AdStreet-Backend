@@ -31,17 +31,9 @@ const getAllBanners = async (req, res) => {
     }
 
     const userId = req.user.id;
-    
+
     const banners = await Banner.find(query).populate("blog").lean();
-
-    // const modifiedBanners = banners.map(banner => {
-    //   return {
-    //     ...banner,
-    //     blogId: banner.blog, // Assign the blog data to blogId
-    //     blog: undefined // Remove the original blog field
-    //   };
-    // });
-
+    
     const modifiedBanners = await Promise.all(
       banners.map(async (banner) => {
         if (banner.blog) {
