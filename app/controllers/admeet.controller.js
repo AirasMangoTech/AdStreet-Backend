@@ -3,6 +3,7 @@ const response = require("../utils/responseHelpers");
 const User = require("../models/users"); 
 const Registration = require("../models/admeet");
 const Interest = require("../models/interest") 
+const { sendEventEmail } = require("../utils/sendEventEmail");
 
 const register = async (req, res) => {
   try {
@@ -33,6 +34,8 @@ const register = async (req, res) => {
     if (existingInterest) {
       return response.badRequest(res, "User has already shown interest in this blog");
     }
+
+    var resp = await sendEventEmail(email, name, "addMeet");
 
     const newInterest = new Interest({
       blog: blogId,

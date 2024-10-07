@@ -7,7 +7,11 @@ const sendEventEmail = async (toEmail, name, event) => {
 
         var subject = "";
 
-        if (event == "eventDragon") // For event Dragon
+        if (event == "addMeet") // For AdMeet
+        {
+            subject = "Thank You for Registering for to AdMeet";
+        }
+        else if (event == "eventDragon") // For event Dragon
         {
             subject = "Thank You for Registering for Dragons Of Pakistan!";
         }
@@ -28,7 +32,101 @@ const sendEventEmail = async (toEmail, name, event) => {
 
 const getEmailTemplate = async (event, customerName) => {
     try {
-        if (event == "eventDragon") // For event Dragon
+        if (event == "addMeet") // For AddMeet
+        {
+            return `<table class="table-responsive" width="" border="1" cellspacing="0" cellpadding="0"
+    style="border-collapse:collapse;max-width:600px;border-color: #00000047;box-shadow: 20px 20px 10px grey !important;"
+    align="center">
+    <tr>
+        <td>
+            <table width="" border="0" cellspacing="0" cellpadding="0" style="background-color:#ffffff;"
+                align="center" bgcolor="#ffffff">
+                <tr>
+                    <td height="30" style="height:30px;"></td>
+                </tr>
+                <tr>
+                    <td>
+                        <table width="100%" border="0" cellspacing="0" cellpadding="0">
+                            <tr>
+                                <td width="30" style="width:30px;"></td>
+                                <td>
+                                     <img src="https://adstreet.mangotech-api.com/uploads/image-1722004805906.png"
+                                        width="200" alt="" style="display: block; border: 0; float: left;">
+                                        
+                                    <img src="https://adstreet.mangotech-api.com/uploads/image-1722426674263.png"
+                                        width="150" alt="" style="display: block; border: 0; float: right;">
+
+                                </td>
+                                <td width="30" style="width:30px;"></td>
+                            </tr>
+                            <tr>
+                                <td colspan="3" height="20" style="height:20px;"></td>
+                            </tr>
+                            <tr>
+                                <td width="30" style="width:30px;"></td>
+                                <td>
+                                    <p
+                                        style="font-family:'Segoe UI',Roboto,'Helvetica Neue',Arial,'Noto Sans',sans-serif,'Apple Color Emoji','Segoe UI Emoji','Segoe UI Symbol','Noto Color Emoji'; font-size:16px; font-weight: bold; margin: 0; margin-bottom: 20px; color:#000000;">
+                                        Dear ${customerName}</p>
+                                    <p
+                                        style="font-family:'Segoe UI',Roboto,'Helvetica Neue',Arial,'Noto Sans',sans-serif,'Apple Color Emoji','Segoe UI Emoji','Segoe UI Symbol','Noto Color Emoji'; font-size:16px; margin: 0; margin-bottom: 20px; color:#000000;">
+                                        Thank you for registering to AdMeet 5.0 Event on Wednesday, October 9th, 7-9 pm at Habitt City.
+
+                                    <p
+                                        style="font-family:'Segoe UI',Roboto,'Helvetica Neue',Arial,'Noto Sans',sans-serif,'Apple Color Emoji','Segoe UI Emoji','Segoe UI Symbol','Noto Color Emoji'; font-size:16px; margin: 0; margin-bottom: 20px; color:#000000;">
+                                        Show this email screenshot at event entry.
+                                        <br /><br />Looking forward to welcome you on the event.
+                                        <br /><br />Thank you once again for participating!
+                                        <br /><br />AdStreet (Pvt.) Ltd. would love your feedback. Post a review to our profile. 
+                                        <br><a style="text-decoration: none; color: #000000;"
+                                            href="https://g.page/r/CYwLg8i3KYdlEBI/review">https://g.page/r/CYwLg8i3KYdlEBI/review</a>.
+                                        
+                                        <br /><br />Warm regards,
+
+                                        <br /><br />ADSTREET TEAM
+
+                                    </p>
+                                </td>
+                                <td width="30" style="width:30px;"></td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+                <tr>
+                    <td height="20" style="height:20px;"></td>
+                </tr>
+                <tr>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td>
+                        <table width="100%" border="0" cellspacing="0" cellpadding="0"
+                            style="background-color:#ffffff; border:0;" align="center" bgcolor="#ffffff">
+                            <tr>
+                                <td>
+                                    <table width="100%" border="0" cellspacing="0" cellpadding="0">
+                                        <tr bgcolor="#ec2028">
+                                            <td align="center" height="70" style="width: 120px;">
+                                                <p
+                                                    style="font-size:14px; margin:27px; margin-right: 0; font-family:'Segoe UI',Roboto,'Helvetica Neue',Arial,'Noto Sans',sans-serif,'Apple Color Emoji','Segoe UI Emoji','Segoe UI Symbol','Noto Color Emoji'; font-size:14px; color:#fff;">
+                                                    ©
+                                                    <script>document.write(new Date().getFullYear());</script>
+                                                    Adstreet. All rights reserved.
+                                                </p>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+            </table>
+        </td>
+    </tr>
+</table>`;
+        }
+        else if (event == "eventDragon") // For event Dragon
         {
             return `<table class="table-responsive" width="" border="1" cellspacing="0" cellpadding="0"
         style="border-collapse:collapse;max-width:600px;border-color: #00000047;box-shadow: 20px 20px 10px grey !important;"
