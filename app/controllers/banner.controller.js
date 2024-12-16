@@ -9,12 +9,8 @@ const createBanner = async (req, res) => {
     if (!req.body.imageUrl) {
       return response.badRequest(res, "Banner content can not be empty");
     }
-    const banner = new Banner({
-      imageUrl: req.body.imageUrl,
-      type: req.body.type,
-      url: req.body.url,
-      blog: req.body.blogId,
-    });
+    const banner = new Banner(req.body);
+    banner.url = `form?event=${req.body.eventName.toLowerCase()}`
     await banner.save();
     return response.success(res, "Banner created successfully", { banner });
   } catch (err) {

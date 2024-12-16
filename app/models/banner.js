@@ -1,6 +1,23 @@
 const mongoose = require("mongoose");
 
 const bannerSchema = new mongoose.Schema({
+  eventName: {
+    type: String,
+    required: [true, 'Event name is required.'],
+    lowerCase: true
+  },
+  eventDate: {
+    type: String,
+    required: [true, 'Event date is required.']
+  },
+  eventStartTime: {
+    type: String,
+    required: [true, 'When will event start.']
+  },
+  eventEndTime: {
+    type: String,
+    required: [true, 'When will event end.']
+  },
   imageUrl: {
     type: String,
     required: true,
