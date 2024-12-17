@@ -10,9 +10,8 @@ const createBanner = async (req, res) => {
       return response.badRequest(res, "Banner content can not be empty");
     }
     if(req.body.eventName){
-      const eventName = req.body.eventName.toLowerCase().trim()
-      req.body.eventName = eventName.includes('dragons') ? eventName.split(" ")[0] : eventName
-      req.body.url = `form?event=${req.body.eventName.toLowerCase()}`
+      const eventName = req.body.eventName.toLowerCase().trim().replace(/\s+/g, "-");
+      req.body.url = `form?event=${eventName}`
     }
     const banner = new Banner(req.body);
     await banner.save();
