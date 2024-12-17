@@ -137,7 +137,7 @@ exports.getAllUserEvents = async (req, res) => {
             .limit(limit)
             .select("-__v"); // Exclude version key
 
-        const totalEvents = await Event.countDocuments(query);
+        const totalEvents = await UserEvent.countDocuments(query);
         const totalPages = Math.ceil(totalEvents / limit);
 
         return response.success(res, "All user events retrieved successfully", {
