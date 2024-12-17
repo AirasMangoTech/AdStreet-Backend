@@ -1,6 +1,22 @@
 const mongoose = require("mongoose");
 
 const bannerSchema = new mongoose.Schema({
+  eventName: {
+    type: String,
+    lowerCase: true
+  },
+  eventDate: {
+    type: String,
+  },
+  eventStartTime: {
+    type: String,
+  },
+  eventEndTime: {
+    type: String,
+  },
+  venue: {
+    type: String,
+  },
   imageUrl: {
     type: String,
     required: true,

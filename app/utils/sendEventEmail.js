@@ -7,17 +7,17 @@ const sendEventEmail = async (toEmail, name, event) => {
 
         var subject = "";
 
-        if (event == "addMeet") // For AdMeet
-        {
+        // FOR ADMEET EVENT
+        if (event.eventName.includes("meet")) {
             subject = "Thank You for Registering for to AdMeet";
         }
-        else if (event == "eventDragon") // For event Dragon
-        {
+        // FOR DRAGONS OF PAKISTAN EVENT
+        else if (event.eventName.includes("dragon")) {
             subject = "Thank You for Registering for Dragons Of Pakistan!";
         }
-        else  // For event AdVision
-        {
-            subject = "Thank You for Registering for AdVision 2024!";
+        // FOR ADVISION EVENT
+        else {
+            subject = `Thank You for Registering for AdVision ${event.eventDetails.year}!`;
         }
 
         var resp = await sendEventEmailWithCC(toEmail, subject, body);
@@ -32,7 +32,7 @@ const sendEventEmail = async (toEmail, name, event) => {
 
 const getEmailTemplate = async (event, customerName) => {
     try {
-        if (event == "addMeet") // For AddMeet
+        if (event.eventName.includes("meet")) // For AddMeet
         {
             return `<table class="table-responsive" width="" border="1" cellspacing="0" cellpadding="0"
     style="border-collapse:collapse;max-width:600px;border-color: #00000047;box-shadow: 20px 20px 10px grey !important;"
@@ -70,7 +70,7 @@ const getEmailTemplate = async (event, customerName) => {
                                         Dear ${customerName}</p>
                                     <p
                                         style="font-family:'Segoe UI',Roboto,'Helvetica Neue',Arial,'Noto Sans',sans-serif,'Apple Color Emoji','Segoe UI Emoji','Segoe UI Symbol','Noto Color Emoji'; font-size:16px; margin: 0; margin-bottom: 20px; color:#000000;">
-                                        Thank you for registering to AdMeet 5.0 Event on Wednesday, October 9th, 7-9 pm at Habitt City.
+                                        Thank you for registering to AdMeet Event on ${event.eventDetails.dayName}, ${event.eventDetails.monthName} ${event.eventDetails.dateNumber}, from ${event.eventStartTime} to ${event.eventEndTime} at ${event.venue}.
 
                                     <p
                                         style="font-family:'Segoe UI',Roboto,'Helvetica Neue',Arial,'Noto Sans',sans-serif,'Apple Color Emoji','Segoe UI Emoji','Segoe UI Symbol','Noto Color Emoji'; font-size:16px; margin: 0; margin-bottom: 20px; color:#000000;">
@@ -79,7 +79,7 @@ const getEmailTemplate = async (event, customerName) => {
                                         <br /><br />Thank you once again for participating!
                                         <br /><br />AdStreet (Pvt.) Ltd. would love your feedback. Post a review to our profile. 
                                         <br><a style="text-decoration: none; color: #000000;"
-                                            href="https://g.page/r/CYwLg8i3KYdlEBI/review">https://g.page/r/CYwLg8i3KYdlEBI/review</a>.
+                                            href="https://g.page/r/CYwLg8i3KYdlEBI/review">Here</a>.
                                         
                                         <br /><br />Warm regards,
 
@@ -126,7 +126,7 @@ const getEmailTemplate = async (event, customerName) => {
     </tr>
 </table>`;
         }
-        else if (event == "eventDragon") // For event Dragon
+        else if (event.eventName.includes("dragon")) // For event Dragon
         {
             return `<table class="table-responsive" width="" border="1" cellspacing="0" cellpadding="0"
         style="border-collapse:collapse;max-width:600px;border-color: #00000047;box-shadow: 20px 20px 10px grey !important;"
@@ -165,8 +165,8 @@ const getEmailTemplate = async (event, customerName) => {
                                         <p
                                             style="font-family:'Segoe UI',Roboto,'Helvetica Neue',Arial,'Noto Sans',sans-serif,'Apple Color Emoji','Segoe UI Emoji','Segoe UI Symbol','Noto Color Emoji'; font-size:16px; margin: 0; margin-bottom: 20px; color:#000000;">
                                             We are thrilled to extend our heartfelt gratitude to you for registering for
-                                            our upcoming award show Dragons of Pakistan on Friday 30th August 2024 at
-                                            Pearl Continental Hotel Karachi. The event is staged by AdStreet the
+                                            our upcoming award show Dragons of Pakistan on ${event.eventDetails.dayName} ${event.eventDetails.dateNumber} ${event.eventDetails.monthName} ${event.eventDetails.year} at
+                                            ${event.venue}. The event is staged by AdStreet the
                                             official Advertising and marketing partners for Dragons of Pakistan.
 
                                         <p
@@ -181,8 +181,7 @@ const getEmailTemplate = async (event, customerName) => {
                                             <br /><br /> Your presence will undoubtedly add to the excitement and
                                             prestige of the evening.
                                             <br /><br /> We are delighted to host you and look forward to celebrating
-                                            the achievements and milestones within our community together at pearl
-                                            continental Karachi starting from 6:30 pm- 10pm, Should you have any
+                                            the achievements and milestones within our community together at ${event.venue} starting from ${event.eventStartTime} - ${event.eventEndTime}, Should you have any
                                             questions or need further assistance, please do not hesitate to reach out to
                                             us at [<a style="text-decoration: none; color: #000000;"
                                                 href="mailto:info@adstreet.com.pk">info@adstreet.com.pk</a>].
@@ -270,18 +269,18 @@ const getEmailTemplate = async (event, customerName) => {
                                             Dear ${customerName}</p>
                                         <p
                                             style="font-family:'Segoe UI',Roboto,'Helvetica Neue',Arial,'Noto Sans',sans-serif,'Apple Color Emoji','Segoe UI Emoji','Segoe UI Symbol','Noto Color Emoji'; font-size:16px; margin: 0; margin-bottom: 20px; color:#000000;">
-                                            We are delighted to extend our gratitude to you for booking your place at AdVision 2024 to discuss the future of Marketing By Adstreet.
+                                            We are delighted to extend our gratitude to you for booking your place at AdVision ${event.eventDetails.year} to discuss the future of Marketing By Adstreet.
                                             <br/>Your participation signifies a commitment to staying ahead in the dynamic world of marketing, and we are excited to have you join us for this landmark event. 
 
                                         <p
                                             style="font-family:'Segoe UI',Roboto,'Helvetica Neue',Arial,'Noto Sans',sans-serif,'Apple Color Emoji','Segoe UI Emoji','Segoe UI Symbol','Noto Color Emoji'; font-size:16px; margin: 0; margin-bottom: 20px; color:#000000;">
-                                            AdVision 2024 promises to be an extraordinary conference where local and global industry leaders, innovators, and visionaries will come together to share their insights and expertise. 
+                                            AdVision ${event.eventDetails.year} promises to be an extraordinary conference where local and global industry leaders, innovators, and visionaries will come together to share their insights and expertise. 
                                             <br /><br />You'll have the opportunity to discover the latest trends, tools, and techniques that are shaping the future of marketing.
                                             <br /><br /> Your presence will undoubtedly add to the excitement and
                                             prestige of the evening.
                                             <br /><br />Our team has meticulously planned an agenda that includes thought-provoking keynote sessions, and panel talks, and ample networking opportunities. 
                                             <br /><br />We are confident that your experience will be both inspiring and enriching.
-                                            <br /><br />We are thrilled to host you and look forward to seeing you on August 29th at Pearl Continental Grand Ballroom  starting from 10:00 am - 2:30 pm. 
+                                            <br /><br />We are thrilled to host you and look forward to seeing you on ${event.eventDetails.monthName} ${event.eventDetails.dateNumber} at ${event.venue} starting from ${event.eventStartTime} - ${event.eventEndTime}. 
 
 
                                             <br /><br /> Should you have any questions or require further assistance, please do not hesitate to reach out to us at [<a style="text-decoration: none; color: #000000;" href="mailto:info@adstreet.com.pk">info@adstreet.com.pk</a>].
