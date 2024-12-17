@@ -12,7 +12,7 @@ const createBanner = async (req, res) => {
     if(req.body.eventName){
       const eventName = req.body.eventName.toLowerCase().trim()
       req.body.eventName = eventName.includes('dragons') ? eventName.split(" ")[0] : eventName
-      banner.url = `form?event=${req.body.eventName.toLowerCase()}`
+      req.body.url = `form?event=${req.body.eventName.toLowerCase()}`
     }
     const banner = new Banner(req.body);
     await banner.save();
