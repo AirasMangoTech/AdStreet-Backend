@@ -1,5 +1,7 @@
+const { format } = require('date-fns');
 const UserEvent = require('../models/usersevents');
 const Event = require('../models/banner')
+const Blog = require('../models/blogs')
 const response = require("../utils/responseHelpers");
 const { sendEventEmail } = require("../utils/sendEventEmail");
 
@@ -20,32 +22,49 @@ const getDateDetails = (dateString) => {
     return { dayName, monthName, dateNumber, year };
 };
 
+
 exports.addUserEvent = async (req, res) => {
     try {
         const eventData = req.body;
-        const eventName = req.query.event.toLowerCase();
+        const eventName = req.query.event?.toLowerCase();
 
-        const event = await Event.findOne({ eventName });
+        if (!eventName) {
+            return response.badRequest(res, "Event name is required.");
+        }
+
+        const event = await Event.findOne({ eventName }) || await Blog.findOne({ type: eventName });
 
         if (!event) {
             return response.badRequest(res, `No event named "${eventName}" exists.`);
         }
 
-        if (!event.eventDate) {
-            return response.badRequest(res, "Event date is not defined.");
+        const eventClone = { ...event.toObject() };
+
+        if (!eventClone.eventDate) {
+            eventClone.eventDate = format(new Date(event.date), 'dd/MM/yyyy');
+            eventClone.eventStartTime = format(new Date(event.additional.start_time), 'HH:mm a');
+            eventClone.eventEndTime = format(new Date(event.additional.end_time), 'HH:mm a');
+            eventClone.eventName = event.title;
+            eventClone.venue = event.additional.location;
         }
 
-        event.eventDetails = getDateDetails(event.eventDate);
 
-        const userevent = await UserEvent.create(eventData);
+        eventClone.eventDetails = getDateDetails(eventClone.eventDate);
 
-        const name = userevent.name.charAt(0).toUpperCase() + userevent.name.slice(1)
-        await sendEventEmail(userevent.email, name, event);
-        return response.success(res, "Event created successfully.", { event: userevent });
+        const userEvent = await UserEvent.create(eventData);
 
+        const name = userEvent.name?.charAt(0).toUpperCase() + userEvent.name?.slice(1);
+
+        if (userEvent.email && name) {
+            await sendEventEmail(userEvent.email, name, eventClone);
+        } else {
+            console.warn("User email or name is missing, skipping email.");
+        }
+
+        return response.success(res, "Event created successfully.", { event: userEvent });
     } catch (error) {
-        console.error(`Error creating event: ${error.message}`);
-        return response.serverError(res, "Error creating event");
+        console.error(`Error creating event: ${error.message}`, error);
+        return response.serverError(res, "Error creating event.");
     }
 };
 
