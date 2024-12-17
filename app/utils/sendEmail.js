@@ -12,7 +12,6 @@ const sendEventEmailWithCC = async (toEmail ,subject, body) => {
             text: subject,
             html: body,
           });
-          console.log(info)
           return info;
     } catch (error) {
         console.log(error)
@@ -30,7 +29,6 @@ const sendOTPEmail = async (toEmail ,subject, body) => {
             text: subject,
             html: body,
           });
-          console.log(info)
           return info;
     } catch (error) {
         console.log(error)

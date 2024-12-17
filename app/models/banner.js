@@ -18,6 +18,10 @@ const bannerSchema = new mongoose.Schema({
     type: String,
     required: [true, 'When will event end.']
   },
+  venue: {
+    type: String,
+    required: [true, 'Please tell us the venue of event.']
+  },
   imageUrl: {
     type: String,
     required: true,

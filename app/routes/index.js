@@ -10,7 +10,6 @@ const admin = require("./admin.routes");
 const app = require("./app.routes");
 const category = require("./category.routes");
 const chat = require("./chat.routes");
-const event = require("./event.routes");
 const fresh = require("./freshLeaks.routes");
 const geo = require("./geo.routes");
 const blog = require("./blog.routes");
@@ -22,6 +21,7 @@ const portfolio = require("./portfolio.routes");
 const promoOffer = require("./promoOffer.routes");
 const service = require("./service.routes");
 const paymentMethod = require("./paymentMethod.routes");
+const userEvent = require('./userevent.routes')
 
 router.use("/ad", ad);
 router.use("/admeet", admeet);
@@ -33,7 +33,6 @@ router.use("/blog", blog);
 router.use("/banner", banner);
 router.use("/category", category);
 router.use("/chat", chat);
-router.use("/event", event);
 router.use("/fresh", fresh);
 router.use("/geo", geo);
 router.use("/industry", industry);
@@ -43,4 +42,6 @@ router.use("/proposal", proposal);
 router.use("/promoOffer", promoOffer);
 router.use("/service", service);
 router.use("/paymentMethod", paymentMethod);
+router.use("/userEvent", userEvent);
+
 module.exports = router;

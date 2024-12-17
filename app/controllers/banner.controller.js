@@ -9,6 +9,8 @@ const createBanner = async (req, res) => {
     if (!req.body.imageUrl) {
       return response.badRequest(res, "Banner content can not be empty");
     }
+    const eventName = req.body.eventName.toLowerCase().trim()
+    req.body.eventName = eventName.includes('dragons') ? eventName.split(" ")[0] : eventName
     const banner = new Banner(req.body);
     banner.url = `form?event=${req.body.eventName.toLowerCase()}`
     await banner.save();
@@ -18,24 +20,25 @@ const createBanner = async (req, res) => {
     return response.serverError(res, `Error creating banner: ${err}`);
   }
 };
-// Retrieve all Banners from the database.
+
 const getAllBanners = async (req, res) => {
   try {
     let query = {};
     if (req.query.type) {
-      query.type = req.query.type;
+      query.type = req.query.type.toLowerCase(); // Ensure type matches schema's lowercase requirement
     }
 
     const userId = req.user.id;
 
+    // Fetch banners and populate the related blog
     const banners = await Banner.find(query).populate("blog").lean();
-    
+
     const modifiedBanners = await Promise.all(
       banners.map(async (banner) => {
         if (banner.blog) {
           const blogId = banner.blog._id;
-    
-          // Perform the aggregation only if blog exists
+
+          // Perform the aggregation only if the blog exists
           const [blogData] = await Blog.aggregate([
             { $match: { _id: blogId } },
             {
@@ -97,8 +100,8 @@ const getAllBanners = async (req, res) => {
               }
             }
           ]);
-    
-          // Merge the aggregated fields into the banner
+
+          // Merge aggregated fields into the banner object
           return {
             ...banner,
             blogId: {
@@ -106,23 +109,26 @@ const getAllBanners = async (req, res) => {
               interestCount: blogData?.interestCount || 0,
               expressedInterest: blogData?.expressedInterest || false,
             },
-            blog: undefined // Optionally remove the original blog field
+            blog: undefined, // Optionally remove the original blog field
           };
         } else {
-          // If no blog, just return the banner with blogId set to null
+          // If no blog, return banner with blogId set to null
           return {
             ...banner,
             blogId: null,
-            blog: undefined
+            blog: undefined,
           };
         }
       })
     );
 
+    // Filter results based on `isActive` if necessary (based on schema)
+    const activeBanners = modifiedBanners.filter(banner => banner.isActive);
+
     return response.success(res, "Banners retrieved successfully", { banners: modifiedBanners });
   } catch (err) {
-    console.log(err);
-    return response.serverError(res, `Error retrieving banners: ${err}`);
+    console.error(err);
+    return response.serverError(res, `Error retrieving banners: ${err.message}`);
   }
 };
 

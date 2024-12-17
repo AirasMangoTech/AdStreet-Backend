@@ -7,7 +7,7 @@ const userEventSchema = mongoose.Schema({
     required: [true, "Name is required"]
   },
   phoneNumber: {
-    type: String,
+    type: Number,
     required: [true, 'Phone number is required.']
   },
   email: {
