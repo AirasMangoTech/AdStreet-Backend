@@ -1,5 +1,6 @@
 const User = require("../models/users");
 const Wallet = require("../models/wallet");
+const WithdrawRequest = require("../models/withdrawRequest");
 const { ROLE_IDS } = require("../utils/utility");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
@@ -152,13 +153,17 @@ const login = async (req, res) => {
         //fcmToken:  user.fcmToken,
       };
 
-      let fcmObj = {
-        user_id: user._id,
-        device_uid: req.headers.deviceid,
-        token: req.body.fcmToken,
-      };
-      let fcm = new FcmToken(fcmObj);
-      await fcm.save();
+
+      if(fcmToken){
+        let fcmObj = {
+          user_id: user._id,
+          device_uid: req.headers.deviceid,
+          token: req.body.fcmToken,
+        };
+        let fcm = new FcmToken(fcmObj);
+        await fcm.save();
+      }
+      
 
       // Return success response
       return response.success(res, "Login Successful", { user: obj });
@@ -464,6 +469,133 @@ const getWalletHistory = async (req, res) => {
   }
 };
 
+const createWithdrawRequest = async (req, res) => {
+  try {
+    const requestObj = req.query;
+    requestObj.user = req.user.id;
+
+    const request = new WithdrawRequest(requestObj);
+    await request.save();
+
+    const message = "Withdraw request generate successfully.";
+
+    return response.success(res, message, {request});
+  } catch (error) {
+    console.log(error);
+    return response.serverError(
+      res,
+      error.message,
+      "Failed to load Payment Method"
+    );
+  }
+};
+
+const updateWithdrawRequest = async (req, res) => {
+  try {
+
+    if (req.user.role_id !== ROLE_IDS.ADMIN) {
+      return response.forbidden(
+        res,
+        "You don't have permission to perform this action"
+      );
+    }
+    
+    const request = await WithdrawRequest.findByIdAndUpdate(req.params.id, req.body, {
+      new: true,
+    });
+    
+    if (!request) {
+      return response.notFound(
+        res,
+        `No request was found with the id of ${req.params.id}`
+      );
+    }
+
+    if(request.status == true){
+
+      let user_wallet = new Wallet({
+        user: request.user.id,
+        amount: request.amount,
+        description: 'Amount debited from wallet on user request',
+        status: 'WITHDRAW',
+      });
+
+      await user_wallet.save();
+
+    }
+
+    return response.success(res, "Withdraw request updated successfully.", { request });
+
+  } catch (error) {
+    console.log(error);
+    return response.serverError(
+      res,
+      error.message,
+      "Failed to load Payment Method"
+    );
+  }
+};
+
+const getWithdrawRequest = async (req, res) => {
+  try {
+    const { search } = req.query;
+    let query = {};
+    if (search) {
+      query = { name: { $regex: new RegExp(search, "i") } };
+    }
+    
+
+    if (req.user.role_id !== ROLE_IDS.ADMIN) {
+      query.user = new mongoose.Types.ObjectId(req.user.id);
+    }
+    else{
+      if (req.query.user_id) {
+        query.user = new mongoose.Types.ObjectId(req.query.user_id);
+      }
+    }
+
+    const getStartOfDay = (date) => {
+      return moment(date).startOf("day").toDate();
+    };
+    const getEndOfDay = (date) => {
+      return moment(date).endOf("day").toDate();
+    };
+    if (req.query.from && req.query.to) {
+      query.createdAt = {
+        $gte: getStartOfDay(new Date(req.query.from)),
+        $lte: getEndOfDay(new Date(req.query.to)),
+      };
+    } else if (req.query.from) {
+      query.createdAt = {
+        $gte: getStartOfDay(new Date(req.query.from)),
+      };
+    } else if (req.query.to) {
+      query.createdAt = {
+        $lte: getEndOfDay(new Date(req.query.to)),
+      };
+    }
+
+    const page = parseInt(req.query.page) || 1; // Default to page 1 if not specified
+    const limit = parseInt(req.query.limit) || 10; // Default limit to 10 items per page
+    const skipIndex = (page - 1) * limit;
+
+    const requests = await WithdrawRequest.find(query)
+      .sort({ createdAt: -1 })
+      .skip(skipIndex)
+      .limit(limit);
+
+    const totalrequests = await WithdrawRequest.countDocuments(query);
+    const totalPages = Math.ceil(totalrequests / limit);
+     // Use a consistent structure for the response
+    const message = categories.length === 0 ? "No categories found" : "Withdraw requests loaded successfully";
+    return response.success(res, message, { requests, totalPages, currentPage: page, totalrequests});
+    
+  } catch (error) {
+    console.log(error);
+    return response.serverError(res, error.message, "Failed to load Categories");
+  }
+};
+
 module.exports = {
   signup,
   login,
@@ -473,4 +605,7 @@ module.exports = {
   getWalletHistory,
   getUser,
   updateUser,
+  createWithdrawRequest,
+  updateWithdrawRequest,
+  getWithdrawRequest,
 };

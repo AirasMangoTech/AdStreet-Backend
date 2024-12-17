@@ -1,4 +1,5 @@
 const Service = require("../models/services");
+const User = require("../models/users");
 const response = require("../utils/responseHelpers");
 const { ROLE_IDS } = require("../utils/utility");
 
@@ -83,7 +84,13 @@ const deleteServiceType = async (req, res) => {
         "You don't have permission to perform this action"
       );
     const { id } = req.params;
-    console.log(id);
+    
+    const isServiceConnected = await User.findOne({ "additional.services": id });
+
+    if (isServiceConnected) {
+      return res.status(400).json({ error: "Cannot delete service. It is connected to one or more users." });
+    }
+
     await Service.findByIdAndDelete(id);
     res.json({ message: "Service type deleted successfully" });
   } catch (error) {

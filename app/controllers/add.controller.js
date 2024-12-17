@@ -780,7 +780,6 @@ const updatePermissions = async (req, res) => {
   }
 };
 
-console.log();
 module.exports = {
   postAd,
   getAllAds,

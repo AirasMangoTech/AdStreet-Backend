@@ -16,4 +16,8 @@ user_route.put("/updateUser", [verifyToken], user.updateUser);
 //user_route.get('/retrieveDataForRole', [verifyToken], user.retrieveDataForRole);
 user_route.get("/getWalletHistory", [verifyToken], user.getWalletHistory);
 
+user_route.post("/createWithdrawRequest", [verifyToken], user.createWithdrawRequest);
+user_route.put("/updateWithdrawRequest/:id", [verifyToken], user.updateWithdrawRequest);
+user_route.get("/getWithdrawRequest", [verifyToken], user.getWithdrawRequest);
+
 module.exports = user_route;

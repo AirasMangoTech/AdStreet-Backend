@@ -1,4 +1,5 @@
 const Industry = require("../models/industry");
+const User = require("../models/users");
 const response = require("../utils/responseHelpers");
 const { ROLE_IDS } = require("../utils/utility");
 
@@ -80,7 +81,13 @@ const deleteIndustry = async (req, res) => {
         "You don't have permission to perform this action"
       );
     const { id } = req.params;
-    console.log(id);
+
+    const isIndustryConnected = await User.findOne({ "additional.industry": id });
+
+    if (isIndustryConnected) {
+      return res.status(400).json({ error: "Cannot delete industry. It is connected to one or more users." });
+    }
+
     await Industry.findByIdAndDelete(id);
     res.json({ message: "industry type deleted successfully" });
   } catch (error) {
