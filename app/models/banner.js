@@ -3,7 +3,7 @@ const mongoose = require("mongoose");
 const bannerSchema = new mongoose.Schema({
   eventName: {
     type: String,
-    lowerCase: true
+    lowerCase: true,
   },
   eventDate: {
     type: String,
@@ -15,6 +15,9 @@ const bannerSchema = new mongoose.Schema({
     type: String,
   },
   venue: {
+    type: String,
+  },
+  formImg: {
     type: String,
   },
   imageUrl: {

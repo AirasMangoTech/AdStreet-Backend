@@ -1,40 +1,44 @@
 const { sendEventEmailWithCC } = require("../utils/sendEmail");
 
 const sendEventEmail = async (toEmail, name, event) => {
-    try {
+  try {
+    var body = await getEmailTemplate(event, name);
 
-        var body = await getEmailTemplate(event, name);
+    var subject = "";
 
-        var subject = "";
-
-        // FOR ADMEET EVENT
-        if (event.eventName.includes("meet")) {
-            subject = "Thank You for Registering for to AdMeet";
-        }
-        // FOR DRAGONS OF PAKISTAN EVENT
-        else if (event.eventName.includes("dragon")) {
-            subject = "Thank You for Registering for Dragons Of Pakistan!";
-        }
-        // FOR ADVISION EVENT
-        else {
-            subject = `Thank You for Registering for AdVision ${event.eventDetails.year}!`;
-        }
-
-        var resp = await sendEventEmailWithCC(toEmail, subject, body);
-
-        return resp;
-
-    } catch (error) {
-        console.log(error)
-        return error;
+    // FOR ADMEET EVENT
+    if (event.eventName.includes("meet")) {
+      subject = "Thank You for Registering for to AdMeet";
     }
-}
+    // FOR DRAGONS OF PAKISTAN EVENT
+    else if (event.eventName.includes("dragon")) {
+      subject = "Thank You for Registering for Dragons Of Pakistan!";
+    }
+    // FOR ADVISION EVENT
+    else if (event.eventName.includes("advision")) {
+      subject = `Thank You for Registering for AdVision ${event.eventDetails.year}!`;
+    } else {
+      const eventName =
+        event.eventName.replace(/-/g, " ").charAt(0).toUpperCase() +
+        event.eventName.replace(/-/g, " ").slice(1);
+
+      subject = `Thank You for Registering for ${eventName} ${event.eventDetails.year}`;
+    }
+
+    var resp = await sendEventEmailWithCC(toEmail, subject, body);
+
+    return resp;
+  } catch (error) {
+    console.log(error);
+    return error;
+  }
+};
 
 const getEmailTemplate = async (event, customerName) => {
-    try {
-        if (event.eventName.includes("meet")) // For AddMeet
-        {
-            return `<table class="table-responsive" width="" border="1" cellspacing="0" cellpadding="0"
+  try {
+    if (event.eventName.includes("meet")) {
+      // For AddMeet
+      return `<table class="table-responsive" width="" border="1" cellspacing="0" cellpadding="0"
     style="border-collapse:collapse;max-width:600px;border-color: #00000047;box-shadow: 20px 20px 10px grey !important;"
     align="center">
     <tr>
@@ -125,10 +129,9 @@ const getEmailTemplate = async (event, customerName) => {
         </td>
     </tr>
 </table>`;
-        }
-        else if (event.eventName.includes("dragon")) // For event Dragon
-        {
-            return `<table class="table-responsive" width="" border="1" cellspacing="0" cellpadding="0"
+    } else if (event.eventName.includes("dragon")) {
+      // For event Dragon
+      return `<table class="table-responsive" width="" border="1" cellspacing="0" cellpadding="0"
         style="border-collapse:collapse;max-width:600px;border-color: #00000047;box-shadow: 20px 20px 10px grey !important;"
         align="center">
         <tr>
@@ -233,10 +236,9 @@ const getEmailTemplate = async (event, customerName) => {
             </td>
         </tr>
     </table>`;
-        }
-        else  // For event AdVision
-        {
-            return `<table class="table-responsive" width="" border="1" cellspacing="0" cellpadding="0"
+    } else if (event.eventName.includes("advision")) {
+      // For event AdVision
+      return `<table class="table-responsive" width="" border="1" cellspacing="0" cellpadding="0"
         style="border-collapse:collapse;max-width:600px;border-color: #00000047;box-shadow: 20px 20px 10px grey !important;"
         align="center">
         <tr>
@@ -330,11 +332,105 @@ const getEmailTemplate = async (event, customerName) => {
             </td>
         </tr>
     </table>`;
-        }
-    } catch (error) {
-        console.log(error)
-        return error;
-    }
-}
+    } else {
+      const eventName =
+        event.eventName.replace(/-/g, " ").charAt(0).toUpperCase() +
+        event.eventName.replace(/-/g, " ").slice(1);
 
-module.exports = { sendEventEmail }
+      return `<table class="table-responsive" width="" border="1" cellspacing="0" cellpadding="0"
+        style="border-collapse:collapse;max-width:600px;border-color:#00000047;box-shadow:20px 20px 10px grey !important;"
+        align="center">
+     <tr>
+         <td>
+             <table width="" border="0" cellspacing="0" cellpadding="0" style="background-color:#ffffff;" align="center">
+                 <tr>
+                     <td height="30" style="height:30px;"></td>
+                 </tr>
+                 <tr>
+                     <td>
+                         <table width="100%" border="0" cellspacing="0" cellpadding="0">
+                             <tr>
+                                 <td width="30" style="width:30px;"></td>
+                                 <td>
+                                     <img src="https://adstreet.mangotech-api.com/uploads/image-1722004805906.png"
+                                          width="200" alt="Adstreet Logo" style="display:block;border:0;">
+                                 </td>
+                                 <td width="30" style="width:30px;"></td>
+                             </tr>
+                             <tr>
+                                 <td colspan="3" height="20" style="height:20px;"></td>
+                             </tr>
+                             <tr>
+                                 <td width="30" style="width:30px;"></td>
+                                 <td>
+                                     <p style="font-family:'Segoe UI',Roboto,'Helvetica Neue',Arial,'Noto Sans',sans-serif; font-size:16px; font-weight:bold; margin:0; margin-bottom:20px; color:#000000;">
+                                         Dear ${customerName},
+                                     </p>
+                                     <p style="font-family:'Segoe UI',Roboto,'Helvetica Neue',Arial,'Noto Sans',sans-serif; font-size:16px; margin:0; margin-bottom:20px; color:#000000;">
+                                         Thank you for reserving your spot at ${eventName} event. We are thrilled to have you join us as we explore new horizons and share valuable insights into the future of our industry.
+                                     </p>
+                                     <p style="font-family:'Segoe UI',Roboto,'Helvetica Neue',Arial,'Noto Sans',sans-serif; font-size:16px; margin:0; margin-bottom:20px; color:#000000;">
+                                         Our event promises to bring together industry leaders, innovators, and visionaries for an enriching experience filled with keynote sessions, panel discussions, and ample networking opportunities. Whether you're here to learn, connect, or share, we're confident it will be a memorable experience.
+                                     </p>
+                                     <p style="font-family:'Segoe UI',Roboto,'Helvetica Neue',Arial,'Noto Sans',sans-serif; font-size:16px; margin:0; margin-bottom:20px; color:#000000;">
+                                         The event details are as follows:
+                                         <br/><br/>
+                                         <strong>Date:</strong> ${event.eventDetails.monthName} ${event.eventDetails.dateNumber} <br/>
+                                         <strong>Time:</strong> ${event.eventStartTime} - ${event.eventEndTime} <br/>
+                                         <strong>Location:</strong> ${event.venue}
+                                     </p>
+                                     <p style="font-family:'Segoe UI',Roboto,'Helvetica Neue',Arial,'Noto Sans',sans-serif; font-size:16px; margin:0; margin-bottom:20px; color:#000000;">
+                                         Should you have any questions or need assistance, feel free to reach out at 
+                                         <a style="text-decoration:none;color:#000000;" href="mailto:info@adstreet.com.pk">info@adstreet.com.pk</a>.
+                                     </p>
+                                     <p style="font-family:'Segoe UI',Roboto,'Helvetica Neue',Arial,'Noto Sans',sans-serif; font-size:16px; margin:0; margin-bottom:20px; color:#000000;">
+                                         We look forward to welcoming you and making this event a great success together.
+                                     </p>
+                                     <p style="font-family:'Segoe UI',Roboto,'Helvetica Neue',Arial,'Noto Sans',sans-serif; font-size:16px; margin:0; margin-bottom:20px; color:#000000;">
+                                         Best regards, <br/><br/>
+                                         Syed Saad Hashmi <br/>
+                                         CEO <br/>
+                                         Adstreet
+                                     </p>
+                                 </td>
+                                 <td width="30" style="width:30px;"></td>
+                             </tr>
+                         </table>
+                     </td>
+                 </tr>
+                 <tr>
+                     <td height="20" style="height:20px;"></td>
+                 </tr>
+                 <tr>
+                     <td>
+                         <table width="100%" border="0" cellspacing="0" cellpadding="0"
+                                style="background-color:#ffffff; border:0;" align="center">
+                             <tr>
+                                 <td>
+                                     <table width="100%" border="0" cellspacing="0" cellpadding="0">
+                                         <tr bgcolor="#ec2028">
+                                             <td align="center" height="70" style="width:120px;">
+                                                 <p style="font-size:14px;margin:27px;margin-right:0;font-family:'Segoe UI',Roboto,'Helvetica Neue',Arial,'Noto Sans',sans-serif;color:#fff;">
+                                                     © <script>document.write(new Date().getFullYear());</script> Adstreet. All rights reserved.
+                                                 </p>
+                                             </td>
+                                         </tr>
+                                     </table>
+                                 </td>
+                             </tr>
+                         </table>
+                     </td>
+                 </tr>
+             </table>
+         </td>
+     </tr>
+ </table>
+ `;
+    }
+  } catch (error) {
+    console.log(error);
+    return error;
+  }
+};
+
+module.exports = { sendEventEmail };
