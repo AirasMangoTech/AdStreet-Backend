@@ -42,6 +42,10 @@ const userEventSchema = mongoose.Schema({
     type: String,
     enum: ["table", "seat"],
   },
+  event : {
+    type : mongoose.Schema.Types.ObjectId,
+    ref : "Banner"
+  }
 });
 
 const Event = mongoose.model("UserEvent", userEventSchema);
