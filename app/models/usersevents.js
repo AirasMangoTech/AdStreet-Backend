@@ -1,46 +1,49 @@
-const mongoose = require('mongoose')
-const { isEmail } = require('validator')
+const mongoose = require("mongoose");
+const { isEmail } = require("validator");
 
 const userEventSchema = mongoose.Schema({
   name: {
     type: String,
-    required: [true, "Name is required"]
+    required: [true, "Name is required"],
   },
   phoneNumber: {
     type: Number,
-    required: [true, 'Phone number is required.']
+    required: [true, "Phone number is required."],
   },
   email: {
     type: String,
     trim: true,
-    validate: [isEmail, 'provide valid email.']
+    validate: [isEmail, "provide valid email."],
   },
   companyName: {
     type: String,
-    required: [true, 'Company name is required']
+    required: [true, "Company name is required"],
   },
   passes: {
-    type: Number
+    type: Number,
   },
   ntnNumber: {
-    type: Number
+    type: Number,
   },
   category: {
     type: String,
-    enum: ['standard', 'premium', 'vip']
+    enum: ["standard", "premium", "vip"],
   },
   totalSeats: {
-    type: Number
+    type: Number,
   },
   totalTables: {
-    type: Number
+    type: Number,
+  },
+  price : {
+    type : Number,
   },
   book: {
     type: String,
-    enum: ['table', 'seat']
-  }
-})
+    enum: ["table", "seat"],
+  },
+});
 
-const Event = mongoose.model('UserEvent', userEventSchema)
+const Event = mongoose.model("UserEvent", userEventSchema);
 
-module.exports = Event
+module.exports = Event;
