@@ -45,6 +45,9 @@ const bannerSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: "Blog",
   },
+  isEvent: {
+    type: Boolean,
+  },
 });
 
 const Banner = mongoose.model("Banner", bannerSchema);
