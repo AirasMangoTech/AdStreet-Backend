@@ -3,7 +3,7 @@ const UserEvent = require("../models/usersevents");
 const Event = require("../models/banner");
 const Blog = require("../models/blogs");
 const response = require("../utils/responseHelpers");
-const { sendEventEmail } = require("../utils/sendEventEmail");
+const { sendEventEmail, sendEmail } = require("../utils/sendEventEmail");
 
 const getDateDetails = (dateString) => {
   if (!dateString) throw new Error("Invalid date string");
@@ -83,7 +83,7 @@ exports.addUserEvent = async (req, res) => {
       userEvent.name?.charAt(0).toUpperCase() + userEvent.name?.slice(1);
 
     if (userEvent.email && name) {
-      await sendEventEmail(userEvent.email, name, eventClone);
+      await sendEventEmail(userEvent.email, name, eventClone, event.mailBody);
     } else {
       console.warn("User email or name is missing, skipping email.");
     }
@@ -219,5 +219,19 @@ exports.deleteUserEvent = async (req, res) => {
   } catch (error) {
     console.error(`Error deleting event: ${error}`);
     return response.serverError(res, `Error deleting event: ${error}`);
+  }
+};
+
+exports.mailTo = async (req, res) => {
+  const { usersEmail, subject, message } = req.body;
+
+  const mails = usersEmail.join(", ");
+
+  try {
+    await sendEmail(mails, subject, message);
+    return response.success(res, "Mail to users sent successfully.");
+  } catch (err) {
+    console.error(`Error sending email: ${error}`);
+    return response.serverError(res, `Error sending email: ${error}`);
   }
 };
