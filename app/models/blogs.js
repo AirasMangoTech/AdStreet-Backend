@@ -7,10 +7,13 @@ const blogSchema = new mongoose.Schema({
     required: true,
     trim: true,
   },
-  user_id:{
+  user_id: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "User",
     required: false,
+  },
+  mailBody: {
+    type: String,
   },
   content: {
     type: String,
@@ -28,7 +31,7 @@ const blogSchema = new mongoose.Schema({
   blogCategory: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "BlogCategory",
-   // required: true,
+    // required: true,
   },
   image: {
     type: String,
@@ -58,34 +61,34 @@ const blogSchema = new mongoose.Schema({
     type: String,
   },
   additional: {
-    name:{
+    name: {
       type: String,
     },
-    email:{
-      type:String,
-    },
-    phone_num : {
+    email: {
       type: String,
     },
-    location:{
+    phone_num: {
       type: String,
     },
-    longitude:{
+    location: {
       type: String,
     },
-    latitude:{
+    longitude: {
       type: String,
     },
-    start_time:{
+    latitude: {
       type: String,
     },
-    end_time:{
+    start_time: {
+      type: String,
+    },
+    end_time: {
       type: String,
     },
     num_people: {
       type: Number,
     },
-    link:{
+    link: {
       type: String,
     },
     f_link: {

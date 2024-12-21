@@ -83,7 +83,7 @@ exports.addUserEvent = async (req, res) => {
       userEvent.name?.charAt(0).toUpperCase() + userEvent.name?.slice(1);
 
     if (userEvent.email && name) {
-      await sendEventEmail(userEvent.email, name, eventClone);
+      await sendEventEmail(userEvent.email, name, eventClone, event.mailBody);
     } else {
       console.warn("User email or name is missing, skipping email.");
     }

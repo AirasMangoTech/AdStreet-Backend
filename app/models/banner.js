@@ -45,6 +45,9 @@ const bannerSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: "Blog",
   },
+  mailBody: {
+    type: String,
+  },
   isEvent: {
     type: Boolean,
   },
