@@ -35,6 +35,8 @@ app.use(
       "http://adstreet.axsonstech.com",
       "http://adstreet.com.pk",
       "https://adstreet.com.pk",
+      "http://www.adstreet.com.pk",
+      "https://www.adstreet.com.pk",
       "https://adstreetweb.surge.sh",
     ],
   })
