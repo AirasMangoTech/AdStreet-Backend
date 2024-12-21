@@ -554,9 +554,6 @@ const getTemplate = (body) => {
                                 <td>
                                      <img src="https://adstreet.mangotech-api.com/uploads/image-1722004805906.png"
                                         width="200" alt="" style="display: block; border: 0; float: left;">
-                                        
-                                    <img src="https://adstreet.mangotech-api.com/uploads/image-1722426674263.png"
-                                        width="150" alt="" style="display: block; border: 0; float: right;">
 
                                 </td>
                                 <td width="30" style="width:30px;"></td>
