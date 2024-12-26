@@ -52,7 +52,7 @@ const bannerSchema = new mongoose.Schema({
     type: Boolean,
   },
   price: {
-    type: number,
+    type: Number,
   },
 });
 
