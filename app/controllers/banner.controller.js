@@ -149,6 +149,24 @@ const getAllBanners = async (req, res) => {
   }
 };
 
+const getBanner = async (req, res) => {
+  try {
+    const { eventName } = req.query;
+    if (!eventName)
+      return response.badRequest(res, "Event name cannnot be empty.");
+
+    const event = await Banner.findOne({ eventName });
+    if (!event) return response.notFound(res, "Banner not found");
+
+    return response.success(res, "Banner retrieved successfully", {
+      event,
+    });
+  } catch (e) {
+    console.log(e);
+    return response.serverError(res, `Error retrieving banner: ${e.message}`);
+  }
+};
+
 // Retrieve all Banners from the database.
 const getAllWebBanners = async (req, res) => {
   try {
@@ -211,5 +229,6 @@ module.exports = {
   getAllBanners,
   getAllWebBanners,
   updateBanner,
+  getBanner,
   deleteBanner,
 };
