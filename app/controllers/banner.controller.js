@@ -9,10 +9,13 @@ const createBanner = async (req, res) => {
     if (!req.body.imageUrl) {
       return response.badRequest(res, "Banner content can not be empty");
     }
-    if(req.body.eventName){
-      const eventName = req.body.eventName.toLowerCase().trim().replace(/\s+/g, "-");
-      req.body.url = `https://adstreet.com.pk/form?event=${eventName}`
-      req.body.eventName = eventName
+    if (req.body.eventName) {
+      const eventName = req.body.eventName
+        .toLowerCase()
+        .trim()
+        .replace(/\s+/g, "-");
+      req.body.url = `https://adstreet.com.pk/form?event=${eventName}`;
+      req.body.eventName = eventName;
     }
     const banner = new Banner(req.body);
     await banner.save();
@@ -53,20 +56,20 @@ const getAllBanners = async (req, res) => {
                       $expr: {
                         $and: [
                           { $eq: ["$blog", "$$blogId"] },
-                          { $eq: ["$expressedInterest", true] }
-                        ]
-                      }
-                    }
+                          { $eq: ["$expressedInterest", true] },
+                        ],
+                      },
+                    },
                   },
                   {
                     $group: {
                       _id: "$blog",
-                      interestCount: { $sum: 1 }
-                    }
-                  }
+                      interestCount: { $sum: 1 },
+                    },
+                  },
                 ],
-                as: "interestData"
-              }
+                as: "interestData",
+              },
             },
             {
               $lookup: {
@@ -78,29 +81,36 @@ const getAllBanners = async (req, res) => {
                       $expr: {
                         $and: [
                           { $eq: ["$blog", "$$blogId"] },
-                          { $eq: ["$user", new mongoose.Types.ObjectId(userId)] },
-                          { $eq: ["$expressedInterest", true] }
-                        ]
-                      }
-                    }
+                          {
+                            $eq: ["$user", new mongoose.Types.ObjectId(userId)],
+                          },
+                          { $eq: ["$expressedInterest", true] },
+                        ],
+                      },
+                    },
                   },
-                  { $limit: 1 }
+                  { $limit: 1 },
                 ],
-                as: "userInterestData"
-              }
+                as: "userInterestData",
+              },
             },
             {
               $addFields: {
-                interestCount: { $ifNull: [{ $arrayElemAt: ["$interestData.interestCount", 0] }, 0] },
+                interestCount: {
+                  $ifNull: [
+                    { $arrayElemAt: ["$interestData.interestCount", 0] },
+                    0,
+                  ],
+                },
                 expressedInterest: {
                   $cond: {
                     if: { $gt: [{ $size: "$userInterestData" }, 0] },
                     then: true,
-                    else: false
-                  }
-                }
-              }
-            }
+                    else: false,
+                  },
+                },
+              },
+            },
           ]);
 
           // Merge aggregated fields into the banner object
@@ -125,12 +135,17 @@ const getAllBanners = async (req, res) => {
     );
 
     // Filter results based on `isActive` if necessary (based on schema)
-    const activeBanners = modifiedBanners.filter(banner => banner.isActive);
+    const activeBanners = modifiedBanners.filter((banner) => banner.isActive);
 
-    return response.success(res, "Banners retrieved successfully", { banners: modifiedBanners });
+    return response.success(res, "Banners retrieved successfully", {
+      banners: modifiedBanners,
+    });
   } catch (err) {
     console.error(err);
-    return response.serverError(res, `Error retrieving banners: ${err.message}`);
+    return response.serverError(
+      res,
+      `Error retrieving banners: ${err.message}`
+    );
   }
 };
 
@@ -143,15 +158,17 @@ const getAllWebBanners = async (req, res) => {
     }
     const banners = await Banner.find(query).populate("blog").lean();
 
-    const modifiedBanners = banners.map(banner => {
+    const modifiedBanners = banners.map((banner) => {
       return {
         ...banner,
         blogId: banner.blog, // Assign the blog data to blogId
-        blog: undefined // Remove the original blog field
+        blog: undefined, // Remove the original blog field
       };
     });
 
-    return response.success(res, "Banners retrieved successfully", { banners: modifiedBanners });
+    return response.success(res, "Banners retrieved successfully", {
+      banners: modifiedBanners,
+    });
   } catch (err) {
     console.log(err);
     return response.serverError(res, `Error retrieving banners: ${err}`);
