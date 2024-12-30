@@ -54,6 +54,9 @@ const bannerSchema = new mongoose.Schema({
   price: {
     type: Number,
   },
+  logo: {
+    type: String,
+  },
 });
 
 const Banner = mongoose.model("Banner", bannerSchema);

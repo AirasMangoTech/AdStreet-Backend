@@ -444,6 +444,7 @@ const sendEmail = async (toEmails, subject, message) => {
 //   }
 // };
 
+// EVENT BODY FOR EVENT EMAIL TEMPLATE
 const getEmailBody = (mailBody, event, username) => {
   let body = mailBody
     .replace("[USER]", username)
@@ -458,6 +459,7 @@ const getEmailBody = (mailBody, event, username) => {
   return body;
 };
 
+// EMAIL TEMPLATE FOR EVENTS
 const getEmailTemplate = async (mailBody, event, customerName) => {
   try {
     const body = getEmailBody(mailBody, event, customerName);
@@ -477,9 +479,12 @@ const getEmailTemplate = async (mailBody, event, customerName) => {
                                <tr>
                                    <td width="30" style="width:30px;"></td>
                                    <td>
-                                       <img src="https://adstreet.mangotech-api.com/uploads/image-1722004805906.png"
-                                            width="200" alt="Adstreet Logo" style="display:block;border:0;">
-                                   </td>
+                                     <img src="https://adstreet.mangotech-api.com/uploads/image-1722004805906.png"
+                                         width="200" alt="" style="display: block; border: 0; float: left;">
+
+<img src=${event.logo}
+width="150" alt="" style="display: block; border: 0; float: right;">
+</td>
                                    <td width="30" style="width:30px;"></td>
                                </tr>
                                <tr>
@@ -535,6 +540,7 @@ const getEmailTemplate = async (mailBody, event, customerName) => {
   }
 };
 
+// EMAIL TEMPLATE FOR GENERALISED EMAILS
 const getTemplate = (body) => {
   return `<table class="table-responsive" width="" border="1" cellspacing="0" cellpadding="0"
     style="border-collapse:collapse;max-width:600px;border-color: #00000047;box-shadow: 20px 20px 10px grey !important;"

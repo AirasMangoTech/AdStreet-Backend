@@ -11,7 +11,17 @@ const sendNotification = require("../utils/sendNotifications");
 
 const createBlog = async (req, res) => {
   try {
-    const { title, content, date, time, category, type, budget, event_type, additional } = req.body;
+    const {
+      title,
+      content,
+      date,
+      time,
+      category,
+      type,
+      budget,
+      event_type,
+      additional,
+    } = req.body;
     // const blogCategory = await BlogCategory.findById(blogId);
     // if (!blogCategory) {
     //   return response.notFound(res, "Invalid Category Id");
@@ -44,53 +54,52 @@ const createBlog = async (req, res) => {
 
     await blog.save();
 
-    const notiTitle = 'New Blog';
-    const notiDescription = req.user.name + ' posted a new blog';
+    const notiTitle = "New Blog";
+    const notiDescription = req.user.name + " posted a new blog";
 
     let notiData = {
       id: blog.id,
       pagename: type,
       title: notiTitle,
-      body: notiDescription
+      body: notiDescription,
     };
 
-    const admins = await Users.find({ roles: 'ADMIN' }).select('_id');
+    const admins = await Users.find({ roles: "ADMIN" }).select("_id");
     if (admins.length > 0) {
-      const adminIds = admins.map(admin => admin._id);
-      if(adminIds.length > 0)
-        {
-          const notifications = adminIds.map(adminId => ({
-            title: notiTitle,
-            content: notiDescription,
-            icon: "check-box",
-            data: JSON.stringify(notiData),
-            user_id: adminId,
-          }));
+      const adminIds = admins.map((admin) => admin._id);
+      if (adminIds.length > 0) {
+        const notifications = adminIds.map((adminId) => ({
+          title: notiTitle,
+          content: notiDescription,
+          icon: "check-box",
+          data: JSON.stringify(notiData),
+          user_id: adminId,
+        }));
 
-          await Notification.insertMany(notifications);
+        await Notification.insertMany(notifications);
 
-          const tokens = await FcmToken.find({ user_id: { $in: adminIds } }).select('token');
-  
-          if (tokens.length > 0) {
-            const tokenList = tokens.map(tokenDoc => tokenDoc.token);
-  
-            if (tokenList.length > 0) {
-              await sendNotification(
-                notiTitle,
-                notiDescription,
-                notiData,
-                tokenList
-              );
-            }
-  
+        const tokens = await FcmToken.find({
+          user_id: { $in: adminIds },
+        }).select("token");
+
+        if (tokens.length > 0) {
+          const tokenList = tokens.map((tokenDoc) => tokenDoc.token);
+
+          if (tokenList.length > 0) {
+            await sendNotification(
+              notiTitle,
+              notiDescription,
+              notiData,
+              tokenList
+            );
           }
-
         }
+      }
     }
 
     const message = isApproved
-      //? "Blog created and approved successfully"
-      ? "Your blog has been approved."
+      ? //? "Blog created and approved successfully"
+        "Your blog has been approved."
       : "You will be notified once your blog has been approved.";
     return response.success(res, message, { blog });
   } catch (error) {
@@ -140,7 +149,6 @@ const createBlog = async (req, res) => {
 //     return response.serverError(res, "Failed to create blog", error.message);
 //   }
 // };
-
 
 // const getAllBlogs = async (req, res) => {
 //   try {
@@ -214,7 +222,7 @@ const getAllBlogs = async (req, res) => {
     if (req.query.id) {
       query._id = new mongoose.Types.ObjectId(req.query.id);
     }
-   
+
     if (req.query.category !== undefined) {
       const categories = req.query.category.split(",");
       const categoryObjectIDs = categories.map(
@@ -240,77 +248,84 @@ const getAllBlogs = async (req, res) => {
     const blogsAggregate = await Blog.aggregate([
       { $match: query },
       {
-        "$lookup": {
-          "from": "interests",
-          "let": { "blogId": "$_id" },
-          "pipeline": [
-            { 
-              "$match": { 
-                "$expr": { 
-                  "$and": [ 
-                    { "$eq": ["$blog", "$$blogId"] }, 
-                    { "$eq": ["$expressedInterest", true] }
-                  ] 
-                } 
-              } 
+        $lookup: {
+          from: "interests",
+          let: { blogId: "$_id" },
+          pipeline: [
+            {
+              $match: {
+                $expr: {
+                  $and: [
+                    { $eq: ["$blog", "$$blogId"] },
+                    { $eq: ["$expressedInterest", true] },
+                  ],
+                },
+              },
             },
-            { 
-              "$group": { 
-                "_id": "$blog", 
-                "interestCount": { "$sum": 1 }
-              } 
-            }
+            {
+              $group: {
+                _id: "$blog",
+                interestCount: { $sum: 1 },
+              },
+            },
           ],
-          "as": "interestData"
-        }
+          as: "interestData",
+        },
       },
       {
-        "$lookup": {
-          "from": "interests",
-          "let": { "blogId": "$_id" },  // Pass userId explicitly
-          "pipeline": [
-            { 
-              "$match": { 
-                "$expr": { 
-                  "$and": [ 
-                    { "$eq": ["$blog", "$$blogId"] }, 
-                    { "$eq": ["$user", new mongoose.Types.ObjectId(userId)] }, 
-                    { "$eq": ["$expressedInterest", true] }
-                  ] 
-                } 
-              } 
+        $lookup: {
+          from: "interests",
+          let: { blogId: "$_id" }, // Pass userId explicitly
+          pipeline: [
+            {
+              $match: {
+                $expr: {
+                  $and: [
+                    { $eq: ["$blog", "$$blogId"] },
+                    { $eq: ["$user", new mongoose.Types.ObjectId(userId)] },
+                    { $eq: ["$expressedInterest", true] },
+                  ],
+                },
+              },
             },
-            { 
-              "$limit": 1
-            }
+            {
+              $limit: 1,
+            },
           ],
-          "as": "userInterestData"
-        }
+          as: "userInterestData",
+        },
       },
       {
         $addFields: {
-          interestCount: { $ifNull: [{ $arrayElemAt: ["$interestData.interestCount", 0] }, 0] },
-          expressedInterest: { $cond: { if: { $gt: [{ $size: "$userInterestData" }, 0] }, then: true, else: false } }
-        }
+          interestCount: {
+            $ifNull: [{ $arrayElemAt: ["$interestData.interestCount", 0] }, 0],
+          },
+          expressedInterest: {
+            $cond: {
+              if: { $gt: [{ $size: "$userInterestData" }, 0] },
+              then: true,
+              else: false,
+            },
+          },
+        },
       },
       { $sort: { createdAt: -1 } },
       { $skip: skipIndex },
       { $limit: limit },
       {
         $lookup: {
-          from: "categories", 
+          from: "categories",
           localField: "category",
           foreignField: "_id",
-          as: "category"
-        }
+          as: "category",
+        },
       },
     ]);
-    
-    blogsAggregate.forEach(blog => {
+
+    blogsAggregate.forEach((blog) => {
       delete blog.interestData;
       delete blog.userInterestData;
     });
-    
 
     const totalBlogs = await Blog.countDocuments(query);
     const totalPages = Math.ceil(totalBlogs / limit);
@@ -335,11 +350,10 @@ const getAllBlogsWEB = async (req, res) => {
   try {
     let query = { status: true };
 
-
     if (req.query.id) {
       query._id = new mongoose.Types.ObjectId(req.query.id);
     }
-   
+
     if (req.query.category !== undefined) {
       const categories = req.query.category.split(",");
       const categoryObjectIDs = categories.map(
@@ -366,56 +380,63 @@ const getAllBlogsWEB = async (req, res) => {
     const blogsAggregate = await Blog.aggregate([
       { $match: query },
       {
-        "$lookup": {
-          "from": "interests",
-          "let": { "blogId": "$_id" },
-          "pipeline": [
-            { 
-              "$match": { 
-                "$expr": { 
-                  "$and": [ 
-                    { "$eq": ["$blog", "$$blogId"] }, 
-                    { "$eq": ["$expressedInterest", true] }
-                  ] 
-                } 
-              } 
+        $lookup: {
+          from: "interests",
+          let: { blogId: "$_id" },
+          pipeline: [
+            {
+              $match: {
+                $expr: {
+                  $and: [
+                    { $eq: ["$blog", "$$blogId"] },
+                    { $eq: ["$expressedInterest", true] },
+                  ],
+                },
+              },
             },
-            { 
-              "$group": { 
-                "_id": "$blog", 
-                "interestCount": { "$sum": 1 } 
-              } 
-            }
+            {
+              $group: {
+                _id: "$blog",
+                interestCount: { $sum: 1 },
+              },
+            },
           ],
-          "as": "interestData"
-        }
-      },      
+          as: "interestData",
+        },
+      },
       {
         $addFields: {
-          interestCount: { $ifNull: [{ $arrayElemAt: ["$interestData.interestCount", 0] }, 0] }
-        }
+          interestCount: {
+            $ifNull: [{ $arrayElemAt: ["$interestData.interestCount", 0] }, 0],
+          },
+        },
       },
       {
         $addFields: {
           // Projecting the interest boolean value
-          expressedInterest: { $cond: { if: { $gt: ["$interestCount", 0] }, then: true, else: false } }
-        }
+          expressedInterest: {
+            $cond: {
+              if: { $gt: ["$interestCount", 0] },
+              then: true,
+              else: false,
+            },
+          },
+        },
       },
       { $sort: { createdAt: -1 } },
       { $skip: skipIndex },
       { $limit: limit },
       {
         $lookup: {
-          from: "categories", 
+          from: "categories",
           localField: "category",
           foreignField: "_id",
-          as: "category"
-        }
+          as: "category",
+        },
       },
     ]);
-    
-    blogsAggregate.forEach(blog => delete blog.interestData);
-    
+
+    blogsAggregate.forEach((blog) => delete blog.interestData);
 
     const totalBlogs = await Blog.countDocuments(query);
     const totalPages = Math.ceil(totalBlogs / limit);
@@ -439,11 +460,9 @@ const updateBlog = async (req, res) => {
   try {
     const categoryId = req.params.id;
 
-    const updatedBlog = await Blog.findByIdAndUpdate(
-      categoryId,
-      req.body, 
-      { new: true }
-    );
+    const updatedBlog = await Blog.findByIdAndUpdate(categoryId, req.body, {
+      new: true,
+    });
 
     if (!updatedBlog) {
       return response.notFound(res, "Blog not found");
