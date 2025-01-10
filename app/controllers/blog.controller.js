@@ -21,6 +21,7 @@ const createBlog = async (req, res) => {
       budget,
       event_type,
       additional,
+      mailBody,
     } = req.body;
     // const blogCategory = await BlogCategory.findById(blogId);
     // if (!blogCategory) {
@@ -50,6 +51,7 @@ const createBlog = async (req, res) => {
       event_type,
       offered_by: req.body.offered_by,
       venue: req.body.venue,
+      mailBody,
     });
 
     await blog.save();
