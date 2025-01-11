@@ -95,12 +95,6 @@ width="150" alt="" style="display: block; border: 0; float: right;">
                                    <td width="30" style="width:30px;"></td>
                                    <td>
                                     ${body}   
-                                   <p style="font-family:'Segoe UI',Roboto,'Helvetica Neue',Arial,'Noto Sans',sans-serif; font-size:16px; margin:0; margin-bottom:20px; color:#000000;">
-                                           Best regards, <br/><br/>
-                                           Syed Saad Hashmi <br/>
-                                           CEO <br/>
-                                           Adstreet
-                                       </p>
                                    </td>
                                    <td width="30" style="width:30px;"></td>
                                </tr>
