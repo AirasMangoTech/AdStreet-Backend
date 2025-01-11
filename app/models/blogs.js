@@ -40,7 +40,10 @@ const blogSchema = new mongoose.Schema({
   date: {
     type: Date,
   },
-  time: {
+  eventStartTime: {
+    type: String,
+  },
+  eventEndTime: {
     type: String,
   },
   venue: {

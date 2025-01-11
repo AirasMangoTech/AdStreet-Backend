@@ -22,6 +22,8 @@ const createBlog = async (req, res) => {
       event_type,
       additional,
       mailBody,
+      eventStartTime,
+      eventEndTime
     } = req.body;
     // const blogCategory = await BlogCategory.findById(blogId);
     // if (!blogCategory) {
@@ -52,6 +54,8 @@ const createBlog = async (req, res) => {
       offered_by: req.body.offered_by,
       venue: req.body.venue,
       mailBody,
+      eventStartTime,
+      eventEndTime
     });
 
     await blog.save();
