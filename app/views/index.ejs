@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- Dynamic Title -->
+  <title>
+    <%= title %>
+  </title>
+
+  <!-- Canonical URL -->
+  <link rel="canonical" href="<%= url %>">
+
+  <!-- Open Graph (Facebook, LinkedIn) -->
+  <meta property="og:type" content="website">
+  <meta id="title" property="og:title" content="<%= title %>">
+  <meta id="image" property="og:image" content="<%= image %>">
+  <meta id="url" property="og:url" content="<%= url %>">
+  <meta id="name" property="og:site_name" content="Adstreet">
+
+  <!-- Favicon -->
+  <link rel="icon" href="/favicon.ico" type="image/x-icon">
+</head>
+
+<body>
+  <p>Redirecting...</p>
+</body>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const urlParams = new URLSearchParams(window.location.search);
+
+    // Prevent infinite redirect by checking if parameters already exist
+    if (!urlParams.has('redirected')) {
+      const title = encodeURIComponent(document.getElementById("title").getAttribute("content"));
+      const image = encodeURIComponent(document.getElementById("image").getAttribute("content"));
+      const url = document.getElementById("url").getAttribute("content");  // No encoding here
+      const name = encodeURIComponent(document.getElementById("name").getAttribute("content"));
+
+      // Redirect to the actual URL in the 'url' meta tag
+      window.location.href = `${url}?title=${title}&image=${image}&site_name=${name}&redirected=true`;
+    }
+  });
+</script>
+
+
+</html>
