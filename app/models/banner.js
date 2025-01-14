@@ -57,6 +57,9 @@ const bannerSchema = new mongoose.Schema({
   logo: {
     type: String,
   },
+  blogUrl: {
+    type: String,
+  },
 });
 
 const Banner = mongoose.model("Banner", bannerSchema);

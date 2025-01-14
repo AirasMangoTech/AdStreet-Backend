@@ -16,6 +16,12 @@ const createBanner = async (req, res) => {
         .replace(/\s+/g, "-");
       req.body.url = `https://adstreet.com.pk/form?event=${eventName}`;
       req.body.eventName = eventName;
+      if (req.body.blogId) {
+        const blog = await Blog.findById(req.body.blogId);
+        if (!blog)
+          return response.badRequest(res, "No blog exists with that ID.");
+        req.body.blogUrl = `https://adstreet.com.pk/${eventName}-blog/${req.body.blogId}`;
+      }
     }
     const banner = new Banner(req.body);
     await banner.save();

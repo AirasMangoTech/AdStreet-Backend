@@ -7,6 +7,7 @@ const socketio = require("socket.io");
 require("./app/config/database");
 const app_route = require("./app/routes/index");
 const chatRoutes = require("./app/routes/chat.routes");
+const Blog = require("./app/models/blogs");
 
 const app = express();
 const server = http.createServer(app);
@@ -16,6 +17,10 @@ app.use(express.json());
 
 // parse requests of content-type - application/x-www-form-urlencoded
 app.use(express.urlencoded({ extended: true }));
+
+// set view engine for ejs
+app.set("view engine", "ejs");
+app.set("views", path.join(__dirname, "app/views"));
 
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 app.use("/uploadFiles", express.static(path.join(__dirname, "uploadFiles")));
@@ -47,6 +52,17 @@ const port = process.env.PORT || 8035;
 app.get("/", (req, res) => {
   res.json({ message: "Codename: Project Ad Street" });
 });
+
+app.get("/share/:id", async (req, res) => {
+  const id = req.params.id;
+  const blog = await Blog.findById(id);
+  res.render("index", {
+    title: blog.title,
+    image: blog.image,
+    url: `https://adstreet.com.pk/adleaks-blog/${id}`,
+  });
+});
+
 app.use("/api", app_route);
 
 server.listen(port, () => {
