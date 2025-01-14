@@ -20,7 +20,7 @@ const createBanner = async (req, res) => {
         const blog = await Blog.findById(req.body.blogId);
         if (!blog)
           return response.badRequest(res, "No blog exists with that ID.");
-        req.body.blogUrl = `https://adstreet.com.pk/${eventName}-blog/${req.body.blogId}`;
+        req.body.blogUrl = `/${eventName}-blog/${req.body.blogId}`;
       }
     }
     const banner = new Banner(req.body);
