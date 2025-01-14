@@ -33,15 +33,9 @@
   document.addEventListener('DOMContentLoaded', () => {
     const urlParams = new URLSearchParams(window.location.search);
 
-    // Prevent infinite redirect by checking if parameters already exist
     if (!urlParams.has('redirected')) {
-      const title = encodeURIComponent(document.getElementById("title").getAttribute("content"));
-      const image = encodeURIComponent(document.getElementById("image").getAttribute("content"));
-      const url = document.getElementById("url").getAttribute("content");  // No encoding here
-      const name = encodeURIComponent(document.getElementById("name").getAttribute("content"));
-
-      // Redirect to the actual URL in the 'url' meta tag
-      window.location.href = `${url}?title=${title}&image=${image}&site_name=${name}&url=${url}&redirected=true`;
+      const url = document.getElementById("url").getAttribute("content");
+      window.location.href = `${url}&redirected=true`;
     }
   });
 </script>
