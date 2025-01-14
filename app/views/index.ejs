@@ -41,7 +41,7 @@
       const name = encodeURIComponent(document.getElementById("name").getAttribute("content"));
 
       // Redirect to the actual URL in the 'url' meta tag
-      window.location.href = `${url}?title=${title}&image=${image}&site_name=${name}&redirected=true`;
+      window.location.href = `${url}?title=${title}&image=${image}&site_name=${name}&url=${url}&redirected=true`;
     }
   });
 </script>
