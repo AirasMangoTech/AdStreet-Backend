@@ -7,10 +7,14 @@ const adSchema = new mongoose.Schema({
     required: true,
     trim: true,
   },
-  featured:{
+  featured: {
     type: Boolean,
     default: false,
-  },  
+  },
+  isMilestoneCreated: {
+    type: Boolean,
+    default: false,
+  },
   category: [
     {
       type: mongoose.Schema.Types.ObjectId,

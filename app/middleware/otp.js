@@ -35,7 +35,7 @@ const verifyOTP = async (req, res, next) => {
         }
       } catch (error) {
         if (error) {
-          return response.otpAuthExpired(res, "OTP Authentication Expired");
+          return res.json(error)
         }
       }
     }

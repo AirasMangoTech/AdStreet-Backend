@@ -54,11 +54,9 @@ const postAd = async (req, res) => {
         isMandatory: paymentstatus,
       });
       await pmstatus.save();
-
     } else {
       paymentstatus = paymentMethodStatus.isMandatory;
     }
-
 
     const newAd = new Ad({
       title,
@@ -71,29 +69,28 @@ const postAd = async (req, res) => {
       postedBy: req.user.id,
       valid_till,
       featured,
-      isActivated: !paymentstatus
+      isActivated: !paymentstatus,
     });
 
     await newAd.save();
 
     const postedBy = req.user.name;
 
-    const notiTitle = 'New Job';
-    const notiDescription = postedBy + ' posted a new job';
+    const notiTitle = "New Job";
+    const notiDescription = postedBy + " posted a new job";
 
     let notiData = {
       id: newAd.id,
-      pagename: '',
+      pagename: "",
       title: notiTitle,
-      body: notiDescription
+      body: notiDescription,
     };
 
-    const admins = await Users.find({ roles: 'ADMIN' }).select('_id');
+    const admins = await Users.find({ roles: "ADMIN" }).select("_id");
     if (admins.length > 0) {
-      const adminIds = admins.map(admin => admin._id);
+      const adminIds = admins.map((admin) => admin._id);
       if (adminIds.length > 0) {
-
-        const notifications = adminIds.map(adminId => ({
+        const notifications = adminIds.map((adminId) => ({
           title: notiTitle,
           content: notiDescription,
           icon: "check-box",
@@ -103,11 +100,12 @@ const postAd = async (req, res) => {
 
         await Notification.insertMany(notifications);
 
-        const tokens = await FcmToken.find({ user_id: { $in: adminIds } }).select('token');
+        const tokens = await FcmToken.find({
+          user_id: { $in: adminIds },
+        }).select("token");
 
         if (tokens.length > 0) {
-
-          const tokenList = tokens.map(tokenDoc => tokenDoc.token);
+          const tokenList = tokens.map((tokenDoc) => tokenDoc.token);
 
           if (tokenList.length > 0) {
             await sendNotification(
@@ -117,7 +115,6 @@ const postAd = async (req, res) => {
               tokenList
             );
           }
-
         }
       }
     }
@@ -130,7 +127,6 @@ const postAd = async (req, res) => {
 };
 
 const getAllAds = async (req, res) => {
-
   try {
     let query = { isApproved: true, isHired: false, isCompleted: false };
 
@@ -146,7 +142,7 @@ const getAllAds = async (req, res) => {
     if (req.query.adId) {
       query._id = new mongoose.Types.ObjectId(req.query.adId);
     }
-    
+
     if (req.query.category !== undefined) {
       const categories = req.query.category.split(",");
       const categoryObjectIDs = categories.map(
@@ -298,7 +294,9 @@ const GetAdddetails = async (req, res) => {
     if (!adDetails) {
       return response.notFound(res, "Ad not found");
     }
-    const proposalCount = await Proposal.countDocuments({ adId: adDetails._id });
+    const proposalCount = await Proposal.countDocuments({
+      adId: adDetails._id,
+    });
 
     const userId = new mongoose.Types.ObjectId(req.user.id);
     const proposal = await Proposal.findOne({
@@ -336,6 +334,13 @@ const acceptProposal = async (req, res) => {
       return response.notFound(res, "Ad not found");
     }
 
+    if (!ad.isMilestoneCreated) {
+      return response.badRequest(
+        res,
+        "Please create the milestone to finalize the job details."
+      );
+    }
+
     if (ad.postedBy.toString() !== req.user.id) {
       return response.authError(
         res,
@@ -367,9 +372,9 @@ const acceptProposal = async (req, res) => {
 
     let notiData = {
       id: adId,
-      pagename: '',
+      pagename: "",
       title: notiTitle,
-      body: notiDescription
+      body: notiDescription,
     };
 
     let notification = new Notification({
@@ -382,11 +387,13 @@ const acceptProposal = async (req, res) => {
     });
 
     await notification.save();
-    let notiToken = await FcmToken.find({ user_id: proposalToAccept.submittedBy._id });
+    let notiToken = await FcmToken.find({
+      user_id: proposalToAccept.submittedBy._id,
+    });
     if (notiToken.length > 0) {
       //const token = notiToken[0];
 
-      const tokenList = notiToken.map(tokenDoc => tokenDoc.token);
+      const tokenList = notiToken.map((tokenDoc) => tokenDoc.token);
 
       await sendNotification(notiTitle, notiDescription, notiData, tokenList);
     }
@@ -516,7 +523,7 @@ const updateAdStatus = async (req, res) => {
       return response.badRequest(res, "Ad ID is required");
     }
 
-    const ad = await Ad.findById(adId).populate('hired_user');
+    const ad = await Ad.findById(adId).populate("hired_user");
 
     if (!ad) {
       return response.notFound(res, "Ad not found");
@@ -533,8 +540,7 @@ const updateAdStatus = async (req, res) => {
 
     const adResponse = await AdResponse.findById(responseId);
 
-    if(!adResponse)
-    {
+    if (!adResponse) {
       return response.notFound(res, "Response not found");
     }
 
@@ -542,15 +548,15 @@ const updateAdStatus = async (req, res) => {
     ad.isCompleted = true;
     await ad.save();
 
-    const isComplete = adResponse.name.toLowerCase().includes('complete');
+    const isComplete = adResponse.name.toLowerCase().includes("complete");
 
     if (ad.isCompleted && ad.isActivated && isComplete) {
       let user_wallet = new wallet({
         user: ad.hired_user.id,
         job: ad.id,
         amount: ad.budget,
-        description: 'Amount credited for completing the job.',
-        status: 'CREDITED',
+        description: "Amount credited for completing the job.",
+        status: "CREDITED",
       });
 
       await user_wallet.save();
@@ -560,19 +566,20 @@ const updateAdStatus = async (req, res) => {
         ad: ad.id,
         cr: 0,
         dr: ad.budget,
-        description: 'Amount debited to wallet',
-        type: 'WITHDRAW', // DEPOSIT // WITHDRAW  // REFUND // COMMISSION
+        description: "Amount debited to wallet",
+        type: "WITHDRAW", // DEPOSIT // WITHDRAW  // REFUND // COMMISSION
       });
       await escrow.save();
 
-      const notiTitle_user = 'Amount credited';
-      const notiDescription_user = 'Amount credited to your wallet for completing the job.';
+      const notiTitle_user = "Amount credited";
+      const notiDescription_user =
+        "Amount credited to your wallet for completing the job.";
 
       let notiData_user = {
         id: adId,
-        pagename: '',
+        pagename: "",
         title: notiTitle_user,
-        body: notiDescription_user
+        body: notiDescription_user,
       };
 
       let notification_user = new Notification({
@@ -580,15 +587,16 @@ const updateAdStatus = async (req, res) => {
         content: notiDescription_user,
         icon: "check-box",
         data: JSON.stringify(notiData_user),
-        user_id: ad.hired_user.id
+        user_id: ad.hired_user.id,
       });
       await notification_user.save();
 
       let notiTokens_user = await FcmToken.find({ user_id: ad.hired_user.id });
 
       if (notiTokens_user.length > 0) {
-
-        const tokenList_user = notiTokens_user.map(tokenDoc => tokenDoc.token);
+        const tokenList_user = notiTokens_user.map(
+          (tokenDoc) => tokenDoc.token
+        );
 
         if (tokenList_user.length > 0) {
           await sendNotification(
@@ -598,26 +606,24 @@ const updateAdStatus = async (req, res) => {
             tokenList_user
           );
         }
-
       }
     }
 
-    
-    const notiTitle = 'Job Completed';
-    const notiDescription = 'Job status updated to completed';
+    const notiTitle = "Job Completed";
+    const notiDescription = "Job status updated to completed";
 
     let notiData = {
       id: adId,
-      pagename: '',
+      pagename: "",
       title: notiTitle,
-      body: notiDescription
+      body: notiDescription,
     };
 
-    const admins = await Users.find({ roles: 'ADMIN' }).select('_id');
+    const admins = await Users.find({ roles: "ADMIN" }).select("_id");
     if (admins.length > 0) {
-      const adminIds = admins.map(admin => admin._id);
+      const adminIds = admins.map((admin) => admin._id);
       if (adminIds.length > 0) {
-        const notifications = adminIds.map(adminId => ({
+        const notifications = adminIds.map((adminId) => ({
           title: notiTitle,
           content: notiDescription,
           icon: "check-box",
@@ -627,11 +633,12 @@ const updateAdStatus = async (req, res) => {
 
         await Notification.insertMany(notifications);
 
-        const tokens = await FcmToken.find({ user_id: { $in: adminIds } }).select('token');
+        const tokens = await FcmToken.find({
+          user_id: { $in: adminIds },
+        }).select("token");
 
         if (tokens.length > 0) {
-
-          const tokenList = tokens.map(tokenDoc => tokenDoc.token);
+          const tokenList = tokens.map((tokenDoc) => tokenDoc.token);
 
           if (tokenList.length > 0) {
             await sendNotification(
@@ -641,9 +648,7 @@ const updateAdStatus = async (req, res) => {
               tokenList
             );
           }
-
         }
-
       }
     }
 
@@ -732,11 +737,10 @@ const updateFeatureStatus = async (req, res) => {
 };
 
 const getPermissions = async (req, res) => {
-
   try {
     let query = {};
     if (req.query.role) {
-      query.role = req.query.role
+      query.role = req.query.role;
     }
     const permission = await AdPermission.find(query);
     if (!permission) {
@@ -744,9 +748,8 @@ const getPermissions = async (req, res) => {
     }
 
     return response.success(res, "Permission details retrieved successfully", {
-      permission
+      permission,
     });
-
   } catch (error) {
     console.error(`Error getting all ads: ${error}`);
     return response.serverError(res, "Error getting all ads");
@@ -771,13 +774,47 @@ const updatePermissions = async (req, res) => {
     permission.save();
 
     return response.success(res, "Permission updated successfully", {
-      permission
+      permission,
     });
-
   } catch (error) {
     console.error(`Error getting all ads: ${error}`);
     return response.serverError(res, "Error getting all ads");
   }
+};
+
+const createMilestone = async (req, res) => {
+  const id = req.query.adId;
+  req.body.isMilestoneCreated = true;
+
+  const ad = await Ad.findById(id);
+
+  if (!ad) {
+    return response.notFound(
+      res,
+      "No ad found with that ID to create milestone."
+    );
+  }
+
+  if (ad.postedBy.toString() !== req.user.id) {
+    return response.authError(
+      res,
+      "Only the creator of the ad can create milestone"
+    );
+  }
+
+  if (ad.isHired) {
+    response.badRequest(
+      res,
+      "The employee for this ad is already hired. Cannot create milestone."
+    );
+  }
+
+  const updatedAd = await Ad.findByIdAndUpdate(id, req.body, {
+    runValidators: true,
+    new: true,
+  });
+
+  response.success(res, "Milestone created.", updatedAd);
 };
 
 module.exports = {
@@ -793,4 +830,5 @@ module.exports = {
   getAllResponses,
   getPermissions,
   updatePermissions,
+  createMilestone,
 };
