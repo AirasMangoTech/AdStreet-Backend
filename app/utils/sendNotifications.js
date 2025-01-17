@@ -1,16 +1,21 @@
 const { firebase } = require("../config/firebase");
 
 const sendNotification = async (title, body, data, token) => {
+  if (!token || typeof token !== "string" || token.trim() === "") {
+    console.warn("Invalid or empty FCM token, skipping notification.");
+    return;
+  }
+
   try {
     const payload = {
       notification: {
         title: title,
         body: body,
       },
-      //token: token,
+      token: token,
       data: { obj: JSON.stringify(data) },
     };
-    
+
     // For Single Notification
 
     // await firebase
@@ -24,14 +29,12 @@ const sendNotification = async (title, body, data, token) => {
 
     //   });
 
-
     // For Multiple Notification
-    const response = await firebase.messaging().sendToDevice(token, payload);
-    console.log('Firebase Response:', response);
+    const response = await firebase.messaging().send(payload);
+    console.log("Firebase Response:", response);
 
-    console.log("im running")
+    console.log("im running");
     return true;
-
   } catch (error) {
     return error;
   }
