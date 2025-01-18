@@ -94,7 +94,7 @@ const verifyOTP = async (req, res, next) => {
     }
     console.log(otp);
     console.log(req.body.code);
-    if (otp && otp.code === req.body.code) {
+    if (otp && otp.code == req.body.code) {
       otp.is_verified = true;
       await otp.save();
       const token = jwt.sign(

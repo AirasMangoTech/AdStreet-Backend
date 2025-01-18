@@ -15,7 +15,7 @@ const postProposal = async (req, res) => {
     const adId = req.body.adId;
     const ad = await Ad.findById(adId);
 
-    if (req.user.id.toString() === ad.postedBy.toString()) {
+    if (req.user.id.toString() == ad.postedBy.toString()) {
       return response.badRequest(
         res,
         "You cannot post a proposal on your own ad",

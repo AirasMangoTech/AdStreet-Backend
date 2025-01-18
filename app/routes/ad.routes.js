@@ -38,6 +38,7 @@ ad_route.patch("/createMilestone", [verifyToken], ad.createMilestone);
 ad_route.post(
   "/completeJobByEmployee",
   [verifyToken],
+  uploadFiles.single("file"),
   ad.completeJobByEmployee
 );
 

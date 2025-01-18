@@ -13,8 +13,28 @@ const moment = require("moment");
 const wallet = require("../models/wallet");
 const paymentMethod = require("../models/paymentMethod");
 const escrowAccount = require("../models/escrowAccount");
+const cloudinary = require("../config/cloudinary");
 
-const isValidObjectId = (id) => mongoose.Types.ObjectId.isValid(id);
+const uploadToCloudinary = async (filePath, mimeType) => {
+  try {
+    let resourceType = "raw";
+
+    if (mimeType.startsWith("image/")) {
+      resourceType = "image";
+    } else if (mimeType.startsWith("video/")) {
+      resourceType = "video";
+    }
+
+    const result = await cloudinary.uploader.upload(filePath, {
+      resource_type: resourceType,
+    });
+
+    return result;
+  } catch (error) {
+    console.error("Cloudinary Upload Error:", error);
+    throw error;
+  }
+};
 
 const postAd = async (req, res) => {
   if (!req.user) {
@@ -302,7 +322,7 @@ const GetAdddetails = async (req, res) => {
 const acceptProposal = async (req, res) => {
   try {
     const { adId, proposalId, token } = req.body;
-
+    console.log(req.user);
     const ad = await Ad.findById(adId);
     if (!ad) {
       return response.notFound(res, "Ad not found");
@@ -328,11 +348,15 @@ const acceptProposal = async (req, res) => {
       );
     }
 
+    console.log("Accepting proposal.");
+
     const proposalToAccept = await Proposal.findByIdAndUpdate(
       proposalId,
       { status: "true" },
       { new: true }
-    ).populate("submittedBy", "_id");
+    );
+
+    console.log("Proposal accepted.", proposalToAccept);
 
     if (!proposalToAccept) {
       return response.notFound(res, "Proposal not found");
@@ -357,12 +381,12 @@ const acceptProposal = async (req, res) => {
       //type: "Accepted",
       icon: "check-box",
       data: JSON.stringify(notiData),
-      user_id: proposalToAccept.submittedBy._id,
+      user_id: proposalToAccept.submittedBy,
     });
 
     await notification.save();
     let notiToken = await FcmToken.find({
-      user_id: proposalToAccept.submittedBy._id,
+      user_id: proposalToAccept.submittedBy,
     });
     if (notiToken.length > 0) {
       //const token = notiToken[0];
@@ -529,29 +553,42 @@ const updateAdStatus = async (req, res) => {
     const isComplete = adResponse.name.toLowerCase().includes("complete");
 
     if (ad.isCompleted && ad.isActivated && isComplete) {
-      let user_wallet = new wallet({
-        user: ad.hired_user.id,
-        job: ad.id,
-        amount: ad.budget,
-        description: "Amount credited for completing the job.",
-        status: "CREDITED",
-      });
-
+      const admin = await Users.findOne({ roles: "ADMIN" });
+      let admin_wallet = await wallet.findOne({ user: admin._id });
+      if (admin_wallet.amount < ad.budget) {
+        ad.isCompleted = false;
+        ad.response = null;
+        await ad.save();
+        response.serverError(
+          res,
+          "There was an error sending amount to employee due to insuffiecient funds. Please contact administration."
+        );
+      }
+      admin_wallet.amount -= ad.budget;
+      let user_wallet = await wallet.findOne({ user: ad.hired_user.id });
+      user_wallet.amount += ad.budget;
       await user_wallet.save();
+      await admin_wallet.save();
 
-      let escrow = new escrowAccount({
+      let userEscrow = new escrowAccount({
         user: ad.hired_user.id,
-        ad: ad.id,
-        cr: 0,
-        dr: ad.budget,
-        description: "Amount debited to wallet",
-        type: "WITHDRAW", // DEPOSIT // WITHDRAW  // REFUND // COMMISSION
+        amount: ad.budget,
+        description: `Amount credited to wallet for completing job - ${ad.title}`,
+        type: "credit", // DEPOSIT // WITHDRAW  // REFUND // COMMISSION
       });
-      await escrow.save();
 
-      const notiTitle_user = "Amount credited";
-      const notiDescription_user =
-        "Amount credited to your wallet for completing the job.";
+      let adminEscrow = new escrowAccount({
+        user: admin._id,
+        amount: ad.budget,
+        description: `Amount debitted from wallet for transfering funds to ${ad.hired_user.name}`,
+        type: "debit", // DEPOSIT // WITHDRAW  // REFUND // COMMISSION
+      });
+
+      await adminEscrow.save();
+      await userEscrow.save();
+
+      const notiTitle_user = "New funds recieved";
+      const notiDescription_user = `Dear Customer, amount of ${ad.budget} recieved from ${req.user.name}`;
 
       let notiData_user = {
         id: adId,
@@ -760,6 +797,7 @@ const updatePermissions = async (req, res) => {
   }
 };
 
+// MILESTONE CREATION - EMPLOYER
 const createMilestone = async (req, res) => {
   try {
     const id = req.query.adId;
@@ -815,6 +853,7 @@ const createMilestone = async (req, res) => {
   }
 };
 
+// COMPLETE JOB BUTTON HANDLER - EMPLOYEE
 const completeJobByEmployee = async (req, res) => {
   try {
     const adId = req.query.adId;
@@ -891,6 +930,13 @@ const completeJobByEmployee = async (req, res) => {
       console.warn(
         "No FCM tokens found for the employer. Notification not sent."
       );
+    }
+
+    if (req.file) {
+      const file = await uploadToCloudinary(req.file.path, req.file.mimetype);
+
+      ad.work.url = file.secure_url;
+      ad.work.public_id = file.public_id;
     }
     await ad.save();
 

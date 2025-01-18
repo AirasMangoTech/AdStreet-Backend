@@ -7,6 +7,7 @@ const bcrypt = require("bcryptjs");
 const response = require("../utils/responseHelpers");
 const logger = require("../logger");
 const FcmToken = require("../models/fcmTokens");
+const escrowAccount = require('../models/')
 const auth = require("../middleware/auth");
 const { verifyGoogleToken, verifyFacebookToken } = require('../utils/verifyToken');
 require("dotenv").config();
@@ -95,6 +96,10 @@ const signup = async (req, res) => {
     };
     let fcm = new FcmToken(fcmObj);
     await fcm.save();
+
+    const wallet = await Wallet.create({
+      user: newUser._id
+    })
 
     // Generate JWT token
     const token = jwt.sign(
@@ -429,7 +434,7 @@ const getWalletHistory = async (req, res) => {
     const { user_id } = req.query;
 
     // Fetch wallet history
-    const walletHistory = await Wallet.find({ user: user_id })
+    const walletHistory = await escrowAccount.find({ user: user_id })
       .select("user amount job description status createdAt")
       .exec();
 
