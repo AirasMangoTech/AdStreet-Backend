@@ -21,6 +21,11 @@ const eaSchema = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
+  adId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Ad",
+    required: true,
+  },
 });
 
 const escrowAccount = mongoose.model("escrowAccount", eaSchema);
