@@ -167,6 +167,7 @@ const saveGatewayResponse = async (req, res) => {
     if (ResponseCode === "00") {
       const admin = await User.findOne({ roles: "ADMIN" });
       let escrow = new escrowAccount({
+        adId: ad._id,
         user: admin._id,
         amount: ad.budget,
         description: "Amount credited - " + ResponseMessage,

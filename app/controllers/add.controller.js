@@ -571,6 +571,7 @@ const updateAdStatus = async (req, res) => {
       await admin_wallet.save();
 
       let userEscrow = new escrowAccount({
+        adId: ad._id,
         user: ad.hired_user.id,
         amount: ad.budget,
         description: `Amount credited to wallet for completing job - ${ad.title}`,
@@ -578,6 +579,7 @@ const updateAdStatus = async (req, res) => {
       });
 
       let adminEscrow = new escrowAccount({
+        adId: ad._id,
         user: admin._id,
         amount: ad.budget,
         description: `Amount debitted from wallet for transfering funds to ${ad.hired_user.name}`,
