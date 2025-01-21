@@ -1,6 +1,8 @@
 const User = require("../models/users");
 const Wallet = require("../models/wallet");
 const WithdrawRequest = require("../models/withdrawRequest");
+const Account = require("../models/accounts");
+const sendNotification = require("../utils/sendNotifications");
 const { ROLE_IDS } = require("../utils/utility");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
@@ -433,14 +435,13 @@ const getWalletHistory = async (req, res) => {
           path: "adId",
           select: "title description budget hired_user postedBy isCompleted",
           populate: [
-            { path: "hired_user", select: "name email" }, 
-            { path: "postedBy", select: "name email" }  
-          ]
+            { path: "hired_user", select: "name email" },
+            { path: "postedBy", select: "name email" },
+          ],
         })
         .exec(),
       Wallet.findOne({ user: user_id }),
     ]);
-    
 
     if (!wallet) {
       return response.badRequest(res, "No wallet found for that user ID.");
@@ -473,9 +474,18 @@ const getWalletHistory = async (req, res) => {
 
 const createWithdrawRequest = async (req, res) => {
   try {
-    const requestObj = req.query;
+    const requestObj = req.body;
     requestObj.user = req.user.id;
 
+    const wallet = await Wallet.findOne({ user: req.user.id });
+    const account = await Account.findById(req.body.account);
+    if (wallet.amount < req.body.amount) {
+      return response.badRequest(res, "Insufficient funds.");
+    }
+
+    if (!account) {
+      return response.badRequest(res, "No such account.");
+    }
     const request = new WithdrawRequest(requestObj);
     await request.save();
 
@@ -494,12 +504,12 @@ const createWithdrawRequest = async (req, res) => {
 
 const updateWithdrawRequest = async (req, res) => {
   try {
-    if (req.user.role_id !== ROLE_IDS.ADMIN) {
-      return response.forbidden(
-        res,
-        "You don't have permission to perform this action"
-      );
-    }
+    // if (req.user.role_id !== ROLE_IDS.ADMIN) {
+    //   return response.forbidden(
+    //     res,
+    //     "You don't have permission to perform this action"
+    //   );
+    // }
 
     const request = await WithdrawRequest.findByIdAndUpdate(
       req.params.id,
@@ -516,20 +526,72 @@ const updateWithdrawRequest = async (req, res) => {
       );
     }
 
-    if (request.status == true) {
-      let user_wallet = new Wallet({
-        user: request.user.id,
+    if (!request.isWithdrawed) {
+      let userWallet = await Wallet.findOne({ user: req.user.id });
+
+      if (userWallet.amount < request.amount) {
+        return response.badRequest(
+          res,
+          "Cannot withdraw, user does not have sufficient funds."
+        );
+      }
+
+      userWallet.amount -= request.amount;
+      await userWallet.save();
+
+      await escrowAccount.create({
+        user: req.user.id,
         amount: request.amount,
-        description: "Amount debited from wallet on user request",
-        status: "WITHDRAW",
+        description: "Amount withdrawed from account.",
+        type: "withdraw",
       });
 
-      await user_wallet.save();
-    }
+      request.isWithdrawed = true;
+      await request.save();
 
-    return response.success(res, "Withdraw request updated successfully.", {
-      request,
-    });
+      const notificationTitle = `Funds withdrawed`;
+      const notificationDescription = `Amount of ${request.amount}PKR has been debitted from your account.`;
+
+      const notificationData = {
+        id: ad._id,
+        pagename: "job-details",
+        title: notificationTitle,
+        body: notificationDescription,
+      };
+
+      const notification = new Notification({
+        title: notificationTitle,
+        content: notificationDescription,
+        icon: "check-box",
+        data: JSON.stringify(notificationData),
+        user_id: req.user.id,
+      });
+      await notification.save();
+
+      const fcmTokens = await FcmToken.find({ user_id: req.user.id });
+      const tokenList = fcmTokens.map((tokenDoc) => tokenDoc.token);
+
+      if (tokenList.length > 0) {
+        for (const token of tokenList) {
+          await sendNotification(
+            notificationTitle,
+            notificationDescription,
+            notificationData,
+            token
+          );
+        }
+      } else {
+        console.warn(
+          "No FCM tokens found for the employer. Notification not sent."
+        );
+      }
+
+      return response.success(res, "Withdraw request updated successfully.", {
+        request,
+      });
+    } else {
+      response.badRequest(res, "Request is already withdrawed");
+    }
   } catch (error) {
     console.log(error);
     return response.serverError(
@@ -582,6 +644,8 @@ const getWithdrawRequest = async (req, res) => {
     const skipIndex = (page - 1) * limit;
 
     const requests = await WithdrawRequest.find(query)
+      .populate("user")
+      .populate("account")
       .sort({ createdAt: -1 })
       .skip(skipIndex)
       .limit(limit);
@@ -589,10 +653,7 @@ const getWithdrawRequest = async (req, res) => {
     const totalrequests = await WithdrawRequest.countDocuments(query);
     const totalPages = Math.ceil(totalrequests / limit);
     // Use a consistent structure for the response
-    const message =
-      categories.length === 0
-        ? "No categories found"
-        : "Withdraw requests loaded successfully";
+    const message = "Withdraw requests loaded successfully";
     return response.success(res, message, {
       requests,
       totalPages,

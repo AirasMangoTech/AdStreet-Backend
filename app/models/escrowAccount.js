@@ -24,7 +24,6 @@ const eaSchema = new mongoose.Schema({
   adId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Ad",
-    required: true,
   },
 });
 

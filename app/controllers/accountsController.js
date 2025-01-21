@@ -38,7 +38,7 @@ exports.getAccountByNo = async (req, res) => {
       return response.badRequest(res, "Account number is mandatory");
     }
 
-    const account = await Account.findOne({ accountNumber });
+    const account = await Account.findOne({ accountNumber }).populate("user");
 
     if (!account) {
       return response.badRequest(res, "No account associated with that number");
@@ -87,7 +87,10 @@ exports.getAllAccounts = async (req, res) => {
 
     const skip = (page - 1) * limit;
 
-    const accounts = await Account.find(filter).skip(skip).limit(Number(limit));
+    const accounts = await Account.find(filter)
+      .populate("user")
+      .skip(skip)
+      .limit(Number(limit));
 
     const totalCount = await Account.countDocuments(filter);
 
@@ -115,7 +118,7 @@ exports.updateAccount = async (req, res) => {
     return response.badRequest(res, "Account ID is mandatory");
   }
 
-  const account = await Account.findByIdAndUpdate(id, req.body, {
+  const account = await Account.findByIdAndUpdate(accountId, req.body, {
     new: true,
   });
   if (!account) {
@@ -136,7 +139,7 @@ exports.deleteAccount = async (req, res) => {
     return response.badRequest(res, "Account ID is mandatory");
   }
 
-  const account = await Account.findByIdAndDelete(id);
+  const account = await Account.findByIdAndDelete(accountId);
   if (!account) {
     return response.badRequest(res, "No account found with that ID.");
   }
