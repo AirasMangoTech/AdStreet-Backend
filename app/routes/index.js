@@ -23,6 +23,7 @@ const promoOffer = require("./promoOffer.routes");
 const service = require("./service.routes");
 const paymentMethod = require("./paymentMethod.routes");
 const userEvent = require("./userevent.routes");
+const fee = require("./proposal.routes");
 
 router.use("/ad", ad);
 router.use("/admeet", admeet);
@@ -45,5 +46,6 @@ router.use("/promoOffer", promoOffer);
 router.use("/service", service);
 router.use("/paymentMethod", paymentMethod);
 router.use("/userEvent", userEvent);
+router.use("/fee");
 
 module.exports = router;
