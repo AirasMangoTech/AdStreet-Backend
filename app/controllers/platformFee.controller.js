@@ -4,7 +4,7 @@ const response = require("../utils/responseHelpers");
 exports.createFee = async (req, res) => {
   try {
     const fees = await PlatformFee.find();
-    if (!fees) {
+    if (fees) {
       return response.badRequest(
         res,
         "Fees is already defined, try updating it."
