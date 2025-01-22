@@ -13,6 +13,7 @@ const moment = require("moment");
 const wallet = require("../models/wallet");
 const paymentMethod = require("../models/paymentMethod");
 const escrowAccount = require("../models/escrowAccount");
+const onholdAds = require("../models/onholdAds");
 const cloudinary = require("../config/cloudinary");
 
 const uploadToCloudinary = async (filePath, mimeType) => {
@@ -512,7 +513,6 @@ const getHiredUser = async (req, res) => {
   }
 };
 
-// write a function where the creator of the add can update the status of the add to completed
 const updateAdStatus = async (req, res) => {
   try {
     const adId = req.query.adId;
@@ -528,8 +528,6 @@ const updateAdStatus = async (req, res) => {
     }
 
     if (ad.postedBy.toString() !== req.user.id) {
-      console.log(req.user.id);
-
       return response.authError(
         res,
         "Only the creator of the ad can update the status"
@@ -552,7 +550,13 @@ const updateAdStatus = async (req, res) => {
 
     const isComplete = adResponse.name.toLowerCase().includes("complete");
 
+    let adminNotiTitle;
+    let adminNotiDescription;
+
     if (ad.isCompleted && ad.isActivated && isComplete) {
+      adminNotiTitle = "Job Completed";
+      adminNotiDescription = "Job status updated to completed";
+
       const admin = await Users.findOne({ roles: "ADMIN" });
       let admin_wallet = await wallet.findOne({ user: admin._id });
       if (admin_wallet.amount < ad.budget) {
@@ -624,16 +628,70 @@ const updateAdStatus = async (req, res) => {
           );
         }
       }
-    }
+    } else {
+      adminNotiTitle = "Job Canceled";
+      adminNotiDescription = "Job status updated to canceled";
 
-    const notiTitle = "Job Completed";
-    const notiDescription = "Job status updated to completed";
+      const onholdNotiTitle = "Job On Hold";
+      const onholdNotiDescription =
+        "The employer has marked the job as canceled. The job is now on hold for review by the administration. You will be notified and paid accordingly once the review is complete.";
+
+      const onholdAd = new onholdAds({
+        ad: ad._id,
+        employer: ad.postedBy,
+        employee: ad.hired_user._id,
+      });
+      await onholdAd.save();
+
+      const onholdNotiData = {
+        id: adId,
+        pagename: "",
+        title: onholdNotiTitle,
+        body: onholdNotiDescription,
+      };
+
+      const onholdNotifications = [
+        {
+          title: onholdNotiTitle,
+          content: onholdNotiDescription,
+          icon: "check-box",
+          data: JSON.stringify(onholdNotiData),
+          user_id: ad.hired_user._id,
+        },
+        {
+          title: onholdNotiTitle,
+          content: onholdNotiDescription,
+          icon: "check-box",
+          data: JSON.stringify(onholdNotiData),
+          user_id: ad.postedBy,
+        },
+      ];
+
+      await Notification.insertMany(onholdNotifications);
+
+      const onholdTokens = await FcmToken.find({
+        user_id: { $in: [ad.hired_user._id, ad.postedBy] },
+      }).select("token");
+
+      if (onholdTokens.length > 0) {
+        const onholdTokenList = onholdTokens.map((tokenDoc) => tokenDoc.token);
+
+        if (onholdTokenList.length > 0) {
+          await sendNotification(
+            onholdNotiTitle,
+            onholdNotiDescription,
+            onholdNotiData,
+            onholdTokenList
+          );
+        }
+      }
+    }
 
     let notiData = {
       id: adId,
       pagename: "",
-      title: notiTitle,
-      body: notiDescription,
+      title: adminNotiTitle,
+      body: adminNotiDescription,
     };
 
     const admins = await Users.find({ roles: "ADMIN" }).select("_id");
@@ -641,8 +699,8 @@ const updateAdStatus = async (req, res) => {
       const adminIds = admins.map((admin) => admin._id);
       if (adminIds.length > 0) {
         const notifications = adminIds.map((adminId) => ({
-          title: notiTitle,
-          content: notiDescription,
+          title: adminNotiTitle,
+          content: adminNotiDescription,
           icon: "check-box",
           data: JSON.stringify(notiData),
           user_id: adminId,
@@ -659,8 +717,8 @@ const updateAdStatus = async (req, res) => {
 
           if (tokenList.length > 0) {
             await sendNotification(
-              notiTitle,
-              notiDescription,
+              adminNotiTitle,
+              adminNotiDescription,
               notiData,
               tokenList
             );

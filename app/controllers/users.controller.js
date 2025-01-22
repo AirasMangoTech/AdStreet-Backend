@@ -470,7 +470,7 @@ const getWalletHistory = async (req, res) => {
     return response.serverError(
       res,
       error.message,
-      "Failed to load Payment Method"
+      "Failed to update withdraw request"
     );
   }
 };
@@ -539,7 +539,7 @@ const updateWithdrawRequest = async (req, res) => {
     if (!request.isWithdrawed) {
       if (!req.body.rejectReason) {
         let userWallet = await Wallet.findOne({ user: request.user });
-        const admin = await User.findOne({ roles: "ADMIN" });
+        const admin = await User.findOne({ roles: ROLE_IDS.ADMIN });
         const adminWallet = await Wallet.findOne({ user: admin._id });
         const amountToBeDeducted = request.amount + request.platformFee;
 
@@ -632,7 +632,7 @@ const updateWithdrawRequest = async (req, res) => {
           content: notificationDescription,
           icon: "check-box",
           data: JSON.stringify(notificationData),
-          user_id: req.user.id,
+          user_id: request.user,
         });
         await notification.save();
 
@@ -659,7 +659,7 @@ const updateWithdrawRequest = async (req, res) => {
         });
       }
     } else {
-      response.badRequest(res, "Request is already withdrawed.");
+      response.badRequest(res, "Request is already withdrawn.");
     }
   } catch (error) {
     console.log(error);
