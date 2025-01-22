@@ -3,7 +3,7 @@ const response = require("../utils/responseHelpers");
 
 exports.createFee = async (req, res) => {
   try {
-    const fees = await PlatformFee.find();
+    const fees = await PlatformFee.findOne();
     if (fees) {
       return response.badRequest(
         res,
@@ -20,7 +20,7 @@ exports.createFee = async (req, res) => {
 
 exports.updateFee = async (req, res) => {
   try {
-    const fees = (await PlatformFee.find())[0];
+    const fees = await PlatformFee.findOne();
     fees.fee = req.body.fee;
     await fees.save();
 
@@ -31,14 +31,26 @@ exports.updateFee = async (req, res) => {
   }
 };
 
+exports.getFee = async (req, res) => {
+  try {
+    const fee = await PlatformFee.findOne();
+    response.success(res, "Fee retrieved successfuly.", {
+      fee,
+    });
+  } catch (err) {
+    console.error("Error getting fees.", err);
+    response.serverError(res, "Server error");
+  }
+};
+
 exports.deleteFee = async (req, res) => {
   try {
-    const fees = (await PlatformFee.find())[0];
-    await PlatformFee.deleteById(fees._id);
+    const fees = await PlatformFee.findOne();
+    await PlatformFee.findByIdAndDelete(fees.id);
 
     response.success(
       res,
-      "Fees deleted succesfulyy. No user won't be charged platform fee."
+      "Fees deleted succesfulyy. User won't be charged platform fee."
     );
   } catch (err) {
     console.error("Error deleting fees.", err);
