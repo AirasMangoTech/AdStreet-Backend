@@ -2,6 +2,7 @@ const OnholdAd = require("../models/onholdAds");
 const Wallet = require("../models/wallet");
 const Notification = require("../models/notifications");
 const FcmToken = require("../models/fcmTokens");
+const Ad = require("../models/ads");
 const { ROLE_IDS } = require("../utils/utility");
 const sendNotification = require("../utils/sendNotifications");
 const response = require("../utils/responseHelpers");
@@ -9,8 +10,24 @@ const response = require("../utils/responseHelpers");
 // Create a new onholdAd
 exports.create = async (req, res) => {
   try {
-    const onholdAd = new OnholdAd(req.body);
+    const { ad, employee, employer } = req.body;
+    const adData = await Ad.findById(ad);
+    if (!adData) {
+      return res.status(400).json({
+        status: "error",
+        message: "Ad not found",
+      });
+    }
+    const onholdAd = new OnholdAd({
+      ad,
+      employee,
+      employer
+    });
     await onholdAd.save();
+
+    adData.isCompleted = true;
+    await adData.save();
+
     res.status(201).json(onholdAd);
   } catch (error) {
     console.log(error);
