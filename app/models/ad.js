@@ -90,6 +90,10 @@ const adSchema = new mongoose.Schema({
     url: String,
     public_id: String,
   },
+  isExpired: {
+    type: Boolean,
+    default: false,
+  },
 });
 
 const Ad = mongoose.model("Ad", adSchema);

@@ -154,7 +154,7 @@ const getAllAds = async (req, res) => {
   try {
     const currentDate = new Date();
     let query = {
-      valid_till: { $gte: currentDate },
+      isExpired: false,
     };
 
     if (req.query.title) {
