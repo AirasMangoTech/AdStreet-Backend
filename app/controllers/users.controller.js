@@ -1,6 +1,7 @@
 const User = require("../models/users");
 const Wallet = require("../models/wallet");
 const WithdrawRequest = require("../models/withdrawRequest");
+const Notification = require("../models/notifications");
 const Account = require("../models/accounts");
 const sendNotification = require("../utils/sendNotifications");
 const { ROLE_IDS } = require("../utils/utility");
@@ -10,6 +11,8 @@ const response = require("../utils/responseHelpers");
 const logger = require("../logger");
 const FcmToken = require("../models/fcmTokens");
 const escrowAccount = require("../models/escrowAccount");
+const PlatformFee = require("../models/platformFee");
+
 const auth = require("../middleware/auth");
 const {
   verifyGoogleToken,
@@ -479,13 +482,20 @@ const createWithdrawRequest = async (req, res) => {
 
     const wallet = await Wallet.findOne({ user: req.user.id });
     const account = await Account.findById(req.body.account);
-    if (wallet.amount < req.body.amount) {
+    if (wallet.amount < requestObj.amount) {
       return response.badRequest(res, "Insufficient funds.");
     }
 
     if (!account) {
       return response.badRequest(res, "No such account.");
     }
+
+    const percent = (await PlatformFee.findOne()).fee;
+    const requestedAmount = requestObj.amount;
+    const platformFee = (requestedAmount * percent) / 100;
+    requestObj.amount -= platformFee;
+    requestObj.platformFee = platformFee;
+
     const request = new WithdrawRequest(requestObj);
     await request.save();
 
@@ -527,70 +537,129 @@ const updateWithdrawRequest = async (req, res) => {
     }
 
     if (!request.isWithdrawed) {
-      let userWallet = await Wallet.findOne({ user: req.user.id });
+      if (!req.body.rejectReason) {
+        let userWallet = await Wallet.findOne({ user: req.user.id });
+        const admin = await User.findOne({ roles: "ADMIN" });
+        const adminWallet = await Wallet.findOne({ user: admin._id });
+        const amountToBeDeducted = request.amount + request.platformFee;
 
-      if (userWallet.amount < request.amount) {
-        return response.badRequest(
-          res,
-          "Cannot withdraw, user does not have sufficient funds."
-        );
-      }
-
-      userWallet.amount -= request.amount;
-      await userWallet.save();
-
-      await escrowAccount.create({
-        user: req.user.id,
-        amount: request.amount,
-        description: "Amount withdrawed from account.",
-        type: "withdraw",
-      });
-
-      request.isWithdrawed = true;
-      await request.save();
-
-      const notificationTitle = `Funds withdrawed`;
-      const notificationDescription = `Amount of ${request.amount}PKR has been debitted from your account.`;
-
-      const notificationData = {
-        id: ad._id,
-        pagename: "job-details",
-        title: notificationTitle,
-        body: notificationDescription,
-      };
-
-      const notification = new Notification({
-        title: notificationTitle,
-        content: notificationDescription,
-        icon: "check-box",
-        data: JSON.stringify(notificationData),
-        user_id: req.user.id,
-      });
-      await notification.save();
-
-      const fcmTokens = await FcmToken.find({ user_id: req.user.id });
-      const tokenList = fcmTokens.map((tokenDoc) => tokenDoc.token);
-
-      if (tokenList.length > 0) {
-        for (const token of tokenList) {
-          await sendNotification(
-            notificationTitle,
-            notificationDescription,
-            notificationData,
-            token
+        if (userWallet.amount < amountToBeDeducted) {
+          return response.badRequest(
+            res,
+            "Cannot withdraw, user does not have sufficient funds."
           );
         }
-      } else {
-        console.warn(
-          "No FCM tokens found for the employer. Notification not sent."
-        );
-      }
 
-      return response.success(res, "Withdraw request updated successfully.", {
-        request,
-      });
+        userWallet.amount -= amountToBeDeducted;
+        await userWallet.save();
+        adminWallet.amount += request.platformFee;
+        await adminWallet.save();
+
+        await escrowAccount.create({
+          user: req.user.id,
+          amount: amountToBeDeducted,
+          description: "Amount withdrawed from account.",
+          type: "withdraw",
+        });
+
+        await escrowAccount.create({
+          user: admin._id,
+          amount: request.platformFee,
+          description: `Amount of ${request.platformFee}Rs credited to your wallet of platform fees.`,
+          type: "credit",
+        });
+
+        request.isWithdrawed = true;
+        await request.save();
+
+        const notificationTitle = `Funds withdrawed`;
+        const notificationDescription = `Amount of ${amountToBeDeducted}PKR has been debitted from your account.`;
+
+        const notificationData = {
+          id: request._id,
+          pagename: "withdraw",
+          title: notificationTitle,
+          body: notificationDescription,
+        };
+
+        const notification = new Notification({
+          title: notificationTitle,
+          content: notificationDescription,
+          icon: "check-box",
+          data: JSON.stringify(notificationData),
+          user_id: request.user,
+        });
+        await notification.save();
+
+        const fcmTokens = await FcmToken.find({ user_id: request.user });
+        const tokenList = fcmTokens.map((tokenDoc) => tokenDoc.token);
+
+        if (tokenList.length > 0) {
+          for (const token of tokenList) {
+            await sendNotification(
+              notificationTitle,
+              notificationDescription,
+              notificationData,
+              token
+            );
+          }
+        } else {
+          console.warn(
+            "No FCM tokens found for the employer. Notification not sent."
+          );
+        }
+
+        return response.success(res, "Withdraw request updated successfully.", {
+          request,
+        });
+      } else {
+        const notificationTitle = `Withdraw request rejected`;
+        const notificationDescription = `Your withdraw request of amount ${
+          request.amount + request.platformFee
+        }Rs has been rejected due to the following reason provided by administration: ${
+          request.rejectReason
+        }. Please contact at support@adstreet.com.pk for more details`;
+
+        const notificationData = {
+          id: request._id,
+          pagename: "job-details",
+          title: notificationTitle,
+          body: notificationDescription,
+        };
+
+        const notification = new Notification({
+          title: notificationTitle,
+          content: notificationDescription,
+          icon: "check-box",
+          data: JSON.stringify(notificationData),
+          user_id: req.user.id,
+        });
+        await notification.save();
+
+        const fcmTokens = await FcmToken.find({ user_id: request.user });
+        const tokenList = fcmTokens.map((tokenDoc) => tokenDoc.token);
+
+        if (tokenList.length > 0) {
+          for (const token of tokenList) {
+            await sendNotification(
+              notificationTitle,
+              notificationDescription,
+              notificationData,
+              token
+            );
+          }
+        } else {
+          console.warn(
+            "No FCM tokens found for the employer. Notification not sent."
+          );
+        }
+
+        response.success(res, "Request rejected", {
+          reason: request.rejectReason,
+        });
+      }
     } else {
-      response.badRequest(res, "Request is already withdrawed");
+      response.badRequest(res, "Request is already withdrawed.");
     }
   } catch (error) {
     console.log(error);

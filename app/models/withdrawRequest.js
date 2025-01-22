@@ -10,6 +10,10 @@ const withdrawRequestSchema = new mongoose.Schema({
     type: Number,
     required: true,
   },
+  platformFee: {
+    type: Number,
+    required: true,
+  },
   account: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Account",

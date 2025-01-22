@@ -11,7 +11,7 @@ exports.createAccount = async (req, res) => {
 
     const existingAccount = await Account.findOne({ accountNumber });
     if (existingAccount) {
-      return response.conflict(res, "Account with this number already exists.");
+      return response.badRequest(res, "Account with this number already exists.");
     }
 
     const account = await Account.create({
