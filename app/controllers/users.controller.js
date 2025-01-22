@@ -514,12 +514,12 @@ const createWithdrawRequest = async (req, res) => {
 
 const updateWithdrawRequest = async (req, res) => {
   try {
-    // if (req.user.role_id !== ROLE_IDS.ADMIN) {
-    //   return response.forbidden(
-    //     res,
-    //     "You don't have permission to perform this action"
-    //   );
-    // }
+    if (req.user.role_id !== ROLE_IDS.ADMIN) {
+      return response.forbidden(
+        res,
+        "You don't have permission to perform this action"
+      );
+    }
 
     const request = await WithdrawRequest.findByIdAndUpdate(
       req.params.id,
@@ -538,7 +538,7 @@ const updateWithdrawRequest = async (req, res) => {
 
     if (!request.isWithdrawed) {
       if (!req.body.rejectReason) {
-        let userWallet = await Wallet.findOne({ user: req.user.id });
+        let userWallet = await Wallet.findOne({ user: request.user });
         const admin = await User.findOne({ roles: "ADMIN" });
         const adminWallet = await Wallet.findOne({ user: admin._id });
         const amountToBeDeducted = request.amount + request.platformFee;
