@@ -294,7 +294,7 @@ const getAllBlogs = async (req, res) => {
     });
   } catch (error) {
     console.error(`Error getting all blogs: ${error}`);
-    return res.status(500).json({ error });
+    return res.status(500).json({ error: error.message });
   }
 };
 
