@@ -7,7 +7,7 @@ const Admeet = require("../models/admeet");
 const Interest = require("../models/interest");
 const Adpro = require("../models/adpro");
 const Notification = require("../models/notifications");
-const sendNotification = require('../utils/sendNotifications');
+const sendNotification = require("../utils/sendNotifications");
 const response = require("../utils/responseHelpers");
 const { ROLE_IDS } = require("../utils/utility");
 const mongoose = require("mongoose");
@@ -193,20 +193,21 @@ const approveAd = async (req, res) => {
     ad.isApproved = isApproved;
     await ad.save();
 
-    let notiTitle_user = 'Job Approved';
-    let notiDescription_user = 'Thank you for posting the job. Your request has been approved by the admin.';
+    let notiTitle_user = "Job Approved";
+    let notiDescription_user =
+      "Thank you for posting the job. Your request has been approved by the admin.";
 
-    if(!isApproved)
-      {
-        notiTitle_user = 'Job Rejected';
-        notiDescription_user = 'Your request to post a job has been rejected by the admin.';
-      }
+    if (!isApproved) {
+      notiTitle_user = "Job Rejected";
+      notiDescription_user =
+        "Your request to post a job has been rejected by the admin.";
+    }
 
     let notiData_user = {
       id: ad.id,
-      pagename: '',
+      pagename: "",
       title: notiTitle_user,
-      body: notiDescription_user
+      body: notiDescription_user,
     };
 
     let notification_user = new Notification({
@@ -214,15 +215,14 @@ const approveAd = async (req, res) => {
       content: notiDescription_user,
       icon: "check-box",
       data: JSON.stringify(notiData_user),
-      user_id: ad.postedBy
+      user_id: ad.postedBy,
     });
     await notification_user.save();
 
     let notiTokens_user = await FcmToken.find({ user_id: ad.postedBy });
 
     if (notiTokens_user.length > 0) {
-
-      const tokenList_user = notiTokens_user.map(tokenDoc => tokenDoc.token);
+      const tokenList_user = notiTokens_user.map((tokenDoc) => tokenDoc.token);
 
       if (tokenList_user.length > 0) {
         await sendNotification(
@@ -232,7 +232,6 @@ const approveAd = async (req, res) => {
           tokenList_user
         );
       }
-
     }
 
     return response.success(res, "Ad approval status updated", { ad });
@@ -245,15 +244,14 @@ const approveAd = async (req, res) => {
 const getAllBlogs = async (req, res) => {
   try {
     let query = {};
-    if(req.query.isApproved){
+    if (req.query.isApproved) {
       query.isApproved = req.query.isApproved;
     }
-
 
     if (req.query.id) {
       query._id = new mongoose.Types.ObjectId(req.query.id);
     }
-   
+
     if (req.query.category !== undefined) {
       const categories = req.query.category.split(",");
       const categoryObjectIDs = categories.map(
@@ -272,7 +270,6 @@ const getAllBlogs = async (req, res) => {
       query.event_type = { $regex: new RegExp(req.query.event_type, "i") };
     }
 
-    
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
     const skipIndex = (page - 1) * limit;
@@ -296,7 +293,7 @@ const getAllBlogs = async (req, res) => {
       },
     });
   } catch (error) {
-    return response.authError(res, "something bad happened");
+    return res.status(500).json({ error });
   }
 };
 
@@ -407,27 +404,28 @@ const blogCounts = async (req, res) => {
           _id: {
             type: "$type",
             month: { $month: "$createdAt" },
-            year: { $year: "$createdAt" }
+            year: { $year: "$createdAt" },
           },
-          count: { $sum: 1 }
-        }
-      }
+          count: { $sum: 1 },
+        },
+      },
     ]);
 
     const totalBlogCountsByType = await Blog.aggregate([
       {
         $group: {
           _id: "$type",
-          total: { $sum: 1 }
-        }
-      }
+          total: { $sum: 1 },
+        },
+      },
     ]);
 
     const countsByTypeAndMonth = {};
     const totalBlogCounts = {};
 
     blogCountsByTypeAndMonth.forEach((entry) => {
-      if (entry._id.type) { // Add null check for _id.type
+      if (entry._id.type) {
+        // Add null check for _id.type
         const type = entry._id.type.toLowerCase().trim();
         const monthYear = `${entry._id.year}-${entry._id.month}`;
         if (!countsByTypeAndMonth[type]) {
@@ -439,7 +437,8 @@ const blogCounts = async (req, res) => {
 
     // Process total count of each type of blog
     totalBlogCountsByType.forEach((entry) => {
-      if (entry._id) { // Add null check for _id
+      if (entry._id) {
+        // Add null check for _id
         const type = entry._id.toLowerCase().trim();
         totalBlogCounts[type] = entry.total;
       }
@@ -447,14 +446,13 @@ const blogCounts = async (req, res) => {
 
     return response.success(res, "Blog counts by type and month", {
       countsByTypeAndMonth,
-      totalBlogCounts
+      totalBlogCounts,
     });
   } catch (err) {
     console.error("Failed to get blog counts", err);
     return response.serverError(res, "Failed to get blog counts");
   }
 };
-
 
 const approveBlog = async (req, res) => {
   try {
@@ -469,48 +467,47 @@ const approveBlog = async (req, res) => {
     blog.isApproved = isApproved;
     blog.status = isApproved;
     await blog.save();
-    
-    let notiTitle_user = 'Blog Approved';
-    let notiDescription_user = 'Thank you for posting the blog. Your request has been approved by the admin.';
 
-    if(!isApproved)
-      {
-        notiTitle_user = 'Blog Rejected';
-        notiDescription_user = 'Your request to post a blog has been rejected by the admin.';
+    let notiTitle_user = "Blog Approved";
+    let notiDescription_user =
+      "Thank you for posting the blog. Your request has been approved by the admin.";
+
+    if (!isApproved) {
+      notiTitle_user = "Blog Rejected";
+      notiDescription_user =
+        "Your request to post a blog has been rejected by the admin.";
+    }
+
+    let notiData_user = {
+      id: blog.id,
+      pagename: "",
+      title: notiTitle_user,
+      body: notiDescription_user,
+    };
+
+    let notification_user = new Notification({
+      title: notiTitle_user,
+      content: notiDescription_user,
+      icon: "check-box",
+      data: JSON.stringify(notiData_user),
+      user_id: userId,
+    });
+    await notification_user.save();
+
+    let notiTokens_user = await FcmToken.find({ user_id: userId });
+
+    if (notiTokens_user.length > 0) {
+      const tokenList_user = notiTokens_user.map((tokenDoc) => tokenDoc.token);
+
+      if (tokenList_user.length > 0) {
+        await sendNotification(
+          notiTitle_user,
+          notiDescription_user,
+          notiData_user,
+          tokenList_user
+        );
       }
-      
-      let notiData_user = {
-        id: blog.id,
-        pagename: '',
-        title: notiTitle_user,
-        body: notiDescription_user
-      };
-  
-      let notification_user = new Notification({
-        title: notiTitle_user,
-        content: notiDescription_user,
-        icon: "check-box",
-        data: JSON.stringify(notiData_user),
-        user_id: userId
-      });
-      await notification_user.save();
-  
-      let notiTokens_user = await FcmToken.find({ user_id: userId });
-  
-      if (notiTokens_user.length > 0) {
-  
-        const tokenList_user = notiTokens_user.map(tokenDoc => tokenDoc.token);
-  
-        if (tokenList_user.length > 0) {
-          await sendNotification(
-            notiTitle_user,
-            notiDescription_user,
-            notiData_user,
-            tokenList_user
-          );
-        }
-  
-      }
+    }
 
     return response.success(res, "Blog approved successfully", { blog });
   } catch (error) {
@@ -518,7 +515,6 @@ const approveBlog = async (req, res) => {
     return response.serverError(res, "Error approving blog");
   }
 };
-
 
 const getAllAds = async (req, res) => {
   try {
@@ -664,7 +660,7 @@ const getAllAds = async (req, res) => {
           budget: 1,
           jobDuration: 1,
           featured: 1,
-          postedBy: { $arrayElemAt:["$postedBy", 0] },
+          postedBy: { $arrayElemAt: ["$postedBy", 0] },
           createdAt: 1,
           image: 1,
           isApproved: 1,
@@ -705,7 +701,7 @@ const updateAdPro = async (req, res) => {
 
     adpro.isContacted = isContacted;
     await adpro.save();
-    
+
     return response.success(res, "AdPro updated successfully", { adpro });
   } catch (error) {
     console.error(`Error approving blog: ${error}`);
@@ -720,5 +716,5 @@ module.exports = {
   getAdStreetStats,
   blogCounts,
   approveBlog,
-  updateAdPro
+  updateAdPro,
 };
