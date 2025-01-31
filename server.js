@@ -59,7 +59,7 @@ app.get("/share/:id", async (req, res) => {
   res.render("index", {
     title: blog.title,
     image: blog.image,
-    url: `http://localhost:3000/adleaks-blog/${id}`,
+    url: `https://adstreet.com.pk/adleaks-blog/${id}`,
   });
 });
 
