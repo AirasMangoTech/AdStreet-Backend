@@ -8,6 +8,8 @@ require("./app/config/database");
 const app_route = require("./app/routes/index");
 const chatRoutes = require("./app/routes/chat.routes");
 const Blog = require("./app/models/blogs");
+const cron = require("node-cron");
+const adManager = require("./app/utils/adManager");
 
 const app = express();
 const server = http.createServer(app);
@@ -67,6 +69,11 @@ app.use("/api", app_route);
 
 server.listen(port, () => {
   console.log(`server is running on ${port}`);
+});
+
+cron.schedule("0 0 * * *", () => {
+  console.log("Running ad manager at midnight");
+  adManager();
 });
 
 const io = socketio(server).sockets;

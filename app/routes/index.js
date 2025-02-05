@@ -3,6 +3,7 @@
 let express = require("express");
 let router = express.Router();
 const user = require("./user.routes");
+const accounts = require("./account.routes");
 const ad = require("./ad.routes");
 const admeet = require("./admeet.routes");
 const adpro = require("./adpro.routes");
@@ -21,10 +22,13 @@ const portfolio = require("./portfolio.routes");
 const promoOffer = require("./promoOffer.routes");
 const service = require("./service.routes");
 const paymentMethod = require("./paymentMethod.routes");
-const userEvent = require('./userevent.routes')
+const userEvent = require("./userevent.routes");
+const fee = require("./platformFee.routes");
+const onholdAds = require("./onholdAds.routes");
 
 router.use("/ad", ad);
 router.use("/admeet", admeet);
+router.use("/accounts", accounts);
 router.use("/adpro", adpro);
 router.use("/admin", admin);
 router.use("/auth", user);
@@ -43,5 +47,7 @@ router.use("/promoOffer", promoOffer);
 router.use("/service", service);
 router.use("/paymentMethod", paymentMethod);
 router.use("/userEvent", userEvent);
+router.use("/fee", fee);
+router.use("/onholdAds", onholdAds);
 
 module.exports = router;

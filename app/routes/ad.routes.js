@@ -33,7 +33,14 @@ ad_route.put("/updateAdStatus", [verifyToken], ad.updateAdStatus);
 //ad_route.get('/handleAdStatus', [verifyToken], ad.handleAdStatus);
 
 // CREATE MILESTONE FOR ADS.
-ad_route.patch("/create-milestone", [verifyToken], ad.createMilestone);
+ad_route.patch("/createMilestone", [verifyToken], ad.createMilestone);
+// SEND NOTIFICATION WHEN JOB COMPLETES - EMPLOYEE
+ad_route.post(
+  "/completeJobByEmployee",
+  [verifyToken],
+  uploadFiles.single("file"),
+  ad.completeJobByEmployee
+);
 
 ad_route.post("/createResponse", [verifyToken], ad.createResponse);
 ad_route.get("/getResponses", [verifyToken], ad.getAllResponses);

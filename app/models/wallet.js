@@ -1,5 +1,4 @@
 const mongoose = require("mongoose");
-const { ObjectId } = require("mongodb");
 
 const walletSchema = new mongoose.Schema({
   user: {
@@ -10,19 +9,12 @@ const walletSchema = new mongoose.Schema({
   amount: {
     type: Number,
     required: true,
-  },
-  job: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Ad",
-    required: false,
-  },
-  description: {
-    type: String,
-    required: true,
+    default: 0,
   },
   status: {
     type: String,
     required: true,
+    default: "active",
   },
   createdAt: {
     type: Date,

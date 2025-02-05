@@ -6,18 +6,8 @@ const eaSchema = new mongoose.Schema({
     ref: "users",
     required: true,
   },
-  ad: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Ad",
-    required: true,
-  },
-  dr: {
+  amount: {
     type: Number,
-    required: true,
-  },
-  cr: {
-    type: Number,
-    required: true,
   },
   description: {
     type: String,
@@ -30,6 +20,10 @@ const eaSchema = new mongoose.Schema({
   createdAt: {
     type: Date,
     default: Date.now,
+  },
+  adId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Ad",
   },
 });
 

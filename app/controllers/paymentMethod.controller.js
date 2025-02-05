@@ -1,4 +1,5 @@
 const Ad = require("../models/ad");
+const User = require("../models/users");
 const Notification = require("../models/notifications");
 const paymentMethod = require("../models/paymentMethod");
 const sendNotification = require("../utils/sendNotifications");
@@ -8,10 +9,9 @@ const apiRequest = require("../utils/apiRequest");
 const { ROLE_IDS } = require("../utils/utility");
 const mongoose = require("mongoose");
 const moment = require("moment");
-const crypto = require('crypto');
+const crypto = require("crypto");
 const paymentlog = require("../models/paymentLogs");
 const escrowAccount = require("../models/escrowAccount");
-
 
 const updatePaymentMethodStatus = async (req, res) => {
   try {
@@ -72,22 +72,24 @@ const getPaymentStatus = async (req, res) => {
 
 const getGatewayToken = async (req, res) => {
   try {
-
     const { adId } = req.body;
 
     if (!adId) {
       return response.badRequest(res, "Ad ID is required");
     }
 
-    const ad = await Ad.findById(adId).populate('postedBy');
+    const ad = await Ad.findById(adId).populate("postedBy");
 
     if (!ad) {
       return response.notFound(res, "Ad not found");
     }
 
-    const tokenData = await apiRequest.sendRequest(process.env.KPTOKEN_URL, { institutionID: process.env.INSTITUTION_ID, kuickpaySecuredKey: process.env.KP_SECURED_KEY });
+    const tokenData = await apiRequest.sendRequest(process.env.KPTOKEN_URL, {
+      institutionID: process.env.INSTITUTION_ID,
+      kuickpaySecuredKey: process.env.KP_SECURED_KEY,
+    });
 
-    if (tokenData.responseCode !== '00') {
+    if (tokenData.responseCode !== "00") {
       return response.badRequest(res, tokenData.message);
     }
 
@@ -97,19 +99,26 @@ const getGatewayToken = async (req, res) => {
       order_id: ad.id,
       merchant_name: process.env.MERCHANT_NAME,
       amount: ad.budget,
-      transaction_description: 'Activate the Job',
+      transaction_description: "Activate the Job",
       customer_email: ad.postedBy.email,
       customer_mobile_number: ad.postedBy.phone_Number,
-      order_date: moment().format('YYYY-MM-DD'),
+      order_date: moment().format("YYYY-MM-DD"),
       token: tokenData.auth_token,
       gross_amount: ad.budget,
       tax_amount: 0,
       discount: 0,
-      signature: crypto.createHash('md5').update(process.env.INSTITUTION_ID + ad.id + ad.budget + process.env.KP_SECURED_KEY).digest('hex'),
+      signature: crypto
+        .createHash("md5")
+        .update(
+          process.env.INSTITUTION_ID +
+            ad.id +
+            ad.budget +
+            process.env.KP_SECURED_KEY
+        )
+        .digest("hex"),
       institution_id: process.env.INSTITUTION_ID,
       url: process.env.KP_REDIRECTION_URL,
     });
-
   } catch (error) {
     console.log(error);
     return response.serverError(
@@ -122,17 +131,27 @@ const getGatewayToken = async (req, res) => {
 
 const saveGatewayResponse = async (req, res) => {
   try {
-
     //const { transactionId, orderId, responseCode, responseObject } = req.body;
 
-    const { TransactionId, OrderId, ResponseCode, ResponseMessage, Signature, amountPaid, discountAmount, responseObject } = req.body;
+    const {
+      TransactionId,
+      OrderId,
+      ResponseCode,
+      ResponseMessage,
+      Signature,
+      amountPaid,
+      discountAmount,
+      responseObject,
+    } = req.body;
     // {"OrderId": "664b183154b14730f13319b9", "ResponseCode": "00", "ResponseMessage": "Transaction%20completed%20successfully", "Signature": "8663b707d69d3196a256127582a29e69", "TransactionId": "2407240407476134", "amountPaid": "125.79", "discountAmount": "0"}
 
     if (!ResponseCode) {
       return response.badRequest(res, "Response code is required");
     }
 
-    const ad = await Ad.findById(OrderId).populate('postedBy').populate('hired_user');
+    const ad = await Ad.findById(OrderId)
+      .populate("postedBy")
+      .populate("hired_user");
 
     let log = new paymentlog({
       user: ad.postedBy.id,
@@ -140,20 +159,26 @@ const saveGatewayResponse = async (req, res) => {
       amount: amountPaid,
       transactionId: TransactionId,
       responseCode: ResponseCode,
-      response: responseObject
+      response: responseObject,
     });
 
     await log.save();
 
-    if (ResponseCode === '00') {
+    if (ResponseCode === "00") {
+      const admin = await User.findOne({ roles: "ADMIN" });
       let escrow = new escrowAccount({
-        user: ad.postedBy.id,
-        ad: ad.id,
-        cr: ad.budget,
-        dr: 0,
-        description: 'Amount credited - ' + ResponseMessage,
-        type: 'DEPOSIT', // WITHDRAW  // REFUND // COMMISSION
+        adId: ad._id,
+        user: admin._id,
+        amount: ad.budget,
+        description: "Amount credited - " + ResponseMessage,
+        type: "credit", // WITHDRAW  // REFUND // COMMISSION
       });
+
+      const wallet = await findOneAndUpdate(
+        { user_id: admin.id },
+        { $inc: { amount: ad.budget } }
+      );
+      
       await escrow.save();
 
       ad.isActivated = true;
@@ -166,10 +191,12 @@ const saveGatewayResponse = async (req, res) => {
           content: `The job you are hired for is activated.`,
           icon: "check-box",
           data: JSON.stringify(notiData_user),
-          user_id: ad.hired_user.id
+          user_id: ad.hired_user.id,
         });
         await notification_user.save();
-        let notiTokens_user = await FcmToken.find({ user_id: ad.hired_user.id });
+        let notiTokens_user = await FcmToken.find({
+          user_id: ad.hired_user.id,
+        });
         for (let i = 0; i < notiTokens_user.length; i++) {
           const token_user = notiTokens_user[0];
 
@@ -180,35 +207,33 @@ const saveGatewayResponse = async (req, res) => {
           );
         }
       }
-      
+
       let notiData = {};
-        let notification = new Notification({
-          title: `Your job is activated.`,
-          content: `Your job is activated.`,
-          icon: "check-box",
-          data: JSON.stringify(notiData),
-          user_id: ad.postedBy.id
-        });
-        await notification.save();
-        let notiTokens = await FcmToken.find({ user_id: ad.postedBy.id });
-        for (let i = 0; i < notiTokens.length; i++) {
-          const token = notiTokens[0];
+      let notification = new Notification({
+        title: `Your job is activated.`,
+        content: `Your job is activated.`,
+        icon: "check-box",
+        data: JSON.stringify(notiData),
+        user_id: ad.postedBy.id,
+      });
+      await notification.save();
+      let notiTokens = await FcmToken.find({ user_id: ad.postedBy.id });
+      for (let i = 0; i < notiTokens.length; i++) {
+        const token = notiTokens[0];
 
-          await sendNotification(
-            `You've received a new notification "${req.body.name}"`,
-            notiData,
-            token.token
-          );
-        }
-
+        await sendNotification(
+          `You've received a new notification "${req.body.name}"`,
+          notiData,
+          token.token
+        );
+      }
     }
 
     const message = "Gateway response saved successfully";
 
     return response.success(res, message, {
-      log
+      log,
     });
-
   } catch (error) {
     console.log(error);
     return response.serverError(
@@ -337,12 +362,16 @@ const getescrowAccountLedger = async (req, res) => {
     const totalCount = await escrowAccount.countDocuments(query);
     const totalPages = Math.ceil(totalCount / limit);
 
-    return response.success(res, "All escrow account ledger retrieved successfully", {
-      escrowAccountLedger,
-      totalCount,
-      totalPages,
-      currentPage: page,
-    });
+    return response.success(
+      res,
+      "All escrow account ledger retrieved successfully",
+      {
+        escrowAccountLedger,
+        totalCount,
+        totalPages,
+        currentPage: page,
+      }
+    );
   } catch (error) {
     console.error(`Error getting all escrow account ledger: ${error}`);
     return response.serverError(res, "Error getting all escrow account ledger");

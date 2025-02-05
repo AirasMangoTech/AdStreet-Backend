@@ -1,5 +1,4 @@
 const mongoose = require("mongoose");
-const { ObjectId } = require("mongodb");
 
 const withdrawRequestSchema = new mongoose.Schema({
   user: {
@@ -11,15 +10,27 @@ const withdrawRequestSchema = new mongoose.Schema({
     type: Number,
     required: true,
   },
+  platformFee: {
+    type: Number,
+    required: true,
+  },
+  account: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Account",
+    required: [
+      true,
+      "Please let us know in which account you want payment to be credited in.",
+    ],
+  },
   transferImage: {
     type: String,
   },
   rejectReason: {
     type: String,
   },
-  status: {
+  isWithdrawed: {
     type: Boolean,
-    default: null
+    default: false,
   },
   createdAt: {
     type: Date,
@@ -27,5 +38,8 @@ const withdrawRequestSchema = new mongoose.Schema({
   },
 });
 
-const withdrawRequest = mongoose.model("withdrawRequest", withdrawRequestSchema);
+const withdrawRequest = mongoose.model(
+  "withdrawRequest",
+  withdrawRequestSchema
+);
 module.exports = withdrawRequest;

@@ -1,14 +1,23 @@
 const User = require("../models/users");
 const Wallet = require("../models/wallet");
 const WithdrawRequest = require("../models/withdrawRequest");
+const Notification = require("../models/notifications");
+const Account = require("../models/accounts");
+const sendNotification = require("../utils/sendNotifications");
 const { ROLE_IDS } = require("../utils/utility");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
 const response = require("../utils/responseHelpers");
 const logger = require("../logger");
 const FcmToken = require("../models/fcmTokens");
+const escrowAccount = require("../models/escrowAccount");
+const PlatformFee = require("../models/platformFee");
+
 const auth = require("../middleware/auth");
-const { verifyGoogleToken, verifyFacebookToken } = require('../utils/verifyToken');
+const {
+  verifyGoogleToken,
+  verifyFacebookToken,
+} = require("../utils/verifyToken");
 require("dotenv").config();
 const mongoose = require("mongoose");
 
@@ -63,14 +72,10 @@ const signup = async (req, res) => {
     // Encrypt the password and create new user
 
     let encryptedPassword = "";
-    if (password)
-    {
-      encryptedPassword = await bcrypt.hash(
-        password,
-        await bcrypt.genSalt(10)
-      );
+    if (password) {
+      encryptedPassword = await bcrypt.hash(password, await bcrypt.genSalt(10));
     }
-    
+
     const newUser = new User({
       name,
       email,
@@ -84,7 +89,7 @@ const signup = async (req, res) => {
       additional: additional ? additional : null,
       isSocialLogin,
       socialLogin,
-      user_type: 'normal',
+      user_type: "normal",
     });
     await newUser.save();
 
@@ -96,13 +101,16 @@ const signup = async (req, res) => {
     let fcm = new FcmToken(fcmObj);
     await fcm.save();
 
+    const wallet = await Wallet.create({
+      user: newUser._id,
+    });
+
     // Generate JWT token
     const token = jwt.sign(
       { email: newUser.email, id: newUser._id, role_id: roleId },
       process.env.SECRET_KEY,
       { expiresIn: "30d" }
     );
-
 
     let userShallow = newUser.toJSON();
     delete userShallow.password;
@@ -153,8 +161,7 @@ const login = async (req, res) => {
         //fcmToken:  user.fcmToken,
       };
 
-
-      if(fcmToken){
+      if (fcmToken) {
         let fcmObj = {
           user_id: user._id,
           device_uid: req.headers.deviceid,
@@ -163,7 +170,6 @@ const login = async (req, res) => {
         let fcm = new FcmToken(fcmObj);
         await fcm.save();
       }
-      
 
       // Return success response
       return response.success(res, "Login Successful", { user: obj });
@@ -185,12 +191,13 @@ const socialLogin = async (req, res) => {
 
     let userData;
 
-    if (socialType === 'google') {
+    if (socialType === "google") {
       userData = await verifyGoogleToken(access_token);
-      if (userData.sub !== id) throw new Error('Google user ID does not match');
-    } else if (socialType === 'facebook') {
+      if (userData.sub !== id) throw new Error("Google user ID does not match");
+    } else if (socialType === "facebook") {
       userData = await verifyFacebookToken(access_token, id);
-      if (userData.id !== id) throw new Error('Facebook user ID does not match');
+      if (userData.id !== id)
+        throw new Error("Facebook user ID does not match");
     } else {
       return response.badRequest(res, "Invalid social type");
     }
@@ -200,7 +207,9 @@ const socialLogin = async (req, res) => {
 
     // If the user doesn't exist, create a new user
     if (!user) {
-      return response.success(res, "Registration Required", { registration_required: true });
+      return response.success(res, "Registration Required", {
+        registration_required: true,
+      });
     }
 
     // Generate JWT token for the user
@@ -234,7 +243,6 @@ const socialLogin = async (req, res) => {
     await fcm.save();
 
     return response.success(res, "Login Successful", { user: obj });
-
   } catch (error) {
     console.log(error.message);
     logger.error(`ip: ${req.ip}, url: ${req.url}, error: ${error.stack}`);
@@ -245,14 +253,13 @@ const socialLogin = async (req, res) => {
 const logout = async (req, res) => {
   try {
     const { fcmToken, user_id } = req.body;
-    
-    const deletedToken = await FcmToken.deleteMany({ 
-      token: fcmToken, 
-      user_id: user_id 
+
+    const deletedToken = await FcmToken.deleteMany({
+      token: fcmToken,
+      user_id: user_id,
     });
 
-    return response.success(res, "Logout Successful", { });
-    
+    return response.success(res, "Logout Successful", {});
   } catch (error) {
     // Log the error and return a server error response
     console.log(error);
@@ -310,7 +317,7 @@ const logout = async (req, res) => {
 
 const getAllUsers = async (req, res) => {
   try {
-    let query = { user_type: 'normal' }; 
+    let query = { user_type: "normal" };
 
     if (req.query.city) {
       query.city = { $regex: new RegExp(req.query.city, "i") };
@@ -378,16 +385,14 @@ const getAllUsers = async (req, res) => {
 
 const getUser = async (req, res) => {
   try {
-    
     const { user_id } = req.query;
 
-    const user = await User.findById(user_id).select('name email phone_Number roles about image');
-    
+    const user = await User.findById(user_id).select(
+      "name email phone_Number roles about image"
+    );
+
     if (!user) {
-      return response.notFound(
-        res,
-        `User not found`
-      );
+      return response.notFound(res, `User not found`);
     }
 
     return response.success(res, "User retrieved successfully", {
@@ -401,18 +406,14 @@ const getUser = async (req, res) => {
 
 const updateUser = async (req, res) => {
   try {
-    
     const { id } = req.body;
 
     const user = await User.findByIdAndUpdate(id, req.body, {
       new: true,
-    }).select('name email phone_Number roles about image');
-    
+    }).select("name email phone_Number roles about image");
+
     if (!user) {
-      return response.notFound(
-        res,
-        `User not found`
-      );
+      return response.notFound(res, `User not found`);
     }
 
     return response.success(res, "User retrieved successfully", {
@@ -429,34 +430,39 @@ const getWalletHistory = async (req, res) => {
     const { user_id } = req.query;
 
     // Fetch wallet history
-    const walletHistory = await Wallet.find({ user: user_id })
-      .select("user amount job description status createdAt")
-      .exec();
+    const [statements, wallet] = await Promise.all([
+      escrowAccount
+        .find({ user: user_id })
+        .select("user amount job description type createdAt adId")
+        .populate({
+          path: "adId",
+          select: "title description budget hired_user postedBy isCompleted",
+          populate: [
+            { path: "hired_user", select: "name email" },
+            { path: "postedBy", select: "name email" },
+          ],
+        })
+        .exec(),
+      Wallet.findOne({ user: user_id }),
+    ]);
+
+    if (!wallet) {
+      return response.badRequest(res, "No wallet found for that user ID.");
+    }
 
     // Transform the fetched data
-    const transformedHistory = walletHistory.map((transaction) => ({
-      user: transaction.user,
+    const transformedHistory = statements.map((transaction) => ({
       amount: transaction.amount,
-      job: transaction.job,
       narration: transaction.description,
-      type: transaction.status === "CREDITED" ? "CR" : "DR",
+      type: transaction.type,
       transaction_date: transaction.createdAt,
+      ad: transaction.adId,
     }));
-
-    // Calculate total balance
-    let totalBalance = 0;
-    transformedHistory.forEach((transaction) => {
-      if (transaction.type === "CR") {
-        totalBalance += transaction.amount;
-      } else if (transaction.type === "DR") {
-        totalBalance -= transaction.amount;
-      }
-    });
 
     const message = "Wallet History loaded successfully";
 
     return response.success(res, message, {
-      balance: totalBalance,
+      balance: wallet.amount,
       transactionHistory: transformedHistory,
     });
   } catch (error) {
@@ -464,22 +470,38 @@ const getWalletHistory = async (req, res) => {
     return response.serverError(
       res,
       error.message,
-      "Failed to load Payment Method"
+      "Failed to update withdraw request"
     );
   }
 };
 
 const createWithdrawRequest = async (req, res) => {
   try {
-    const requestObj = req.query;
+    const requestObj = req.body;
     requestObj.user = req.user.id;
+
+    const wallet = await Wallet.findOne({ user: req.user.id });
+    const account = await Account.findById(req.body.account);
+    if (wallet.amount < requestObj.amount) {
+      return response.badRequest(res, "Insufficient funds.");
+    }
+
+    if (!account) {
+      return response.badRequest(res, "No such account.");
+    }
+
+    const percent = (await PlatformFee.findOne()).fee;
+    const requestedAmount = requestObj.amount;
+    const platformFee = (requestedAmount * percent) / 100;
+    requestObj.amount -= platformFee;
+    requestObj.platformFee = platformFee;
 
     const request = new WithdrawRequest(requestObj);
     await request.save();
 
     const message = "Withdraw request generate successfully.";
 
-    return response.success(res, message, {request});
+    return response.success(res, message, { request });
   } catch (error) {
     console.log(error);
     return response.serverError(
@@ -492,18 +514,21 @@ const createWithdrawRequest = async (req, res) => {
 
 const updateWithdrawRequest = async (req, res) => {
   try {
-
     if (req.user.role_id !== ROLE_IDS.ADMIN) {
       return response.forbidden(
         res,
         "You don't have permission to perform this action"
       );
     }
-    
-    const request = await WithdrawRequest.findByIdAndUpdate(req.params.id, req.body, {
-      new: true,
-    });
-    
+
+    const request = await WithdrawRequest.findByIdAndUpdate(
+      req.params.id,
+      req.body,
+      {
+        new: true,
+      }
+    );
+
     if (!request) {
       return response.notFound(
         res,
@@ -511,21 +536,131 @@ const updateWithdrawRequest = async (req, res) => {
       );
     }
 
-    if(request.status == true){
+    if (!request.isWithdrawed) {
+      if (!req.body.rejectReason) {
+        let userWallet = await Wallet.findOne({ user: request.user });
+        const admin = await User.findOne({ roles: ROLE_IDS.ADMIN });
+        const adminWallet = await Wallet.findOne({ user: admin._id });
+        const amountToBeDeducted = request.amount + request.platformFee;
 
-      let user_wallet = new Wallet({
-        user: request.user.id,
-        amount: request.amount,
-        description: 'Amount debited from wallet on user request',
-        status: 'WITHDRAW',
-      });
+        if (userWallet.amount < amountToBeDeducted) {
+          return response.badRequest(
+            res,
+            "Cannot withdraw, user does not have sufficient funds."
+          );
+        }
 
-      await user_wallet.save();
+        userWallet.amount -= amountToBeDeducted;
+        await userWallet.save();
+        adminWallet.amount += request.platformFee;
+        await adminWallet.save();
 
+        await escrowAccount.create({
+          user: req.user.id,
+          amount: amountToBeDeducted,
+          description: "Amount withdrawed from account.",
+          type: "withdraw",
+        });
+
+        await escrowAccount.create({
+          user: admin._id,
+          amount: request.platformFee,
+          description: `Amount of ${request.platformFee}Rs credited to your wallet of platform fees.`,
+          type: "credit",
+        });
+
+        request.isWithdrawed = true;
+        await request.save();
+
+        const notificationTitle = `Funds withdrawed`;
+        const notificationDescription = `Amount of ${amountToBeDeducted}PKR has been debitted from your account.`;
+
+        const notificationData = {
+          id: request._id,
+          pagename: "withdraw",
+          title: notificationTitle,
+          body: notificationDescription,
+        };
+
+        const notification = new Notification({
+          title: notificationTitle,
+          content: notificationDescription,
+          icon: "check-box",
+          data: JSON.stringify(notificationData),
+          user_id: request.user,
+        });
+        await notification.save();
+
+        const fcmTokens = await FcmToken.find({ user_id: request.user });
+        const tokenList = fcmTokens.map((tokenDoc) => tokenDoc.token);
+
+        if (tokenList.length > 0) {
+          for (const token of tokenList) {
+            await sendNotification(
+              notificationTitle,
+              notificationDescription,
+              notificationData,
+              token
+            );
+          }
+        } else {
+          console.warn(
+            "No FCM tokens found for the employer. Notification not sent."
+          );
+        }
+
+        return response.success(res, "Withdraw request updated successfully.", {
+          request,
+        });
+      } else {
+        const notificationTitle = `Withdraw request rejected`;
+        const notificationDescription = `Your withdraw request of amount ${
+          request.amount + request.platformFee
+        }Rs has been rejected due to the following reason provided by administration: ${
+          request.rejectReason
+        }. Please contact at support@adstreet.com.pk for more details`;
+
+        const notificationData = {
+          id: request._id,
+          pagename: "job-details",
+          title: notificationTitle,
+          body: notificationDescription,
+        };
+
+        const notification = new Notification({
+          title: notificationTitle,
+          content: notificationDescription,
+          icon: "check-box",
+          data: JSON.stringify(notificationData),
+          user_id: request.user,
+        });
+        await notification.save();
+
+        const fcmTokens = await FcmToken.find({ user_id: request.user });
+        const tokenList = fcmTokens.map((tokenDoc) => tokenDoc.token);
+
+        if (tokenList.length > 0) {
+          for (const token of tokenList) {
+            await sendNotification(
+              notificationTitle,
+              notificationDescription,
+              notificationData,
+              token
+            );
+          }
+        } else {
+          console.warn(
+            "No FCM tokens found for the employer. Notification not sent."
+          );
+        }
+
+        response.success(res, "Request rejected", {
+          reason: request.rejectReason,
+        });
+      }
+    } else {
+      response.badRequest(res, "Request is already withdrawn.");
     }
-
-    return response.success(res, "Withdraw request updated successfully.", { request });
-
   } catch (error) {
     console.log(error);
     return response.serverError(
@@ -543,12 +678,10 @@ const getWithdrawRequest = async (req, res) => {
     if (search) {
       query = { name: { $regex: new RegExp(search, "i") } };
     }
-    
 
     if (req.user.role_id !== ROLE_IDS.ADMIN) {
       query.user = new mongoose.Types.ObjectId(req.user.id);
-    }
-    else{
+    } else {
       if (req.query.user_id) {
         query.user = new mongoose.Types.ObjectId(req.query.user_id);
       }
@@ -580,19 +713,29 @@ const getWithdrawRequest = async (req, res) => {
     const skipIndex = (page - 1) * limit;
 
     const requests = await WithdrawRequest.find(query)
+      .populate("user")
+      .populate("account")
       .sort({ createdAt: -1 })
       .skip(skipIndex)
       .limit(limit);
 
     const totalrequests = await WithdrawRequest.countDocuments(query);
     const totalPages = Math.ceil(totalrequests / limit);
-     // Use a consistent structure for the response
-    const message = categories.length === 0 ? "No categories found" : "Withdraw requests loaded successfully";
-    return response.success(res, message, { requests, totalPages, currentPage: page, totalrequests});
-    
+    // Use a consistent structure for the response
+    const message = "Withdraw requests loaded successfully";
+    return response.success(res, message, {
+      requests,
+      totalPages,
+      currentPage: page,
+      totalrequests,
+    });
   } catch (error) {
     console.log(error);
-    return response.serverError(res, error.message, "Failed to load Categories");
+    return response.serverError(
+      res,
+      error.message,
+      "Failed to load Categories"
+    );
   }
 };
 

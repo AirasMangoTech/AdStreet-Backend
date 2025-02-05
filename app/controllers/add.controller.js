@@ -12,6 +12,30 @@ const mongoose = require("mongoose");
 const moment = require("moment");
 const wallet = require("../models/wallet");
 const paymentMethod = require("../models/paymentMethod");
+const escrowAccount = require("../models/escrowAccount");
+const onholdAds = require("../models/onholdAds");
+const cloudinary = require("../config/cloudinary");
+
+const uploadToCloudinary = async (filePath, mimeType) => {
+  try {
+    let resourceType = "raw";
+
+    if (mimeType.startsWith("image/")) {
+      resourceType = "image";
+    } else if (mimeType.startsWith("video/")) {
+      resourceType = "video";
+    }
+
+    const result = await cloudinary.uploader.upload(filePath, {
+      resource_type: resourceType,
+    });
+
+    return result;
+  } catch (error) {
+    console.error("Cloudinary Upload Error:", error);
+    throw error;
+  }
+};
 
 const postAd = async (req, res) => {
   if (!req.user) {
@@ -128,94 +152,64 @@ const postAd = async (req, res) => {
 
 const getAllAds = async (req, res) => {
   try {
-    let query = { isApproved: true, isHired: false, isCompleted: false };
+    const currentDate = new Date();
+    let query = {
+      isExpired: false,
+    };
 
     if (req.query.title) {
       query.title = { $regex: new RegExp(req.query.title, "i") };
     }
 
-    if (req.query.user_id) {
+    if (
+      req.query.user_id &&
+      mongoose.Types.ObjectId.isValid(req.query.user_id)
+    ) {
       query.postedBy = new mongoose.Types.ObjectId(req.query.user_id);
       delete query.isHired;
       delete query.isCompleted;
     }
-    if (req.query.adId) {
+
+    if (req.query.adId && mongoose.Types.ObjectId.isValid(req.query.adId)) {
       query._id = new mongoose.Types.ObjectId(req.query.adId);
     }
 
-    if (req.query.category !== undefined) {
-      const categories = req.query.category.split(",");
-      const categoryObjectIDs = categories.map(
-        (category) => new mongoose.Types.ObjectId(category)
-      );
-      query.category = { $in: categoryObjectIDs };
-    }
-    const getStartOfDay = (date) => {
-      return moment(date).startOf("day").toDate();
-    };
-    const getEndOfDay = (date) => {
-      return moment(date).endOf("day").toDate();
-    };
-    if (req.query.valid_till_from && req.query.valid_till_to) {
-      query.valid_till = {
-        $gte: getStartOfDay(new Date(req.query.valid_till_from)),
-        $lte: getEndOfDay(new Date(req.query.valid_till_to)),
-      };
-    } else if (req.query.valid_till_from) {
-      query.valid_till = {
-        $gte: getStartOfDay(new Date(req.query.valid_till_from)),
-      };
-    } else if (req.query.valid_till_to) {
-      query.valid_till = {
-        $lte: getEndOfDay(new Date(req.query.valid_till_to)),
-      };
-    }
-    // Date range for createdAt
-    if (req.query.created_at_from && req.query.created_at_to) {
-      query.createdAt = {
-        $gte: getStartOfDay(new Date(req.query.created_at_from)),
-        $lte: getEndOfDay(new Date(req.query.created_at_to)),
-      };
-    } else if (req.query.created_at_from) {
-      query.created_at = {
-        $gte: getStartOfDay(new Date(req.query.created_at_from)),
-      };
-    } else if (req.query.created_at_to) {
-      query.created_at = {
-        $lte: getEndOfDay(new Date(req.query.created_at_to)),
-      };
+    if (req.query.category) {
+      const categories = req.query.category
+        .split(",")
+        .filter(mongoose.Types.ObjectId.isValid);
+      if (categories.length) {
+        query.category = {
+          $in: categories.map((id) => new mongoose.Types.ObjectId(id)),
+        };
+      }
     }
 
-    let userLookupPipeline = [
-      {
-        $match: {
-          $expr: {
-            $eq: ["$_id", "$$postedBy"],
-          },
-        },
-      },
-      {
-        $project: {
-          password: 0, // Exclude the password field
-        },
-      },
-    ];
-    // if (req.query.roles) {
-    //   userLookupPipeline.unshift({
-    //     $match: {
-    //       roles: req.query.role, // Assumes roles field exists and contains the role
-    //     },
-    //   });
-    // }
+    const getStartOfDay = (date) => moment(date).startOf("day").toDate();
+    const getEndOfDay = (date) => moment(date).endOf("day").toDate();
 
-    const page = parseInt(req.query.page) || 1; // Default to page 1
-    const limit = parseInt(req.query.limit) || 10; // Default limit to 10 items
+    if (req.query.valid_till_from || req.query.valid_till_to) {
+      query.valid_till = {};
+      if (req.query.valid_till_from)
+        query.valid_till.$gte = getStartOfDay(req.query.valid_till_from);
+      if (req.query.valid_till_to)
+        query.valid_till.$lte = getEndOfDay(req.query.valid_till_to);
+    }
+
+    if (req.query.created_at_from || req.query.created_at_to) {
+      query.createdAt = {};
+      if (req.query.created_at_from)
+        query.createdAt.$gte = getStartOfDay(req.query.created_at_from);
+      if (req.query.created_at_to)
+        query.createdAt.$lte = getEndOfDay(req.query.created_at_to);
+    }
+
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
     const skip = (page - 1) * limit;
 
     const ads = await Ad.aggregate([
-      {
-        $match: query,
-      },
+      { $match: query },
       {
         $lookup: {
           from: "proposals",
@@ -227,14 +221,14 @@ const getAllAds = async (req, res) => {
       {
         $lookup: {
           from: "users",
-          let: { postedBy: "$postedBy" },
-          pipeline: userLookupPipeline,
+          localField: "postedBy",
+          foreignField: "_id",
           as: "postedBy",
         },
       },
       {
         $lookup: {
-          from: "categories", // Assuming the collection name is "categories" for categories data
+          from: "categories",
           localField: "category",
           foreignField: "_id",
           as: "category",
@@ -249,7 +243,7 @@ const getAllAds = async (req, res) => {
           description: 1,
           budget: 1,
           jobDuration: 1,
-          postedBy: { $arrayElemAt: ["$postedBy", 0] }, // unwind postedBy array if necessary
+          postedBy: { $arrayElemAt: ["$postedBy", 0] },
           createdAt: 1,
           image: 1,
           featured: 1,
@@ -276,10 +270,11 @@ const getAllAds = async (req, res) => {
       currentPage: page,
     });
   } catch (error) {
-    console.error(`Error getting all ads: ${error}`);
-    return response.serverError(res, "Error getting all ads");
+    console.error(`Error fetching ads: ${error.message}`);
+    return response.serverError(res, "Error fetching ads");
   }
 };
+
 // chnages user applied status to true or false
 const GetAdddetails = async (req, res) => {
   try {
@@ -328,7 +323,7 @@ const GetAdddetails = async (req, res) => {
 const acceptProposal = async (req, res) => {
   try {
     const { adId, proposalId, token } = req.body;
-
+    console.log(req.user);
     const ad = await Ad.findById(adId);
     if (!ad) {
       return response.notFound(res, "Ad not found");
@@ -354,11 +349,15 @@ const acceptProposal = async (req, res) => {
       );
     }
 
+    console.log("Accepting proposal.");
+
     const proposalToAccept = await Proposal.findByIdAndUpdate(
       proposalId,
       { status: "true" },
       { new: true }
-    ).populate("submittedBy", "_id");
+    );
+
+    console.log("Proposal accepted.", proposalToAccept);
 
     if (!proposalToAccept) {
       return response.notFound(res, "Proposal not found");
@@ -383,12 +382,12 @@ const acceptProposal = async (req, res) => {
       //type: "Accepted",
       icon: "check-box",
       data: JSON.stringify(notiData),
-      user_id: proposalToAccept.submittedBy._id,
+      user_id: proposalToAccept.submittedBy,
     });
 
     await notification.save();
     let notiToken = await FcmToken.find({
-      user_id: proposalToAccept.submittedBy._id,
+      user_id: proposalToAccept.submittedBy,
     });
     if (notiToken.length > 0) {
       //const token = notiToken[0];
@@ -514,7 +513,6 @@ const getHiredUser = async (req, res) => {
   }
 };
 
-// write a function where the creator of the add can update the status of the add to completed
 const updateAdStatus = async (req, res) => {
   try {
     const adId = req.query.adId;
@@ -530,8 +528,6 @@ const updateAdStatus = async (req, res) => {
     }
 
     if (ad.postedBy.toString() !== req.user.id) {
-      console.log(req.user.id);
-
       return response.authError(
         res,
         "Only the creator of the ad can update the status"
@@ -544,36 +540,61 @@ const updateAdStatus = async (req, res) => {
       return response.notFound(res, "Response not found");
     }
 
+    if (ad.isCompleted) {
+      return response.badRequest(res, "Ad is already marked as completed.");
+    }
+
     ad.response = responseId;
     ad.isCompleted = true;
     await ad.save();
 
     const isComplete = adResponse.name.toLowerCase().includes("complete");
 
+    let adminNotiTitle;
+    let adminNotiDescription;
+
     if (ad.isCompleted && ad.isActivated && isComplete) {
-      let user_wallet = new wallet({
-        user: ad.hired_user.id,
-        job: ad.id,
-        amount: ad.budget,
-        description: "Amount credited for completing the job.",
-        status: "CREDITED",
-      });
+      adminNotiTitle = "Job Completed";
+      adminNotiDescription = "Job status updated to completed";
 
+      const admin = await Users.findOne({ roles: "ADMIN" });
+      let admin_wallet = await wallet.findOne({ user: admin._id });
+      if (admin_wallet.amount < ad.budget) {
+        ad.isCompleted = false;
+        ad.response = null;
+        await ad.save();
+        response.serverError(
+          res,
+          "There was an error sending amount to employee due to insuffiecient funds. Please contact administration."
+        );
+      }
+      admin_wallet.amount -= ad.budget;
+      let user_wallet = await wallet.findOne({ user: ad.hired_user.id });
+      user_wallet.amount += ad.budget;
       await user_wallet.save();
+      await admin_wallet.save();
 
-      let escrow = new escrowAccount({
+      let userEscrow = new escrowAccount({
+        adId: ad._id,
         user: ad.hired_user.id,
-        ad: ad.id,
-        cr: 0,
-        dr: ad.budget,
-        description: "Amount debited to wallet",
-        type: "WITHDRAW", // DEPOSIT // WITHDRAW  // REFUND // COMMISSION
+        amount: ad.budget,
+        description: `Amount credited to wallet for completing job - ${ad.title}`,
+        type: "credit", // DEPOSIT // WITHDRAW  // REFUND // COMMISSION
       });
-      await escrow.save();
 
-      const notiTitle_user = "Amount credited";
-      const notiDescription_user =
-        "Amount credited to your wallet for completing the job.";
+      let adminEscrow = new escrowAccount({
+        adId: ad._id,
+        user: admin._id,
+        amount: ad.budget,
+        description: `Amount debitted from wallet for transfering funds to ${ad.hired_user.name}`,
+        type: "debit", // DEPOSIT // WITHDRAW  // REFUND // COMMISSION
+      });
+
+      await adminEscrow.save();
+      await userEscrow.save();
+
+      const notiTitle_user = "New funds recieved";
+      const notiDescription_user = `Dear Customer, amount of ${ad.budget} recieved from ${req.user.name}`;
 
       let notiData_user = {
         id: adId,
@@ -607,16 +628,70 @@ const updateAdStatus = async (req, res) => {
           );
         }
       }
-    }
+    } else {
+      adminNotiTitle = "Job Canceled";
+      adminNotiDescription = "Job status updated to canceled";
 
-    const notiTitle = "Job Completed";
-    const notiDescription = "Job status updated to completed";
+      const onholdNotiTitle = "Job On Hold";
+      const onholdNotiDescription =
+        "The employer has marked the job as canceled. The job is now on hold for review by the administration. You will be notified and paid accordingly once the review is complete.";
+
+      const onholdAd = new onholdAds({
+        ad: ad._id,
+        employer: ad.postedBy,
+        employee: ad.hired_user._id,
+      });
+      await onholdAd.save();
+
+      const onholdNotiData = {
+        id: adId,
+        pagename: "",
+        title: onholdNotiTitle,
+        body: onholdNotiDescription,
+      };
+
+      const onholdNotifications = [
+        {
+          title: onholdNotiTitle,
+          content: onholdNotiDescription,
+          icon: "check-box",
+          data: JSON.stringify(onholdNotiData),
+          user_id: ad.hired_user._id,
+        },
+        {
+          title: onholdNotiTitle,
+          content: onholdNotiDescription,
+          icon: "check-box",
+          data: JSON.stringify(onholdNotiData),
+          user_id: ad.postedBy,
+        },
+      ];
+
+      await Notification.insertMany(onholdNotifications);
+
+      const onholdTokens = await FcmToken.find({
+        user_id: { $in: [ad.hired_user._id, ad.postedBy] },
+      }).select("token");
+
+      if (onholdTokens.length > 0) {
+        const onholdTokenList = onholdTokens.map((tokenDoc) => tokenDoc.token);
+
+        if (onholdTokenList.length > 0) {
+          await sendNotification(
+            onholdNotiTitle,
+            onholdNotiDescription,
+            onholdNotiData,
+            onholdTokenList
+          );
+        }
+      }
+    }
 
     let notiData = {
       id: adId,
       pagename: "",
-      title: notiTitle,
-      body: notiDescription,
+      title: adminNotiTitle,
+      body: adminNotiDescription,
     };
 
     const admins = await Users.find({ roles: "ADMIN" }).select("_id");
@@ -624,8 +699,8 @@ const updateAdStatus = async (req, res) => {
       const adminIds = admins.map((admin) => admin._id);
       if (adminIds.length > 0) {
         const notifications = adminIds.map((adminId) => ({
-          title: notiTitle,
-          content: notiDescription,
+          title: adminNotiTitle,
+          content: adminNotiDescription,
           icon: "check-box",
           data: JSON.stringify(notiData),
           user_id: adminId,
@@ -642,8 +717,8 @@ const updateAdStatus = async (req, res) => {
 
           if (tokenList.length > 0) {
             await sendNotification(
-              notiTitle,
-              notiDescription,
+              adminNotiTitle,
+              adminNotiDescription,
               notiData,
               tokenList
             );
@@ -782,39 +857,160 @@ const updatePermissions = async (req, res) => {
   }
 };
 
+// MILESTONE CREATION - EMPLOYER
 const createMilestone = async (req, res) => {
-  const id = req.query.adId;
-  req.body.isMilestoneCreated = true;
+  try {
+    const id = req.query.adId;
 
-  const ad = await Ad.findById(id);
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return response.badRequest(res, "Invalid ad ID.");
+    }
 
-  if (!ad) {
-    return response.notFound(
+    req.body.isMilestoneCreated = true;
+
+    const ad = await Ad.findById(id);
+
+    if (!ad) {
+      return response.notFound(
+        res,
+        "No ad found with that ID to create milestone."
+      );
+    }
+
+    if (ad.postedBy.toString() !== req.user.id) {
+      return response.authError(
+        res,
+        "Only the creator of the ad can create milestone."
+      );
+    }
+
+    if (ad.isHired) {
+      return response.badRequest(
+        res,
+        "The employee for this ad is already hired. Cannot create milestone."
+      );
+    }
+
+    const updatedAd = await Ad.findByIdAndUpdate(id, req.body, {
+      runValidators: true,
+      new: true,
+    });
+
+    if (!updatedAd) {
+      return response.serverError(
+        res,
+        "Failed to create milestone. Please try again."
+      );
+    }
+
+    return response.success(res, "Milestone created.", updatedAd);
+  } catch (error) {
+    console.error(`Error creating milestone: ${error.message}`);
+    return response.serverError(
       res,
-      "No ad found with that ID to create milestone."
+      "An error occurred while creating the milestone."
     );
   }
+};
 
-  if (ad.postedBy.toString() !== req.user.id) {
-    return response.authError(
+// COMPLETE JOB BUTTON HANDLER - EMPLOYEE
+const completeJobByEmployee = async (req, res) => {
+  try {
+    const adId = req.query.adId;
+
+    if (!mongoose.Types.ObjectId.isValid(adId)) {
+      return response.badRequest(res, "Invalid ad ID.");
+    }
+
+    const ad = await Ad.findById(adId);
+
+    if (!ad) {
+      return response.notFound(res, "No ad found with the provided ID.");
+    }
+
+    const employee = req.user;
+
+    if (!ad.isHired || ad.hired_user.toString() !== employee.id) {
+      return response.authError(
+        res,
+        "You are not authorized to complete this job."
+      );
+    }
+
+    if (ad.isCompleted) {
+      return response.badRequest(
+        res,
+        "This job has already been marked as completed."
+      );
+    }
+
+    const employeeName =
+      employee.name.charAt(0).toUpperCase() + employee.name.slice(1);
+
+    const [employer, fcmTokens] = await Promise.all([
+      Users.findById(ad.postedBy),
+      FcmToken.find({ user_id: ad.postedBy }).select("token"),
+    ]);
+
+    if (!employer) {
+      return response.notFound(res, "Employer not found.");
+    }
+
+    const notificationTitle = `Job Completed - ${ad.title}`;
+    const notificationDescription = `${employeeName} marked the job as completed. Please review the work and confirm completion.`;
+
+    const notificationData = {
+      id: ad._id,
+      pagename: "job-details",
+      title: notificationTitle,
+      body: notificationDescription,
+    };
+
+    const notification = new Notification({
+      title: notificationTitle,
+      content: notificationDescription,
+      icon: "check-box",
+      data: JSON.stringify(notificationData),
+      user_id: employer._id,
+    });
+    await notification.save();
+
+    const tokenList = fcmTokens.map((tokenDoc) => tokenDoc.token);
+
+    if (tokenList.length > 0) {
+      for (const token of tokenList) {
+        await sendNotification(
+          notificationTitle,
+          notificationDescription,
+          notificationData,
+          token
+        );
+      }
+    } else {
+      console.warn(
+        "No FCM tokens found for the employer. Notification not sent."
+      );
+    }
+
+    if (req.file) {
+      const file = await uploadToCloudinary(req.file.path, req.file.mimetype);
+
+      ad.work.url = file.secure_url;
+      ad.work.public_id = file.public_id;
+    }
+    await ad.save();
+
+    return response.success(
       res,
-      "Only the creator of the ad can create milestone"
+      "Job has been marked as completed and the employer has been notified."
+    );
+  } catch (error) {
+    console.error(`Error completing job: ${error.message}`);
+    return response.serverError(
+      res,
+      "An error occurred while completing the job."
     );
   }
-
-  if (ad.isHired) {
-    response.badRequest(
-      res,
-      "The employee for this ad is already hired. Cannot create milestone."
-    );
-  }
-
-  const updatedAd = await Ad.findByIdAndUpdate(id, req.body, {
-    runValidators: true,
-    new: true,
-  });
-
-  response.success(res, "Milestone created.", updatedAd);
 };
 
 module.exports = {
@@ -831,4 +1027,5 @@ module.exports = {
   getPermissions,
   updatePermissions,
   createMilestone,
+  completeJobByEmployee,
 };
