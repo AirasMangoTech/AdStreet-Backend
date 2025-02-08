@@ -185,6 +185,15 @@ const getAllAds = async (req, res) => {
       }
     }
 
+    if (req.query.isApproved) {
+      query.isApproved =
+        req.query.isApproved === "true"
+          ? true
+          : req.query.isApproved === "false"
+          ? false
+          : null;
+    }
+
     const getStartOfDay = (date) => moment(date).startOf("day").toDate();
     const getEndOfDay = (date) => moment(date).endOf("day").toDate();
 
