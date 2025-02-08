@@ -174,8 +174,8 @@ const saveGatewayResponse = async (req, res) => {
         type: "credit", // WITHDRAW  // REFUND // COMMISSION
       });
 
-      const wallet = await findOneAndUpdate(
-        { user_id: admin.id },
+      const wallet = await User.findOneAndUpdate(
+        { _id: admin.id },
         { $inc: { amount: ad.budget } }
       );
       
