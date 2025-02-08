@@ -12,6 +12,7 @@ const moment = require("moment");
 const crypto = require("crypto");
 const paymentlog = require("../models/paymentLogs");
 const escrowAccount = require("../models/escrowAccount");
+const Wallet = require("../models/wallet");
 
 const updatePaymentMethodStatus = async (req, res) => {
   try {
@@ -174,8 +175,8 @@ const saveGatewayResponse = async (req, res) => {
         type: "credit", // WITHDRAW  // REFUND // COMMISSION
       });
 
-      const wallet = await User.findOneAndUpdate(
-        { _id: admin.id },
+      const wallet = await Wallet.findOneAndUpdate(
+        { user: admin.id },
         { $inc: { amount: ad.budget } }
       );
       
