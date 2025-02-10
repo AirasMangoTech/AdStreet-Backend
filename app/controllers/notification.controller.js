@@ -91,54 +91,33 @@ module.exports.updateNotificationStatus = async (req, res) => {
 
 module.exports.sendNotification = async (req, res) => {
   try {
+    let notiTitle = `New Notification`;
+    let notiDescription = `Test Notification`;
 
-    let notiData = {};
+    let notiData = {
+      id: proposal.id,
+      pagename: "proposal",
+      title: notiTitle,
+      body: notiDescription,
+    };
 
-    const Admins = await Users.find({ roles: 'ADMIN' });
-    const adminIds = Admins.map(admin => admin._id);
+    let notification = new Notification({
+      title: notiTitle,
+      content: notiDescription,
+      icon: "note-pad",
+      data: JSON.stringify(notiData),
+      user_id: req.query.user_id,
+    });
 
-    // let notiTokens = await FcmToken.find({ user_id: req.user.id });
-
-    // let token = "fowWJsMhR5CrpvuxR7m7mp:APA91bFxUI-S74kexX4Xc1SqBTL_8PbXq8JIq1KJsAQILTpvYC1NfukWuF5KmH2c3KgUZ_gBD53bA2B3T6lg38yo94TIXhZalcC7alMphDcB8WbM8Jp0eQ-Y7jqcyuu9VMbVW-Wy3JwJ";
-
-    // await sendNotification(
-    //   `You've received a new notification`,
-    //   "body",
-    //   notiData,
-    //   token
-    // );
-
-    const notiTitle = 'New Notification';
-    const notiDescription = 'You received new notification';
-
-    const admins = await Users.find().select('_id');
-    if (admins.length > 0) {
-      const adminIds = admins.map(admin => admin._id);
-      if(adminIds.length > 0)
-        {
-          const tokens = await FcmToken.find({ user_id: { $in: adminIds } }).select('token');
-  
-          if (tokens.length > 0) {
-  
-            let tokenList = tokens.map(tokenDoc => tokenDoc.token);
-  
-            if (tokenList.length > 0) {
-              await sendNotification(
-                notiTitle,
-                notiDescription,
-                notiData,
-                tokenList
-              );
-            }
-  
-          }
-
-        }
+    await notification.save();
+    let notiToken = await FcmToken.find({ user_id: req.query.user_id });
+    if (notiToken.length > 0) {
+      const tokenList = notiToken.map((tokenDoc) => tokenDoc.token);
+      await sendNotification(notiTitle, notiDescription, notiData, tokenList);
     }
 
-
     return response.success(res, "Notification send successfully", {
-      'notification': '',
+      notification: "",
     });
   } catch (error) {
     console.log(error);
