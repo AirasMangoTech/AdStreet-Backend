@@ -363,8 +363,6 @@ const acceptProposal = async (req, res) => {
       { new: true }
     );
 
-    console.log("Proposal accepted.", proposalToAccept);
-
     if (!proposalToAccept) {
       return response.notFound(res, "Proposal not found");
     }
@@ -372,7 +370,7 @@ const acceptProposal = async (req, res) => {
     ad.isHired = true;
     await ad.save();
 
-    let notiTitle = `Admin has accepted your proposal`;
+    let notiTitle = `${req.user.name} has accepted your proposal`;
     let notiDescription = `Your contract with ${req.user.name} has started`;
 
     let notiData = {
@@ -629,7 +627,7 @@ const updateAdStatus = async (req, res) => {
 
         if (tokenList_user.length > 0) {
           tokenList_user.forEach((token) =>
-            sendNotification(notiTitle_user, notiDescription_user, notiData, token)
+            sendNotification(notiTitle_user, notiDescription_user, notiData_user, token)
           );
         }
       }
@@ -686,7 +684,7 @@ const updateAdStatus = async (req, res) => {
             sendNotification(
               onholdNotiTitle,
               onholdNotiDescription,
-              notiData,
+              onholdNotiData,
               token
             )
           );
