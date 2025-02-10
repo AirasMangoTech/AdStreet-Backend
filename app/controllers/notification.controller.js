@@ -95,7 +95,7 @@ module.exports.sendNotification = async (req, res) => {
     let notiDescription = `Test Notification`;
 
     let notiData = {
-      id: proposal.id,
+      id: "123",
       pagename: "proposal",
       title: notiTitle,
       body: notiDescription,
