@@ -32,6 +32,7 @@ module.exports.getNotifications = async (req, res) => {
     return response.success(res, "Notifications List", {
       notifications,
       count,
+      totalPages: Math.ceil(count / limit)
     });
   } catch (error) {
     console.log(error);
