@@ -225,11 +225,8 @@ const approveAd = async (req, res) => {
       const tokenList_user = notiTokens_user.map((tokenDoc) => tokenDoc.token);
 
       if (tokenList_user.length > 0) {
-        await sendNotification(
-          notiTitle_user,
-          notiDescription_user,
-          notiData_user,
-          tokenList_user
+        tokenList_user.forEach((token) =>
+          sendNotification(notiTitle_user, notiDescription_user, notiData_user, token)
         );
       }
     }
@@ -501,11 +498,8 @@ const approveBlog = async (req, res) => {
       const tokenList_user = notiTokens_user.map((tokenDoc) => tokenDoc.token);
 
       if (tokenList_user.length > 0) {
-        await sendNotification(
-          notiTitle_user,
-          notiDescription_user,
-          notiData_user,
-          tokenList_user
+        tokenList_user.forEach((token) =>
+          sendNotification(notiTitle_user, notiDescription_user, notiData_user, token)
         );
       }
     }

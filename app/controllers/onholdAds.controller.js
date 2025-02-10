@@ -201,11 +201,8 @@ exports.payToUser = async (req, res) => {
       const onholdTokenList = onholdTokens.map((tokenDoc) => tokenDoc.token);
 
       if (onholdTokenList.length > 0) {
-        await sendNotification(
-          onholdNotiTitle,
-          onholdNotiDescription,
-          onholdNotiData,
-          onholdTokenList
+        onholdTokenList.forEach((token) =>
+          sendNotification(onholdNotiTitle, onholdNotiDescription, onholdNotiData, token)
         );
       }
     }

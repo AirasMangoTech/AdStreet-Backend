@@ -78,8 +78,9 @@ const postProposal = async (req, res) => {
     let notiToken = await FcmToken.find({ user_id: ad.postedBy });
     if (notiToken.length > 0) {
       const tokenList = notiToken.map(tokenDoc => tokenDoc.token);
-      await sendNotification(notiTitle, notiDescription, notiData, tokenList);
-    }
+      tokenList.forEach((token) =>
+        sendNotification(notiTitle, notiDescription, notiData, token)
+      );    }
     // Send a success response
     return response.success(res, "Proposal submitted successfully", {
       proposal,

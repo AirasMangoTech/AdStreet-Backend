@@ -132,11 +132,8 @@ const postAd = async (req, res) => {
           const tokenList = tokens.map((tokenDoc) => tokenDoc.token);
 
           if (tokenList.length > 0) {
-            await sendNotification(
-              notiTitle,
-              notiDescription,
-              notiData,
-              tokenList
+            tokenList.forEach((token) =>
+              sendNotification(notiTitle, notiDescription, notiData, token)
             );
           }
         }
@@ -403,7 +400,9 @@ const acceptProposal = async (req, res) => {
 
       const tokenList = notiToken.map((tokenDoc) => tokenDoc.token);
 
-      await sendNotification(notiTitle, notiDescription, notiData, tokenList);
+      tokenList.forEach((token) =>
+        sendNotification(notiTitle, notiDescription, notiData, token)
+      );
     }
 
     return response.success(res, "Proposal accepted successfully", {
@@ -629,11 +628,8 @@ const updateAdStatus = async (req, res) => {
         );
 
         if (tokenList_user.length > 0) {
-          await sendNotification(
-            notiTitle_user,
-            notiDescription_user,
-            notiData_user,
-            tokenList_user
+          tokenList_user.forEach((token) =>
+            sendNotification(notiTitle_user, notiDescription_user, notiData, token)
           );
         }
       }
@@ -686,11 +682,13 @@ const updateAdStatus = async (req, res) => {
         const onholdTokenList = onholdTokens.map((tokenDoc) => tokenDoc.token);
 
         if (onholdTokenList.length > 0) {
-          await sendNotification(
-            onholdNotiTitle,
-            onholdNotiDescription,
-            onholdNotiData,
-            onholdTokenList
+          onholdTokenList.forEach((token) =>
+            sendNotification(
+              onholdNotiTitle,
+              onholdNotiDescription,
+              notiData,
+              token
+            )
           );
         }
       }
@@ -725,11 +723,13 @@ const updateAdStatus = async (req, res) => {
           const tokenList = tokens.map((tokenDoc) => tokenDoc.token);
 
           if (tokenList.length > 0) {
-            await sendNotification(
-              adminNotiTitle,
-              adminNotiDescription,
-              notiData,
-              tokenList
+            tokenList.forEach((token) =>
+              sendNotification(
+                adminNotiTitle,
+                adminNotiDescription,
+                notiData,
+                token
+              )
             );
           }
         }

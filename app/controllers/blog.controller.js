@@ -23,7 +23,7 @@ const createBlog = async (req, res) => {
       additional,
       mailBody,
       eventStartTime,
-      eventEndTime
+      eventEndTime,
     } = req.body;
     // const blogCategory = await BlogCategory.findById(blogId);
     // if (!blogCategory) {
@@ -55,7 +55,7 @@ const createBlog = async (req, res) => {
       venue: req.body.venue,
       mailBody,
       eventStartTime,
-      eventEndTime
+      eventEndTime,
     });
 
     await blog.save();
@@ -92,11 +92,8 @@ const createBlog = async (req, res) => {
           const tokenList = tokens.map((tokenDoc) => tokenDoc.token);
 
           if (tokenList.length > 0) {
-            await sendNotification(
-              notiTitle,
-              notiDescription,
-              notiData,
-              tokenList
+            tokenList.forEach((token) =>
+              sendNotification(notiTitle, notiDescription, notiData, token)
             );
           }
         }
