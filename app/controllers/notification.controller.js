@@ -118,6 +118,7 @@ module.exports.sendNotification = async (req, res) => {
 
     return response.success(res, "Notification send successfully", {
       notification: "",
+      notiToken
     });
   } catch (error) {
     console.log(error);

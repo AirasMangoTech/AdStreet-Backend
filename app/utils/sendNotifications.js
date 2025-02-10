@@ -12,6 +12,7 @@ const sendNotification = async (title, body, data, token) => {
         title: title,
         body: body,
       },
+      token: token,
       data: { obj: JSON.stringify(data) },
     };
 
@@ -29,7 +30,7 @@ const sendNotification = async (title, body, data, token) => {
     //   });
 
     // For Multiple Notification
-    const response = await firebase.messaging().sendToDevice(token, payload)
+    const response = await firebase.messaging().send(payload);
     console.log("Firebase Response:", response);
 
     console.log("im running");
