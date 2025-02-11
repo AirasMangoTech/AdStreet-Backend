@@ -94,6 +94,9 @@ const adSchema = new mongoose.Schema({
     type: Boolean,
     default: false,
   },
+  projectUrl : {
+    type: String,
+  },
 });
 
 const Ad = mongoose.model("Ad", adSchema);

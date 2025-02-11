@@ -627,7 +627,12 @@ const updateAdStatus = async (req, res) => {
 
         if (tokenList_user.length > 0) {
           tokenList_user.forEach((token) =>
-            sendNotification(notiTitle_user, notiDescription_user, notiData_user, token)
+            sendNotification(
+              notiTitle_user,
+              notiDescription_user,
+              notiData_user,
+              token
+            )
           );
         }
       }
@@ -1004,6 +1009,8 @@ const completeJobByEmployee = async (req, res) => {
 
       ad.work.url = file.secure_url;
       ad.work.public_id = file.public_id;
+    } else {
+      ad.projectUrl = req.body.projectUrl;
     }
     await ad.save();
 
