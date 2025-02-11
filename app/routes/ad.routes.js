@@ -41,6 +41,11 @@ ad_route.post(
   uploadFiles.single("file"),
   ad.completeJobByEmployee
 );
+// SEND REQUEST TO ACCEPT OFFER BY EMPLOYEE
+ad_route.post("/acceptOffer", [verifyToken], ad.sendRequestToAcceptAd);
+
+// GET ALL MILESTONES
+ad_route.get("/getMilestone", [verifyToken], ad.getMilestones);
 
 ad_route.post("/createResponse", [verifyToken], ad.createResponse);
 ad_route.get("/getResponses", [verifyToken], ad.getAllResponses);

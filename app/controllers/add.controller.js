@@ -15,6 +15,7 @@ const paymentMethod = require("../models/paymentMethod");
 const escrowAccount = require("../models/escrowAccount");
 const onholdAds = require("../models/onholdAds");
 const cloudinary = require("../config/cloudinary");
+const Milestone = require("../models/milestones");
 
 const uploadToCloudinary = async (filePath, mimeType) => {
   try {
@@ -869,16 +870,13 @@ const updatePermissions = async (req, res) => {
   }
 };
 
-// MILESTONE CREATION - EMPLOYER
-const createMilestone = async (req, res) => {
+const sendRequestToAcceptAd = async (req, res) => {
   try {
     const id = req.query.adId;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return response.badRequest(res, "Invalid ad ID.");
     }
-
-    req.body.isMilestoneCreated = true;
 
     const ad = await Ad.findById(id);
 
@@ -892,7 +890,7 @@ const createMilestone = async (req, res) => {
     if (ad.postedBy.toString() !== req.user.id) {
       return response.authError(
         res,
-        "Only the creator of the ad can create milestone."
+        "Only the creator of the ad can send request."
       );
     }
 
@@ -903,7 +901,160 @@ const createMilestone = async (req, res) => {
       );
     }
 
-    const updatedAd = await Ad.findByIdAndUpdate(id, req.body, {
+    const milestone = await Milestone.create(req.body);
+
+    const [employee, employer, fcmTokens] = await Promise.all([
+      Users.findById(req.body?.employee),
+      Users.findById(req.body?.employer),
+      FcmToken.find({ user_id: req.body?.employee }).select("token"),
+    ]);
+
+    const notificationTitleEmployee = `New Offer - ${ad.title}`;
+    const notificationDescriptionEmployee = `${employer.name} has sent you a new offer. Please review and accept it to start working on the job.`;
+
+    const notificationData = {
+      id: milestone._id,
+      pagename: "job-details",
+      title: notificationTitleEmployee,
+      body: notificationDescriptionEmployee,
+    };
+
+    const notification = new Notification({
+      title: notificationTitleEmployee,
+      content: notificationDescriptionEmployee,
+      icon: "check-box",
+      data: JSON.stringify(notificationData),
+      user_id: employee._id,
+    });
+
+    await notification.save();
+
+    const tokenList = fcmTokens.map((tokenDoc) => tokenDoc.token);
+
+    if (tokenList.length > 0) {
+      for (const token of tokenList) {
+        await sendNotification(
+          notificationTitleEmployee,
+          notificationDescriptionEmployee,
+          notificationData,
+          token
+        );
+      }
+    } else {
+      console.warn(
+        "No FCM tokens found for the employer. Notification not sent."
+      );
+    }
+
+    return response.success(res, "Request to accept ad sent successfully.", {
+      milestone,
+    });
+  } catch (error) {
+    console.error(`Error sending request to accept ad: ${error.message}`);
+    return response.serverError(res, "Error sending request to accept ad.");
+  }
+};
+
+const getMilestones = async (req, res) => {
+  try {
+    const { ad, employee, employer } = req.query;
+
+    if (!ad || !employee || !employer) {
+      return response.badRequest(
+        res,
+        "Ad ID, employee ID and employer ID are required."
+      );
+    }
+
+    const milestone = await Milestone.findOne({ ad, employee, employer });
+
+    if (!milestone) {
+      return response.notFound(res, "No milestone found.");
+    }
+
+    response.success(res, "Milestone found.", milestone);
+  } catch (err) {
+    console.error("Error fetching milestone.", err);
+    return response.serverError(res, "Error fetching milestone.");
+  }
+};
+
+// MILESTONE CREATION - EMPLOYER
+const createMilestone = async (req, res) => {
+  try {
+    const id = req.query.adId;
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return response.badRequest(res, "Invalid ad ID.");
+    }
+
+    const ad = await Ad.findById(id);
+
+    if (!ad) {
+      return response.notFound(
+        res,
+        "No ad found with that ID to create milestone."
+      );
+    }
+
+    if (ad.isHired) {
+      return response.badRequest(
+        res,
+        "The employee for this ad is already hired. Cannot create milestone."
+      );
+    }
+
+    if (req.body?.action === "reject") {
+      const [fcmTokens, employee] = await Promise.all([
+        FcmToken.findById(req.body?.employer),
+        Users.findById(req.body?.employee),
+      ]);
+      const notificationTitle = `Offer Rejected - ${ad.title}`;
+      const notificationDescription = `${employee.name} has rejected your offer. Please review and send a new offer.`;
+
+      const notificationData = {
+        id: ad._id,
+        pagename: "job-details",
+        title: notificationTitle,
+        body: notificationDescription,
+      };
+
+      const notification = new Notification({
+        title: notificationTitle,
+        content: notificationDescription,
+        icon: "check-box",
+        data: JSON.stringify(notificationData),
+        user_id: req.body.employer,
+      });
+      await notification.save();
+
+      const tokenList = fcmTokens.map((tokenDoc) => tokenDoc.token);
+
+      if (tokenList.length > 0) {
+        for (const token of tokenList) {
+          await sendNotification(
+            notificationTitle,
+            notificationDescription,
+            notificationData,
+            token
+          );
+        }
+      } else {
+        console.warn(
+          "No FCM tokens found for the employer. Notification not sent."
+        );
+      }
+      return;
+    }
+
+    const milestone = await Milestone.findById(req.body.milestone);
+    
+    const data = {
+      budget: milestone.budget,
+      jobDuration: milestone.jobDuration,
+      isMilestoneCreated: true
+    };
+    const updatedAd = await Ad.findByIdAndUpdate(id, data, {
       runValidators: true,
       new: true,
     });
@@ -1042,4 +1193,6 @@ module.exports = {
   updatePermissions,
   createMilestone,
   completeJobByEmployee,
+  sendRequestToAcceptAd,
+  getMilestones
 };
