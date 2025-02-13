@@ -335,10 +335,7 @@ const GetAdddetails = async (req, res) => {
     });
   } catch (error) {
     console.error(`Error getting ad details: ${error}`);
-    return res.json({
-      status: "fail",
-      error,
-    });
+    return response.serverError(res, `Error getting ad details: ${error.message}`);
   }
 };
 // chngaes the status of the proposal to true /false after hiring
