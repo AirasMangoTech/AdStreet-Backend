@@ -327,6 +327,7 @@ const GetAdddetails = async (req, res) => {
       ...{ adDetails },
       applied: userApplied,
       proposalCount: proposalCount,
+      proposal: proposal._id,
       milestone: request,
     };
     return response.success(res, "Ad details retrieved successfully", {
