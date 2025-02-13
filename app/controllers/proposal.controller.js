@@ -9,6 +9,8 @@ const Ad = require("../models/ad");
 const response = require("../utils/responseHelpers");
 const { ROLE_IDS } = require("../utils/utility");
 const moment = require("moment");
+const Milestones = require("../models/milestones");
+const Milestone = require("../models/milestones");
 
 const postProposal = async (req, res) => {
   try {
@@ -56,14 +58,15 @@ const postProposal = async (req, res) => {
     });
     await proposal.save();
 
+    const user = await Users.findById(req.user.id);
     let notiTitle = `New Proposal`;
-    let notiDescription = `${req.user.name} sent you a proposal on your job post`;
- 
+    let notiDescription = `${user.name} sent you a proposal on your job post`;
+
     let notiData = {
       id: proposal.id,
-      pagename: 'proposal',
+      pagename: "proposal",
       title: notiTitle,
-      body: notiDescription
+      body: notiDescription,
     };
 
     let notification = new Notification({
@@ -77,10 +80,11 @@ const postProposal = async (req, res) => {
     await notification.save();
     let notiToken = await FcmToken.find({ user_id: ad.postedBy });
     if (notiToken.length > 0) {
-      const tokenList = notiToken.map(tokenDoc => tokenDoc.token);
+      const tokenList = notiToken.map((tokenDoc) => tokenDoc.token);
       tokenList.forEach((token) =>
         sendNotification(notiTitle, notiDescription, notiData, token)
-      );    }
+      );
+    }
     // Send a success response
     return response.success(res, "Proposal submitted successfully", {
       proposal,
@@ -137,7 +141,7 @@ const getAllProposals = async (req, res) => {
     const limit = parseInt(req.query.limit, 10) || 10;
     const skip = (page - 1) * limit;
 
-    const proposals = await Proposal.find(where)
+    const allProposals = await Proposal.find(where)
       .populate("submittedBy", "-password")
       .populate({
         path: "submittedBy",
@@ -172,6 +176,23 @@ const getAllProposals = async (req, res) => {
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit);
+
+    const proposals = await Promise.all(
+      allProposals.map(async (proposal) => {
+        const proposalObj = proposal.toObject();
+        const milestone = await Milestone.findOne({
+          ad: proposal.adId._id,
+          employee: proposal.submittedBy._id,
+          employer: proposal.adId.postedBy,
+        });
+
+        if (milestone) {
+          proposalObj.milestone = milestone;
+        }
+
+        return proposalObj;
+      })
+    );
 
     const totalProposals = await Proposal.countDocuments(where);
 
