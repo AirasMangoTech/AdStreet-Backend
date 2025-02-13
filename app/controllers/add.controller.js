@@ -297,13 +297,13 @@ const GetAdddetails = async (req, res) => {
       return response.notFound(res, "Ad not found");
     }
     const proposalCount = await Proposal.countDocuments({
-      adId: adDetails._id,
+      adId: adDetails?._id,
     });
 
     const userId = new mongoose.Types.ObjectId(req.user.id);
     const proposal = await Proposal.findOne({
       submittedBy: userId,
-      adId: adDetails._id,
+      adId: adDetails?._id,
     });
 
     // Check if the user has already applied for this proposal
@@ -313,9 +313,9 @@ const GetAdddetails = async (req, res) => {
     }
 
     const milestone = await Milestone.findOne({
-      ad: adDetails._id,
+      ad: adDetails?._id,
       employee: userId,
-      employer: adDetails.postedBy._id,
+      employer: adDetails?.postedBy?._id,
     });
 
     let request = false;
@@ -327,7 +327,7 @@ const GetAdddetails = async (req, res) => {
       ...{ adDetails },
       applied: userApplied,
       proposalCount: proposalCount,
-      proposal: proposal._id,
+      proposal: proposal?._id,
       milestone: request,
     };
     return response.success(res, "Ad details retrieved successfully", {
@@ -335,7 +335,10 @@ const GetAdddetails = async (req, res) => {
     });
   } catch (error) {
     console.error(`Error getting ad details: ${error}`);
-    return response.serverError(res, `Error getting ad details: ${error.message}`);
+    return response.serverError(
+      res,
+      `Error getting ad details: ${error.message}`
+    );
   }
 };
 // chngaes the status of the proposal to true /false after hiring
