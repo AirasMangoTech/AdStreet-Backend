@@ -901,6 +901,11 @@ const sendRequestToAcceptAd = async (req, res) => {
       );
     }
 
+    if (ad.isMilestoneCreated) {
+      return response.badRequest(res, "Milestone already created for this ad.");
+    }
+
+    req.body.ad = req.query.adId;
     const milestone = await Milestone.create(req.body);
 
     const [employee, employer, fcmTokens] = await Promise.all([
@@ -966,7 +971,10 @@ const getMilestones = async (req, res) => {
       );
     }
 
-    const milestone = await Milestone.findOne({ ad, employee, employer });
+    const milestone = await Milestone.find({ ad, employee, employer })
+      .populate("ad")
+      .populate("employee")
+      .populate("employer");
 
     if (!milestone) {
       return response.notFound(res, "No milestone found.");
@@ -1006,9 +1014,12 @@ const createMilestone = async (req, res) => {
 
     if (req.body?.action === "reject") {
       const [fcmTokens, employee] = await Promise.all([
-        FcmToken.findById(req.body?.employer),
+        FcmToken.find({ user_id: req.body?.employer }),
         Users.findById(req.body?.employee),
       ]);
+      console.log("🚀 ~ createMilestone ~ employee:", employee);
+      console.log("🚀 ~ createMilestone ~ fcmTokens:", fcmTokens);
+
       const notificationTitle = `Offer Rejected - ${ad.title}`;
       const notificationDescription = `${employee.name} has rejected your offer. Please review and send a new offer.`;
 
@@ -1044,15 +1055,21 @@ const createMilestone = async (req, res) => {
           "No FCM tokens found for the employer. Notification not sent."
         );
       }
-      return;
+      await Milestone.deleteOne({
+        ad: id,
+        employee: req.body.employee,
+        employer: req.body.employer,
+      });
+      return response.success(res, "Request rejected");
     }
 
     const milestone = await Milestone.findById(req.body.milestone);
-    
+
     const data = {
       budget: milestone.budget,
       jobDuration: milestone.jobDuration,
-      isMilestoneCreated: true
+      description: milestone.description,
+      isMilestoneCreated: true,
     };
     const updatedAd = await Ad.findByIdAndUpdate(id, data, {
       runValidators: true,
@@ -1194,5 +1211,5 @@ module.exports = {
   createMilestone,
   completeJobByEmployee,
   sendRequestToAcceptAd,
-  getMilestones
+  getMilestones,
 };

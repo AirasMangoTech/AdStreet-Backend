@@ -8,18 +8,21 @@ const milestoneSchema = new mongoose.Schema({
   },
   employer: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "User",
+    ref: "users",
     required: true,
   },
   employee: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "User",
+    ref: "users",
     required: true,
   },
   budget: {
     type: Number,
   },
   jobDuration: {
+    type: String,
+  },
+  description: {
     type: String,
   },
 });
