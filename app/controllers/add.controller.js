@@ -358,12 +358,6 @@ const acceptProposal = async (req, res) => {
       );
     }
 
-    if (ad.postedBy.toString() !== req.user.id) {
-      return response.authError(
-        res,
-        "Only the creator of the ad can accept proposals"
-      );
-    }
     if (ad.hired_user) {
       return response.badRequest(
         res,
