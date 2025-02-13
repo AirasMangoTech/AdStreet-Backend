@@ -306,17 +306,28 @@ const GetAdddetails = async (req, res) => {
       adId: adDetails._id,
     });
 
-    console.log(proposal);
     // Check if the user has already applied for this proposal
     let userApplied = false;
     if (proposal) {
       userApplied = true;
+    }
+
+    const milestone = await Milestone.findOne({
+      ad: adDetails._id,
+      employee: userId,
+      employer: adDetails.postedBy._id,
+    });
+
+    let request = false;
+    if (milestone) {
+      request = milestone;
     }
     // Update ad details to include the 'applied' flag
     const adDetailsWithAppliedFlag = {
       ...{ adDetails },
       applied: userApplied,
       proposalCount: proposalCount,
+      milestone: request,
     };
     return response.success(res, "Ad details retrieved successfully", {
       adDetails: adDetailsWithAppliedFlag,
