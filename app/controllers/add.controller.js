@@ -560,7 +560,6 @@ const updateAdStatus = async (req, res) => {
     }
 
     ad.response = responseId;
-    ad.isCompleted = true;
     await ad.save();
 
     const isComplete = adResponse.name.toLowerCase().includes("complete");
@@ -568,7 +567,10 @@ const updateAdStatus = async (req, res) => {
     let adminNotiTitle;
     let adminNotiDescription;
 
-    if (ad.isCompleted && ad.isActivated && isComplete) {
+    if (ad.isActivated && isComplete) {
+      ad.isCompleted = true;
+      await ad.save();
+
       adminNotiTitle = "Job Completed";
       adminNotiDescription = "Job status updated to completed";
 
@@ -646,6 +648,8 @@ const updateAdStatus = async (req, res) => {
         }
       }
     } else {
+      ad.onHold = true;
+      await ad.save();
       adminNotiTitle = "Job Canceled";
       adminNotiDescription = "Job status updated to canceled";
 

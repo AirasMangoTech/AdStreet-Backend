@@ -94,8 +94,12 @@ const adSchema = new mongoose.Schema({
     type: Boolean,
     default: false,
   },
-  projectUrl : {
+  projectUrl: {
     type: String,
+  },
+  onHold: {
+    type: Boolean,
+    default: false,
   },
 });
 
