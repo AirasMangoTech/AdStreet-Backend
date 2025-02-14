@@ -1200,10 +1200,7 @@ const completeJobByEmployee = async (req, res) => {
     );
   } catch (error) {
     console.error(`Error completing job: ${error.message}`);
-    return response.serverError(
-      res,
-      "An error occurred while completing the job."
-    );
+    return res.status(500).json({ status: "fail", error: error.message });
   }
 };
 
