@@ -1072,7 +1072,7 @@ const createMilestone = async (req, res) => {
         employee: req.body.employee,
         employer: req.body.employer,
       });
-      return response.success(res, "Request rejected");
+      return response.custom(res, 200, "Request rejected", false);
     }
 
     const milestone = await Milestone.findById(req.body.milestone);
