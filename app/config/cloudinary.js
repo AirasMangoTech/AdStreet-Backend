@@ -1,9 +1,7 @@
 const cloudinary = require("cloudinary").v2;
 const path = require("path");
 
-require("dotenv").config({
-  path: path.join(__dirname, "../../", ".env"),
-});
+require("dotenv").config();
 
 const { CLOUDINARY_SECRET_KEY, CLOUDINARY_API_KEY, CLOUDINARY_CLOUD_NAME } =
   process.env;
