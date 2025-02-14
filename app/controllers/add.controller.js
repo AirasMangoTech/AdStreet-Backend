@@ -345,7 +345,7 @@ const GetAdddetails = async (req, res) => {
 const acceptProposal = async (req, res) => {
   try {
     const { adId, proposalId, token } = req.body;
-    console.log(req.user);
+
     const ad = await Ad.findById(adId);
     if (!ad) {
       return response.notFound(res, "Ad not found");
@@ -365,8 +365,6 @@ const acceptProposal = async (req, res) => {
       );
     }
 
-    console.log("Accepting proposal.");
-
     const proposalToAccept = await Proposal.findByIdAndUpdate(
       proposalId,
       { status: "true" },
@@ -376,11 +374,12 @@ const acceptProposal = async (req, res) => {
     if (!proposalToAccept) {
       return response.notFound(res, "Proposal not found");
     }
+
     ad.hired_user = proposalToAccept.submittedBy;
     ad.isHired = true;
     await ad.save();
 
-    let notiTitle = `${req.user.name} has accepted your proposal`;
+    let notiTitle = `${req.user.name} has accepted your request`;
     let notiDescription = `Your contract with ${req.user.name} has started`;
 
     let notiData = {
@@ -396,12 +395,12 @@ const acceptProposal = async (req, res) => {
       //type: "Accepted",
       icon: "check-box",
       data: JSON.stringify(notiData),
-      user_id: proposalToAccept.submittedBy,
+      user_id: ad.postedBy,
     });
 
     await notification.save();
     let notiToken = await FcmToken.find({
-      user_id: proposalToAccept.submittedBy,
+      user_id: ad.postedBy,
     });
     if (notiToken.length > 0) {
       //const token = notiToken[0];
