@@ -12,7 +12,7 @@ const logger = require("../logger");
 const FcmToken = require("../models/fcmTokens");
 const escrowAccount = require("../models/escrowAccount");
 const PlatformFee = require("../models/platformFee");
-const moment = require("moment")
+const moment = require("moment");
 
 const auth = require("../middleware/auth");
 const {
@@ -460,11 +460,26 @@ const getWalletHistory = async (req, res) => {
       ad: transaction.adId,
     }));
 
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
+
+    const paginatedHistory = transformedHistory.slice(skip, skip + limit);
+    const totalTransactions = transformedHistory.length;
+    const totalPages = Math.ceil(totalTransactions / limit);
+    const pagination = {
+      totalTransactions,
+      totalPages,
+      currentPage: page,
+      limit,
+    };
+
     const message = "Wallet History loaded successfully";
 
     return response.success(res, message, {
       balance: wallet.amount,
-      transactionHistory: transformedHistory,
+      transactionHistory: paginatedHistory,
+      pagination,
     });
   } catch (error) {
     console.log(error);

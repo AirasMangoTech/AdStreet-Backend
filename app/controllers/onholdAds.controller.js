@@ -43,17 +43,20 @@ exports.getAllAds = async (req, res) => {
       limit = 10,
       sortBy = "createdAt",
       order = "asc",
-      employeeId,
-      employerId,
+      from,
+      to,
     } = req.query;
     const filter = {};
 
-    if (employeeId) {
-      filter.employeeId = employeeId;
+    if (from) {
+      filter.createdAt = { $gte: new Date(from) };
     }
 
-    if (employerId) {
-      filter.employerId = employerId;
+    if (to) {
+      if (!filter.createdAt) {
+        filter.createdAt = {};
+      }
+      filter.createdAt.$lte = new Date(to);
     }
 
     const onholdAds = await OnholdAd.find(filter)
