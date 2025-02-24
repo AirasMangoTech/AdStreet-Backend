@@ -452,13 +452,17 @@ const getWalletHistory = async (req, res) => {
     }
 
     // Transform the fetched data
-    const transformedHistory = statements.map((transaction) => ({
-      amount: transaction.amount,
-      narration: transaction.description,
-      type: transaction.type,
-      transaction_date: transaction.createdAt,
-      ad: transaction.adId,
-    }));
+    const transformedHistory = statements
+      .map((transaction) => ({
+        amount: transaction.amount,
+        narration: transaction.description,
+        type: transaction.type,
+        transaction_date: transaction.createdAt,
+        ad: transaction.adId,
+      }))
+      .sort(
+        (a, b) => new Date(b.transaction_date) - new Date(a.transaction_date)
+      );
 
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
