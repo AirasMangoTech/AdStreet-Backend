@@ -576,7 +576,7 @@ const updateWithdrawRequest = async (req, res) => {
         await adminWallet.save();
 
         await escrowAccount.create({
-          user: req.user.id,
+          user: request.user,
           amount: amountToBeDeducted,
           description: "Amount withdrawed from account.",
           type: "withdraw",
