@@ -7,7 +7,7 @@ module.exports = async (req, res, next) => {
     if (user?.isDelete) {
       return response.badRequest(
         res,
-        "Your account has been deleted, you cannot proceed with these credentials. Contact support for further inquiry."
+        "Your account has been deleted. Contact support for further inquiry."
       );
     }
     return next();
@@ -19,7 +19,7 @@ module.exports = async (req, res, next) => {
     if (user?.isDelete) {
       return response.badRequest(
         res,
-        "Your account has been deleted, you cannot proceed with these credentials. Contact support for further inquiry."
+        "Your account has been deleted. Contact support for further inquiry."
       );
     }
     next();
