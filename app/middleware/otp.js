@@ -19,9 +19,8 @@ const GenerateOTP = (length) => {
 
 const verifyOTP = async (req, res, next) => {
   try {
-
     if (req.body.isSocialLogin) {
-      next();
+      return next();
     }
 
     if (req.body.otp_token) {
@@ -35,7 +34,7 @@ const verifyOTP = async (req, res, next) => {
         }
       } catch (error) {
         if (error) {
-          return res.json(error)
+          return res.status(400).json(error);
         }
       }
     }

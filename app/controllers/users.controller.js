@@ -755,6 +755,33 @@ const getWithdrawRequest = async (req, res) => {
   }
 };
 
+const deleteUser = async (req, res) => {
+  try {
+    const userId = req.query.id;
+
+    if (!userId) {
+      return res.status(400).json({
+        status: "fail",
+        message: "Invalid user id",
+      });
+    }
+
+    const user = await User.findByIdAndUpdate(userId, { isDelete: true });
+
+    if (!user) {
+      return res.status(400).json({
+        status: "fail",
+        message: "No user found with that ID.",
+      });
+    }
+
+    response.success(res, "User deleted successfully");
+  } catch (error) {
+    console.error(`Error deleting user: ${error}`);
+    return response.serverError(res, "Something bad happened! Try Again Later");
+  }
+};
+
 module.exports = {
   signup,
   login,
@@ -767,4 +794,5 @@ module.exports = {
   createWithdrawRequest,
   updateWithdrawRequest,
   getWithdrawRequest,
+  deleteUser,
 };

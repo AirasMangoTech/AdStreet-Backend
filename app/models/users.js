@@ -46,7 +46,7 @@ const UserSchema = new mongoose.Schema({
     },
     industry: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'Industry',
+      ref: "Industry",
     },
     services: {
       type: mongoose.Schema.Types.ObjectId,
@@ -67,33 +67,33 @@ const UserSchema = new mongoose.Schema({
     p_link: {
       type: String,
     },
-    facebook:{
+    facebook: {
       type: String,
     },
-    twitter :{
+    twitter: {
       type: String,
     },
-    linkedin:{
+    linkedin: {
       type: String,
     },
   },
   isSocialLogin: {
     type: Boolean,
-    default: false
+    default: false,
   },
   socialLogin: {
     google: {
       id: String,
-      token: String
+      token: String,
     },
     facebook: {
       id: String,
-      token: String
+      token: String,
     },
     apple: {
       id: String,
-      token: String
-    }
+      token: String,
+    },
   },
   country: {
     type: String,
@@ -105,13 +105,16 @@ const UserSchema = new mongoose.Schema({
     type: String,
   },
   about: {
-    type: String, 
-    required: false, 
+    type: String,
+    required: false,
   },
   user_type: {
-    type: String,  
+    type: String,
   },
-
+  isDelete: {
+    type: Boolean,
+    default: false,
+  },
   updated_at: Date,
 });
 const Users = mongoose.model("users", UserSchema);
