@@ -389,7 +389,7 @@ const getUser = async (req, res) => {
     const { user_id } = req.query;
 
     const user = await User.findById(user_id).select(
-      "name email phone_Number roles about image"
+      "name email phone_Number roles about image isDelete"
     );
 
     if (!user) {
