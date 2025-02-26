@@ -25,8 +25,10 @@ const paymentMethod = require("./paymentMethod.routes");
 const userEvent = require("./userevent.routes");
 const fee = require("./platformFee.routes");
 const onholdAds = require("./onholdAds.routes");
+const appVersion = require("./appVersion.routes");
 
 router.use("/ad", ad);
+router.use("/appVersion", appVersion);
 router.use("/admeet", admeet);
 router.use("/accounts", accounts);
 router.use("/adpro", adpro);
