@@ -25,7 +25,7 @@ app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "app/views"));
 
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
-app.use("/well-known", express.static(path.join(__dirname, ".well-known")));
+app.use("/.well-known", express.static(path.join(__dirname, ".well-known")));
 app.use("/uploadFiles", express.static(path.join(__dirname, "uploadFiles")));
 //app.use('/uploads', express.static('uploads'));
 
