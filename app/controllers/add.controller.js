@@ -369,18 +369,18 @@ const acceptProposal = async (req, res) => {
       proposalId,
       { status: "true" },
       { new: true }
-    );
+    ).populate("submittedBy");
 
     if (!proposalToAccept) {
       return response.notFound(res, "Proposal not found");
     }
 
-    ad.hired_user = proposalToAccept.submittedBy;
+    ad.hired_user = proposalToAccept.submittedBy?._id;
     ad.isHired = true;
     await ad.save();
 
-    let notiTitle = `${req.user.name} has accepted your request`;
-    let notiDescription = `Your contract with ${req.user.name} has started`;
+    let notiTitle = `${proposalToAccept.submittedBy?.name} has accepted your request`;
+    let notiDescription = `Your contract with ${proposalToAccept.submittedBy?.name} has started`;
 
     let notiData = {
       id: adId,
@@ -1029,8 +1029,6 @@ const createMilestone = async (req, res) => {
         FcmToken.find({ user_id: req.body?.employer }),
         Users.findById(req.body?.employee),
       ]);
-      console.log("🚀 ~ createMilestone ~ employee:", employee);
-      console.log("🚀 ~ createMilestone ~ fcmTokens:", fcmTokens);
 
       const notificationTitle = `Offer Rejected - ${ad.title}`;
       const notificationDescription = `${employee.name} has rejected your offer. Please review and send a new offer.`;
