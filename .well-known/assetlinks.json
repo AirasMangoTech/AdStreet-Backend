@@ -1,0 +1,14 @@
+[
+  {
+    "relation": [
+      "delegate_permission/common.handle_all_urls"
+    ],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.axsonstech.adstreet",
+      "sha256_cert_fingerprints": [
+        "D3:1A:04:6A:85:DE:90:38:F4:37:06:77:76:B0:1F:69:57:FF:22:53:98:3B:90:66:17:D4:BA:9C:00:D3:CB:97"
+      ]
+    }
+  }
+]
