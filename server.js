@@ -66,6 +66,31 @@ app.get("/share/:id", async (req, res) => {
   });
 });
 
+app.get("/ad/:id", (req, res) => {
+  const adId = req.params.id;
+  const appScheme = `adstreet://ad/${adId}`;
+  const playStoreUrl =
+    "https://play.google.com/store/apps/details?id=com.axsonstech.adstreet";
+
+  res.send(`
+      <html>
+          <head>
+              <script>
+                  // Try opening the app
+                  setTimeout(function() {
+                      window.location.href = "${playStoreUrl}";
+                  }, 2000);
+
+                  window.location.href = "${appScheme}";
+              </script>
+          </head>
+          <body>
+              <p>Redirecting...</p>
+          </body>
+      </html>
+  `);
+});
+
 app.use("/api", app_route);
 
 server.listen(port, () => {
