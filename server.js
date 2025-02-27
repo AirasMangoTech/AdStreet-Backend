@@ -75,17 +75,16 @@ app.get("/ad/:id", (req, res) => {
   res.send(`
       <html>
           <head>
-              <script>
+          </head>
+          <body>
+              <p>Redirecting...</p>
+               <script>
                   // Try opening the app
                   setTimeout(function() {
                       window.location.href = "${playStoreUrl}";
                   }, 2000);
-
                   window.location.href = "${appScheme}";
               </script>
-          </head>
-          <body>
-              <p>Redirecting...</p>
           </body>
       </html>
   `);
