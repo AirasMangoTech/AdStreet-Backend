@@ -7,7 +7,8 @@
       "namespace": "android_app",
       "package_name": "com.axsonstech.adstreet",
       "sha256_cert_fingerprints": [
-        "D3:1A:04:6A:85:DE:90:38:F4:37:06:77:76:B0:1F:69:57:FF:22:53:98:3B:90:66:17:D4:BA:9C:00:D3:CB:97"
+        "D3:1A:04:6A:85:DE:90:38:F4:37:06:77:76:B0:1F:69:57:FF:22:53:98:3B:90:66:17:D4:BA:9C:00:D3:CB:97",
+        "FA:C6:17:45:DC:09:03:78:6F:B9:ED:E6:2A:96:2B:39:9F:73:48:F0:BB:6F:89:9B:83:32:66:75:91:03:3B:9C"
       ]
     }
   }
