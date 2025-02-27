@@ -68,26 +68,47 @@ app.get("/share/:id", async (req, res) => {
 
 app.get("/ad/:id", (req, res) => {
   const adId = req.params.id;
-  const appScheme = `adstreet://ad/${adId}`;
+
+  const androidAppScheme = `adstreet://ad/${adId}`;
+  const iosAppScheme = `adstreet://ad/${adId}`;
+
   const playStoreUrl =
     "https://play.google.com/store/apps/details?id=com.axsonstech.adstreet";
+  const appStoreUrl =
+    "https://apps.apple.com/us/app/adstreet/idYOUR_APPLE_APP_ID";
+
+  const webUrl = `https://adstreet.mangotech-api.com/ad/${adId}`;
+
+  const userAgent = req.headers["user-agent"];
+  const isAndroid = /android/i.test(userAgent);
+  const isIOS = /iphone|ipad|ipod/i.test(userAgent);
+  const isMobile = isAndroid || isIOS;
+  const isDesktop = !isMobile;
+
+  if (isDesktop) {
+    return res.redirect(webUrl);
+  }
+
+  let fallbackUrl = isAndroid ? playStoreUrl : isIOS ? appStoreUrl : webUrl;
 
   res.send(`
-      <html>
-          <head>
-          </head>
-          <body>
-              <p>Redirecting...</p>
-               <script>
-                  // Try opening the app
-                  setTimeout(function() {
-                      window.location.href = "${playStoreUrl}";
-                  }, 2000);
-                  window.location.href = "${appScheme}";
-              </script>
-          </body>
-      </html>
-  `);
+        <html>
+            <head>
+                <script>
+                    setTimeout(function() {
+                        window.location.href = "${fallbackUrl}";
+                    }, 2000);
+
+                    window.location.href = "${
+                      isIOS ? iosAppScheme : androidAppScheme
+                    }";
+                </script>
+            </head>
+            <body>
+                <p>Redirecting...</p>
+            </body>
+        </html>
+    `);
 });
 
 app.use("/api", app_route);
