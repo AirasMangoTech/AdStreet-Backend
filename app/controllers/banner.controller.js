@@ -39,6 +39,10 @@ const getAllBanners = async (req, res) => {
       query.type = req.query.type.toLowerCase(); // Ensure type matches schema's lowercase requirement
     }
 
+    if (req.query.active) {
+      query.isActive = req.query.active;
+    }
+
     const userId = req.user.id;
 
     // Fetch banners and populate the related blog
@@ -139,9 +143,6 @@ const getAllBanners = async (req, res) => {
         }
       })
     );
-
-    // Filter results based on `isActive` if necessary (based on schema)
-    const activeBanners = modifiedBanners.filter((banner) => banner.isActive);
 
     return response.success(res, "Banners retrieved successfully", {
       banners: modifiedBanners,
