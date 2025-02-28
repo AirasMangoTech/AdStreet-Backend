@@ -40,7 +40,7 @@ const getAllBanners = async (req, res) => {
     }
 
     if (req.query.active) {
-      query.isActive = req.query.active;
+      query.isActive = req.query.active == "true" ? true : false;
     }
 
     const userId = req.user.id;
