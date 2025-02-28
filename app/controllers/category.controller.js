@@ -11,11 +11,14 @@ const createCategory = async (req, res) => {
   try {
     console.log(req.user);
     const { name, imageUrl, type } = req.body;
-    const category = new Category({ name, image: req.body.imageUrl, type});
+    const category = new Category({ name, image: req.body.imageUrl, type });
     await category.save();
     return response.success(res, "Category created successfully", { category });
   } catch (error) {
-    return response.badRequest(res, "Already  exists a category with that name.");
+    return response.badRequest(
+      res,
+      "Already  exists a category with that name."
+    );
   }
 };
 const getAllCategories = async (req, res) => {
@@ -28,6 +31,11 @@ const getAllCategories = async (req, res) => {
     if (req.query.type) {
       query.type = req.query.type;
     }
+
+    if (req.query.active) {
+      query.isActive = req.query.active == "true" ? true : false;
+    }
+
     const page = parseInt(req.query.page) || 1; // Default to page 1 if not specified
     const limit = parseInt(req.query.limit) || 10; // Default limit to 10 items per page
     const skipIndex = (page - 1) * limit;
@@ -37,16 +45,26 @@ const getAllCategories = async (req, res) => {
       .limit(limit);
     const totalCategory = await Category.countDocuments(query);
     const totalPages = Math.ceil(totalCategory / limit);
-     // Use a consistent structure for the response
-    const message = categories.length === 0 ? "No categories found" : "Categories loaded successfully";
-    return response.success(res, message, { categories, totalPages, currentPage: page, totalCategory});
-    
+    // Use a consistent structure for the response
+    const message =
+      categories.length === 0
+        ? "No categories found"
+        : "Categories loaded successfully";
+    return response.success(res, message, {
+      categories,
+      totalPages,
+      currentPage: page,
+      totalCategory,
+    });
   } catch (error) {
     console.log(error);
-    return response.serverError(res, error.message, "Failed to load Categories");
+    return response.serverError(
+      res,
+      error.message,
+      "Failed to load Categories"
+    );
   }
 };
-
 
 const updateCategory = async (req, res) => {
   try {
@@ -59,14 +77,16 @@ const updateCategory = async (req, res) => {
     const category = await Category.findByIdAndUpdate(req.params.id, req.body, {
       new: true,
     });
-    
+
     if (!category) {
       return response.notFound(
         res,
         `No Category was found with the id of ${req.params.id}`
       );
     }
-    return response.success(res, "Category updated successfully.", { category });
+    return response.success(res, "Category updated successfully.", {
+      category,
+    });
   } catch (error) {
     response.serverError(
       res,
