@@ -179,14 +179,17 @@ const saveGatewayResponse = async (req, res) => {
         { user: admin.id },
         { $inc: { amount: ad.budget } }
       );
-      
+
       await escrow.save();
 
       ad.isActivated = true;
       await ad.save();
 
       if (ad.isHired) {
-        let notiData_user = {};
+        let notiData_user = {
+          id: ad._id,
+          pagename: "AdBazarDetailScreen",
+        };
         let notification_user = new Notification({
           title: `The job you are hired for is activated.`,
           content: `The job you are hired for is activated.`,

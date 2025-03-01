@@ -615,7 +615,7 @@ const updateAdStatus = async (req, res) => {
 
       let notiData_user = {
         id: adId,
-        pagename: "",
+        pagename: "wallet",
         title: notiTitle_user,
         body: notiDescription_user,
       };
@@ -931,7 +931,7 @@ const sendRequestToAcceptAd = async (req, res) => {
 
     const notificationData = {
       id: milestone._id,
-      pagename: "job-details",
+      pagename: "AdBazarDetailScreen",
       title: notificationTitleEmployee,
       body: notificationDescriptionEmployee,
     };

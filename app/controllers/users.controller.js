@@ -597,7 +597,7 @@ const updateWithdrawRequest = async (req, res) => {
 
         const notificationData = {
           id: request._id,
-          pagename: "withdraw",
+          pagename: "wallet",
           title: notificationTitle,
           body: notificationDescription,
         };
