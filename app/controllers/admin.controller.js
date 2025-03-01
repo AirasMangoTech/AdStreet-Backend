@@ -205,7 +205,7 @@ const approveAd = async (req, res) => {
 
     let notiData_user = {
       id: ad.id,
-      pagename: "",
+      pagename: "Contracts",
       title: notiTitle_user,
       body: notiDescription_user,
     };
