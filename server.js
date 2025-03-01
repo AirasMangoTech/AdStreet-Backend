@@ -56,6 +56,10 @@ app.get("/", (req, res) => {
   res.json({ message: "Codename: Project Ad Street" });
 });
 
+app.get("/payment-failed", (req, res) => {
+  res.render("cancel");
+});
+
 app.get("/share/:id", async (req, res) => {
   const id = req.params.id;
   const blog = await Blog.findById(id);
