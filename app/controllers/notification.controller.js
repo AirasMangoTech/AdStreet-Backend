@@ -32,7 +32,7 @@ module.exports.getNotifications = async (req, res) => {
     return response.success(res, "Notifications List", {
       notifications,
       count,
-      totalPages: Math.ceil(count / limit)
+      totalPages: Math.ceil(count / limit),
     });
   } catch (error) {
     console.log(error);
@@ -92,7 +92,10 @@ module.exports.updateNotificationStatus = async (req, res) => {
 
 module.exports.sendNotification = async (req, res) => {
   try {
-    let notiData = {};
+    let notiData = {
+      pagename: "AdBazarDetailScreen",
+      id: "67c549fcbed14b24a383a0ce",
+    };
 
     const Admins = await Users.find({ roles: "ADMIN" });
     const adminIds = Admins.map((admin) => admin._id);
