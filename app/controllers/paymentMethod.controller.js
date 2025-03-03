@@ -212,7 +212,10 @@ const saveGatewayResponse = async (req, res) => {
         }
       }
 
-      let notiData = {};
+      let notiData = {
+        id: ad._id,
+        pagename: "AdBazarDetailScreen",
+      };
       let notification = new Notification({
         title: `Your job is activated.`,
         content: `Your job is activated.`,

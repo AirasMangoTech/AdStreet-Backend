@@ -1035,7 +1035,7 @@ const createMilestone = async (req, res) => {
 
       const notificationData = {
         id: ad._id,
-        pagename: "job-details",
+        pagename: "AdBazarDetailScreen",
         title: notificationTitle,
         body: notificationDescription,
       };
@@ -1147,11 +1147,11 @@ const completeJobByEmployee = async (req, res) => {
     }
 
     const notificationTitle = `Job Completed - ${ad.title}`;
-    const notificationDescription = `${employeeName} marked the job as completed. Please review the work and confirm completion.`;
+    const notificationDescription = `${employeeName} has submitted the work. Please review the work and confirm completion.`;
 
     const notificationData = {
       id: ad._id,
-      pagename: "job-details",
+      pagename: "AdBazarDetailScreen",
       title: notificationTitle,
       body: notificationDescription,
     };
