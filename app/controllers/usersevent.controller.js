@@ -64,11 +64,11 @@ exports.addUserEvent = async (req, res) => {
     if (!eventClone.eventDate) {
       eventClone.eventDate = format(new Date(event.date), "dd/MM/yyyy");
       eventClone.eventStartTime = format(
-        new Date(event.additional.start_time),
+        new Date(event.eventStartTime),
         "HH:mm a"
       );
       eventClone.eventEndTime = format(
-        new Date(event.additional.end_time),
+        new Date(event.eventEndTime),
         "HH:mm a"
       );
       eventClone.eventName = event.title;
