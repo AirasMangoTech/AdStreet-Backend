@@ -62,7 +62,7 @@ const register = async (req, res) => {
       const password = crypto.randomBytes(6).toString("hex");
       const newRegistration = new User({
         name,
-        phoneNumber,
+        phone_Number: phoneNumber,
         email,
         password,
         companyName,
@@ -136,7 +136,7 @@ const getAllRegistrations = async (req, res) => {
     //const registrations = await Registration.find(query);
     const registrations = await Interest.find(query).populate({
       path: "user",
-      select: "name email phoneNumber",
+      select: "name email phone_Number",
     });
     return response.success(res, "Registrations fetched successfully", {
       registrations,
