@@ -136,7 +136,7 @@ const getAllRegistrations = async (req, res) => {
     //const registrations = await Registration.find(query);
     const registrations = await Interest.find(query).populate({
       path: "user",
-      select: "name email phone_Number",
+      select: "name email phone_Number companyName",
     });
     return response.success(res, "Registrations fetched successfully", {
       registrations,
