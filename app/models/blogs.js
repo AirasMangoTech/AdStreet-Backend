@@ -117,7 +117,7 @@ const blogSchema = new mongoose.Schema({
     default: Date.now,
   },
   logo: {
-    typr: String,
+    type: String,
   },
 });
 
