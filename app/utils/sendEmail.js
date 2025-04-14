@@ -3,7 +3,7 @@ const { transporter, transporterOTP } = require("../config/email");
 const sendEventEmailWithCC = async (toEmail, subject, body) => {
   try {
     const info = await transporter.sendMail({
-      from: `"ADSTREET" <events@adstreet.com.pk>`,
+      from: `"ADSTREET" <connect@adstreet.com.pk>`,
       to: toEmail,
       cc: "sshashmi@adstreet.com.pk",
       //cc: 'sajid.mangotech@gmail.com',
