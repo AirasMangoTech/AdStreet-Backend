@@ -77,6 +77,11 @@ const signup = async (req, res) => {
       encryptedPassword = await bcrypt.hash(password, await bcrypt.genSalt(10));
     }
 
+    // Check if email is already registered
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      return response.badRequest(res, "Email is already registered");
+    }
     const newUser = new User({
       name,
       email,
@@ -124,9 +129,9 @@ const signup = async (req, res) => {
 
     return response.success(res, "Signup Successful", { user: obj, token });
   } catch (error) {
-    console.log(error.message);
+    console.error(`Error: ${error.message}`);
     logger.error(`ip: ${req.ip}, url: ${req.url}, error: ${error.stack}`);
-    return response.serverError(res, "Something bad happened! Try Again Later");
+    return response.serverError(res, `Error: ${error.message}`);
   }
 };
 
@@ -247,7 +252,7 @@ const socialLogin = async (req, res) => {
   } catch (error) {
     console.log(error.message);
     logger.error(`ip: ${req.ip}, url: ${req.url}, error: ${error.stack}`);
-    return response.serverError(res, "Something bad happened! Try Again Later");
+    return response.serverError(res, `Error: ${error.message}`);
   }
 };
 
