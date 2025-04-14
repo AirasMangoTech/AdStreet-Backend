@@ -9,7 +9,6 @@ const createCategory = async (req, res) => {
       "You don't have permission to perform this action"
     );
   try {
-    console.log(req.user);
     const { name, imageUrl, type } = req.body;
     const category = new Category({ name, image: req.body.imageUrl, type });
     await category.save();
@@ -117,10 +116,46 @@ const deleteCategory = async (req, res) => {
   }
 };
 
+const updateCategorySequence = async (req, res) => {
+  try {
+    const { categories } = req.body;
+
+    if (!Array.isArray(categories) || categories.length === 0) {
+      return response.badRequest(
+        res,
+        "Categories array is required and cannot be empty"
+      );
+    }
+
+    const bulkOperations = categories.map((categoryItem) => {
+      if (!categoryItem._id || typeof categoryItem.sortOrder !== "number") {
+        throw new Error(
+          "Each category must have an _id and a numeric sortOrder"
+        );
+      }
+
+      return {
+        updateOne: {
+          filter: { _id: categoryItem._id },
+          update: { $set: { num_id: categoryItem.sortOrder } },
+        },
+      };
+    });
+
+    await Category.bulkWrite(bulkOperations);
+
+    return response.success(res, "Categories sortation updated successfully");
+  } catch (error) {
+    console.error(`Error updating categories sortation: ${error}`);
+    return response.serverError(res, "Error updating categories sortation");
+  }
+};
+
 module.exports = {
   createCategory,
   getAllCategories,
   //getCategoryById,
   updateCategory,
   deleteCategory,
+  updateCategorySequence,
 };

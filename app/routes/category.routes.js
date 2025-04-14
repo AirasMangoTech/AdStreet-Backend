@@ -10,5 +10,6 @@ category_router.get('/allcategoriesWEB', cc.getAllCategories);
 // category_router.get('/categoriesId/:id',[verifyToken], cc.getCategoryById);
 category_router.put('/update/:id',[verifyToken], cc.updateCategory);
 category_router.delete('/delete/:id',[verifyToken], cc.deleteCategory);
+category_router.post('/updateCategorySequence',[verifyToken], cc.updateCategorySequence);
 
 module.exports = category_router;
