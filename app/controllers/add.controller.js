@@ -584,6 +584,7 @@ const updateAdStatus = async (req, res) => {
           res,
           "There was an error sending amount to employee due to insuffiecient funds. Please contact administration."
         );
+        return
       }
       admin_wallet.amount -= ad.budget;
       let user_wallet = await wallet.findOne({ user: ad.hired_user.id });
