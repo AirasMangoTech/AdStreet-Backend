@@ -95,6 +95,44 @@ const postProposal = async (req, res) => {
   }
 };
 
+const getProposalById = async (req, res) => {
+  try {
+    const proposalId = req.params.id;
+
+    if (!mongoose.Types.ObjectId.isValid(proposalId)) {
+      return response.badRequest(res, "Invalid proposal ID", 400);
+    }
+
+    const proposal = await Proposal.findById(proposalId)
+      .populate("submittedBy", "-password")
+      .populate({
+        path: "adId",
+        populate: [
+          {
+            path: "category",
+            model: "Category",
+            select: "_id name",
+          },
+          {
+            path: "postedBy",
+            select: "-password",
+          },
+        ],
+      });
+
+    if (!proposal) {
+      return response.notFound(res, "Proposal not found", 404);
+    }
+
+    return response.success(res, "Proposal retrieved successfully", {
+      proposal,
+    });
+  } catch (error) {
+    console.error(`Error getting proposal by ID: ${error}`);
+    return response.serverError(res, "Error getting proposal details");
+  }
+};
+
 const getAllProposals = async (req, res) => {
   try {
     let where = {};
