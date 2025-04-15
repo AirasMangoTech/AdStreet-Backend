@@ -64,7 +64,7 @@ const postProposal = async (req, res) => {
 
     let notiData = {
       id: proposal.id,
-      pagename: "AdBazarDetailScreen",
+      pagename: "ProposalDetail",
       title: notiTitle,
       body: notiDescription,
     };
