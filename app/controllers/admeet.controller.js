@@ -54,6 +54,7 @@ const register = async (req, res) => {
       expressedInterest,
       industry,
       blogId,
+      user_type,
     } = req.body;
 
     let existingUser = await User.findOne({ email });
@@ -69,7 +70,7 @@ const register = async (req, res) => {
         industry,
         blogId,
         roles: "Individual",
-        user_type: "admeet",
+        user_type,
         expressedInterest,
       });
       await newRegistration.save();
@@ -100,7 +101,12 @@ const register = async (req, res) => {
 
     eventClone.eventDetails = getDateDetails(eventClone.eventDate);
 
-    var resp = await sendEventEmail(email, name, eventClone, event.mailBody);
+    var resp = await sendEventEmail(
+      email,
+      name,
+      eventClone,
+      event.mailBody
+    );
 
     const newInterest = new Interest({
       blog: blogId,
