@@ -63,8 +63,8 @@ const postProposal = async (req, res) => {
     let notiDescription = `${user.name} sent you a proposal on your job post`;
 
     let notiData = {
-      id: proposal.id,
-      pagename: "ProposalDetail",
+      id: adId,
+      pagename: "AdBazarDetailScreen",
       title: notiTitle,
       body: notiDescription,
     };
