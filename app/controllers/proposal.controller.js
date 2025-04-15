@@ -307,4 +307,5 @@ module.exports = {
   getAllProposals,
   getProposalsByAdId,
   getHiredUser,
+  getProposalById
 };
