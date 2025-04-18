@@ -425,7 +425,7 @@ const acceptProposal = async (req, res) => {
 const getHiredUsersAndAds = async (req, res) => {
   try {
     const userId = req.user.id;
-    const { param } = req.query;
+    const { param1, param2 } = req.query;
 
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
@@ -434,7 +434,7 @@ const getHiredUsersAndAds = async (req, res) => {
     let result = {};
     let totalCount = 0;
 
-    if (param === "my-jobs") {
+    if (param1 === "my-jobs" && param2 === "ongoing") {
       result.ongoingAds = await Ad.find({
         postedBy: userId,
         hired_user: { $exists: true, $ne: null },
@@ -446,6 +446,12 @@ const getHiredUsersAndAds = async (req, res) => {
         .skip(skip)
         .limit(limit);
 
+      totalCount = await Ad.countDocuments({
+        postedBy: userId,
+        hired_user: { $exists: true, $ne: null },
+        isCompleted: false,
+      });
+    } else if (param1 === "my-jobs" && param2 === "completed") {
       result.completedAds = await Ad.find({
         postedBy: userId,
         isCompleted: true,
@@ -458,12 +464,9 @@ const getHiredUsersAndAds = async (req, res) => {
 
       totalCount = await Ad.countDocuments({
         postedBy: userId,
-        $or: [
-          { hired_user: { $exists: true, $ne: null }, isCompleted: false },
-          { isCompleted: true },
-        ],
+        isCompleted: true,
       });
-    } else if (param === "applied-jobs") {
+    } else if (param1 === "applied-jobs" && param2 === "ongoing") {
       result.hiredUser = await Proposal.find({
         submittedBy: userId,
         status: "true",
@@ -478,22 +481,7 @@ const getHiredUsersAndAds = async (req, res) => {
         status: "true",
         isCompleted: false,
       });
-    } else if (param === "ongoing-jobs") {
-      result.ongoingHIREDAds = await Ad.find({
-        hired_user: userId,
-        isCompleted: false,
-      })
-        .populate("hired_user", "-password")
-        .populate("category")
-        .populate("postedBy", "_id")
-        .skip(skip)
-        .limit(limit);
-
-      totalCount = await Ad.countDocuments({
-        hired_user: userId,
-        isCompleted: false,
-      });
-    } else if (param === "completed-jobs") {
+    } else if (param1 === "applied-jobs" && param2 === "completed") {
       result.completedHIREDAds = await Ad.find({
         hired_user: userId,
         isCompleted: true,
@@ -509,7 +497,7 @@ const getHiredUsersAndAds = async (req, res) => {
         isCompleted: true,
       });
     } else {
-      return response.badRequest(res, "Invalid param value");
+      return response.badRequest(res, "Invalid param values");
     }
 
     return response.success(res, "Jobs retrieved successfully", {
@@ -558,8 +546,8 @@ const getHiredUser = async (req, res) => {
 
     const totalAds = await Ad.countDocuments({
       $or: [
-      { postedBy: userId, hired_user: { $exists: true, $ne: null } },
-      { hired_user: userId },
+        { postedBy: userId, hired_user: { $exists: true, $ne: null } },
+        { hired_user: userId },
       ],
     });
     const totalPages = Math.ceil(totalAds / limit);
@@ -632,7 +620,7 @@ const updateAdStatus = async (req, res) => {
           res,
           "There was an error sending amount to employee due to insuffiecient funds. Please contact administration."
         );
-        return
+        return;
       }
       admin_wallet.amount -= ad.budget;
       let user_wallet = await wallet.findOne({ user: ad.hired_user.id });
