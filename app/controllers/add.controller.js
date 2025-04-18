@@ -499,18 +499,24 @@ const getHiredUsersAndAds = async (req, res) => {
 const getHiredUser = async (req, res) => {
   try {
     const { userId } = req.user;
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
 
     // Check if the logged-in user's ID matches the postedBy field
     const postedByAds = await Ad.find({
       postedBy: userId,
       hired_user: { $exists: true, $ne: null },
-    }).populate("hired_user", "-password");
+    })
+      .populate("hired_user", "-password")
+      .skip(skip)
+      .limit(limit);
 
     // Check if the logged-in user's ID matches the hired_user field
-    const hiredUserAds = await Ad.find({ hired_user: userId }).populate(
-      "postedBy",
-      "name"
-    );
+    const hiredUserAds = await Ad.find({ hired_user: userId })
+      .populate("postedBy", "name")
+      .skip(skip)
+      .limit(limit);
 
     let ads;
     if (postedByAds.length > 0) {
@@ -521,7 +527,20 @@ const getHiredUser = async (req, res) => {
       return response.notFound(res, "No relevant ads found.");
     }
 
-    return response.success(res, "Ads retrieved successfully.", { ads });
+    const totalAds = await Ad.countDocuments({
+      $or: [
+      { postedBy: userId, hired_user: { $exists: true, $ne: null } },
+      { hired_user: userId },
+      ],
+    });
+    const totalPages = Math.ceil(totalAds / limit);
+
+    return response.success(res, "Ads retrieved successfully.", {
+      ads,
+      totalAds,
+      totalPages,
+      currentPage: page,
+    });
   } catch (error) {
     console.error(`Error getting hired user details: ${error}`);
     return response.serverError(res, "Error getting hired user details.");
