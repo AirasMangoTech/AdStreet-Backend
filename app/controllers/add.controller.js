@@ -272,9 +272,11 @@ const getAllAds = async (req, res) => {
 
     return response.success(res, "All ads retrieved successfully", {
       ads,
-      totalAds,
-      totalPages,
-      currentPage: page,
+      pagination: {
+        totalAds,
+        totalPages,
+        currentPage: page,
+      },
     });
   } catch (error) {
     console.error(`Error fetching ads: ${error.message}`);
