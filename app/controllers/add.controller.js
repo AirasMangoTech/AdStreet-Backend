@@ -435,7 +435,7 @@ const getHiredUsersAndAds = async (req, res) => {
     let totalCount = 0;
 
     if (param1 === "my-jobs" && param2 === "ongoing") {
-      result.ongoingAds = await Ad.find({
+      result.jobs = await Ad.find({
         postedBy: userId,
         hired_user: { $exists: true, $ne: null },
         isCompleted: false,
@@ -452,7 +452,7 @@ const getHiredUsersAndAds = async (req, res) => {
         isCompleted: false,
       });
     } else if (param1 === "my-jobs" && param2 === "completed") {
-      result.completedAds = await Ad.find({
+      result.jobs = await Ad.find({
         postedBy: userId,
         isCompleted: true,
       })
@@ -467,7 +467,7 @@ const getHiredUsersAndAds = async (req, res) => {
         isCompleted: true,
       });
     } else if (param1 === "applied-jobs" && param2 === "ongoing") {
-      result.hiredUser = await Proposal.find({
+      result.jobs = await Proposal.find({
         submittedBy: userId,
         status: "true",
         isCompleted: false,
@@ -482,7 +482,7 @@ const getHiredUsersAndAds = async (req, res) => {
         isCompleted: false,
       });
     } else if (param1 === "applied-jobs" && param2 === "completed") {
-      result.completedHIREDAds = await Ad.find({
+      result.jobs = await Ad.find({
         hired_user: userId,
         isCompleted: true,
       })
