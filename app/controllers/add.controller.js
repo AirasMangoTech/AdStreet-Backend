@@ -425,71 +425,100 @@ const acceptProposal = async (req, res) => {
 const getHiredUsersAndAds = async (req, res) => {
   try {
     const userId = req.user.id;
+    const { param } = req.query;
 
-    const ongoingAds = await Ad.find({
-      postedBy: userId,
-      hired_user: { $exists: true, $ne: null },
-      isCompleted: false,
-    })
-      .populate("hired_user", "-password")
-      .populate("category")
-      .populate("postedBy", "_id");
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
 
-    // Find completed ads posted by the current user
-    const completedAds = await Ad.find({
-      postedBy: userId,
-      isCompleted: true,
-    })
-      .populate("hired_user", "-password")
-      .populate("category")
-      .populate("postedBy", "_id");
+    let result = {};
+    let totalCount = 0;
 
-    const ongoingHIREDAds = await Ad.find({
-      hired_user: userId,
-      //hired_user: { $exists: true, $ne: null },
-      isCompleted: false,
-    })
-      .populate("hired_user", "-password")
-      .populate("category")
-      .populate("postedBy", "_id");
+    if (param === "my-jobs") {
+      result.ongoingAds = await Ad.find({
+        postedBy: userId,
+        hired_user: { $exists: true, $ne: null },
+        isCompleted: false,
+      })
+        .populate("hired_user", "-password")
+        .populate("category")
+        .populate("postedBy", "_id")
+        .skip(skip)
+        .limit(limit);
 
-    // Find completed ads posted by the current user
-    const completedHIREDAds = await Ad.find({
-      hired_user: userId,
-      isCompleted: true,
-    })
-      .populate("hired_user", "-password")
-      .populate("category")
-      .populate("postedBy", "_id");
+      result.completedAds = await Ad.find({
+        postedBy: userId,
+        isCompleted: true,
+      })
+        .populate("hired_user", "-password")
+        .populate("category")
+        .populate("postedBy", "_id")
+        .skip(skip)
+        .limit(limit);
 
-    const hiredUser = await Proposal.find({
-      submittedBy: userId,
-      status: "true",
-      isCompleted: false,
-    }).populate("postedBy", "name");
+      totalCount = await Ad.countDocuments({
+        postedBy: userId,
+        $or: [
+          { hired_user: { $exists: true, $ne: null }, isCompleted: false },
+          { isCompleted: true },
+        ],
+      });
+    } else if (param === "applied-jobs") {
+      result.hiredUser = await Proposal.find({
+        submittedBy: userId,
+        status: "true",
+        isCompleted: false,
+      })
+        .populate("postedBy", "name")
+        .skip(skip)
+        .limit(limit);
 
-    // Check if any ads are found
-    // if (
-    //   (!ongoingAds || ongoingAds.length === 0) &&
-    //   (!completedAds || completedAds.length === 0)
-    // ) {
-    //   return response.notFound(res, "No ads found for the user");
-    // }
+      totalCount = await Proposal.countDocuments({
+        submittedBy: userId,
+        status: "true",
+        isCompleted: false,
+      });
+    } else if (param === "ongoing-jobs") {
+      result.ongoingHIREDAds = await Ad.find({
+        hired_user: userId,
+        isCompleted: false,
+      })
+        .populate("hired_user", "-password")
+        .populate("category")
+        .populate("postedBy", "_id")
+        .skip(skip)
+        .limit(limit);
 
-    // Extract hired users from all ongoing ads
-    // const hiredUsers = ongoingAds.reduce((users, ad) => {
-    //   if (ad.submittedBy) {
-    //     users.push(ad.submittedBy);
-    //   }
-    //   return users;
-    // }, []);
+      totalCount = await Ad.countDocuments({
+        hired_user: userId,
+        isCompleted: false,
+      });
+    } else if (param === "completed-jobs") {
+      result.completedHIREDAds = await Ad.find({
+        hired_user: userId,
+        isCompleted: true,
+      })
+        .populate("hired_user", "-password")
+        .populate("category")
+        .populate("postedBy", "_id")
+        .skip(skip)
+        .limit(limit);
 
-    return response.success(res, "Hired users and ads retrieved successfully", {
-      ongoingAds,
-      completedAds,
-      hiredUser,
-      ongoingHIREDAds,
-      completedHIREDAds,
+      totalCount = await Ad.countDocuments({
+        hired_user: userId,
+        isCompleted: true,
+      });
+    } else {
+      return response.badRequest(res, "Invalid param value");
+    }
+
+    return response.success(res, "Jobs retrieved successfully", {
+      ...result,
+      pagination: {
+        totalCount,
+        currentPage: page,
+        totalPages: Math.ceil(totalCount / limit),
+      },
     });
   } catch (error) {
     console.error(`Error getting hired users and ads: ${error}`);
