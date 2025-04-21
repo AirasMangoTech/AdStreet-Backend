@@ -101,12 +101,7 @@ const register = async (req, res) => {
 
     eventClone.eventDetails = getDateDetails(eventClone.eventDate);
 
-    var resp = await sendEventEmail(
-      email,
-      name,
-      eventClone,
-      event.mailBody
-    );
+    await sendEventEmail(email, name, eventClone, event.mailBody);
 
     const newInterest = new Interest({
       blog: blogId,
@@ -117,7 +112,7 @@ const register = async (req, res) => {
 
     return response.success(
       res,
-      "Registration and interest recorded successfully",
+      "Registration and interest recorded successfully, check your inbox or spam for confirmation email",
       {
         user: existingUser,
         interest: newInterest,
