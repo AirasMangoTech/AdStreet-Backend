@@ -39,7 +39,7 @@ const getAllCategories = async (req, res) => {
     const limit = parseInt(req.query.limit) || 10; // Default limit to 10 items per page
     const skipIndex = (page - 1) * limit;
     const categories = await Category.find(query)
-      .sort({ createdAt: -1 })
+      .sort({ num_id: 1 })
       .skip(skipIndex)
       .limit(limit);
     const totalCategory = await Category.countDocuments(query);
