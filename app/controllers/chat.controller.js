@@ -282,50 +282,62 @@ const getMessages = async(req,res) => {
       { $skip: skip }, // Skip the specified number of messages
       { $limit: parseInt(pageSize) }, // Limit the number of messages per page
       {
-        $match: {
-          $or: [
-            {
-              "messages.sentBy": { $ne: null },
-              "messages.sentBy": new mongoose.Types.ObjectId(userId),
-              "messages.deleted": { $ne: true },
-            },
-            {
-              // "messages.receivedBy.userId": { $ne: null },
-              "messages.receivedBy": {
-                $elemMatch: {
-                  userId: { $ne: null },
-                  userId: new mongoose.Types.ObjectId(userId),
-                  deleted: { $ne: true },
-                },
-              },
-            },
-          ],
+      $match: {
+        $or: [
+        {
+          "messages.sentBy": { $ne: null },
+          "messages.sentBy": new mongoose.Types.ObjectId(userId),
+          "messages.deleted": { $ne: true },
         },
+        {
+          "messages.receivedBy": {
+          $elemMatch: {
+            userId: { $ne: null },
+            userId: new mongoose.Types.ObjectId(userId),
+            deleted: { $ne: true },
+          },
+          },
+        },
+        ],
+      },
       },
       {
-        $lookup: {
-          from: "users",
-          localField: "messages.sentBy",
-          foreignField: "_id",
-          as: "sender",
-        },
+      $lookup: {
+        from: "users",
+        localField: "messages.sentBy",
+        foreignField: "_id",
+        as: "sender",
+      },
+      },
+      {
+      $lookup: {
+        from: "users",
+        localField: "messages.receivedBy.userId",
+        foreignField: "_id",
+        as: "receiver",
+      },
       },
       { $unwind: { path: "$sender", preserveNullAndEmptyArrays: true } }, // Unwind the sender array
+      { $unwind: { path: "$receiver", preserveNullAndEmptyArrays: true } }, // Unwind the receiver array
       {
-        $addFields: {
-          "messages.senderId": "$sender._id",
-          "messages.firstName": "$sender.firstName",
-          "messages.lastName": "$sender.lastName",
-          "messages.image": "$sender.image",
-        },
+      $addFields: {
+        "messages.senderId": "$sender._id",
+        "messages.senderFirstName": "$sender.firstName",
+        "messages.senderLastName": "$sender.lastName",
+        "messages.senderImage": "$sender.image",
+        "messages.receiverId": "$receiver._id",
+        "messages.receiverFirstName": "$receiver.firstName",
+        "messages.receiverLastName": "$receiver.lastName",
+        "messages.receiverImage": "$receiver.image",
+      },
       },
       {
-        $group: {
-          _id: "$_id",
-          messages: { $push: "$messages" },
-          totalCount: { $sum: 1 }, // Calculate the total count of messages in the chat
-          unReadCount: { $sum: "$unReadCount" }, // Calculate the total count of unread messages in the chat
-        },
+      $group: {
+        _id: "$_id",
+        messages: { $push: "$messages" },
+        totalCount: { $sum: 1 }, // Calculate the total count of messages in the chat
+        unReadCount: { $sum: "$unReadCount" }, // Calculate the total count of unread messages in the chat
+      },
       },
     ]);
 
