@@ -969,7 +969,7 @@ const sendRequestToAcceptAd = async (req, res) => {
     const notificationDescriptionEmployee = `${employer.name} has sent you a new offer. Please review and accept it to start working on the job.`;
 
     const notificationData = {
-      id: milestone._id,
+      id,
       pagename: "AdBazarDetailScreen",
       title: notificationTitleEmployee,
       body: notificationDescriptionEmployee,

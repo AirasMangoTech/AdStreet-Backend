@@ -51,12 +51,19 @@ const bannerSchema = new mongoose.Schema({
   isEvent: {
     type: Boolean,
   },
-  tablePrice: {
-    type: Number,
-  },
-  seatPrice: {
-    type: Number,
-  },
+  table: [
+    {
+      category: String,
+      price: Number,
+    },
+  ],
+  seat: [
+    {
+      category: String,
+      price: Number,
+    },
+  ],
+  price: Number,
   logo: {
     type: String,
   },
