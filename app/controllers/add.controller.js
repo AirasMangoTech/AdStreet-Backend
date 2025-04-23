@@ -625,9 +625,15 @@ const updateAdStatus = async (req, res) => {
         return;
       }
       admin_wallet.amount -= ad.budget;
-      let user_wallet = await wallet.findOne({ user: ad.hired_user.id });
-      user_wallet.amount += ad.budget;
-      await user_wallet.save();
+
+      await wallet.findOneAndUpdate(
+        { user: ad.hired_user.id },
+        {
+          $inc: { amount: ad.budget },
+        },
+        { new: true, upsert: true }
+      );
+
       await admin_wallet.save();
 
       let userEscrow = new escrowAccount({
