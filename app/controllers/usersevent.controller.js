@@ -88,7 +88,7 @@ exports.addUserEvent = async (req, res) => {
       console.warn("User email or name is missing, skipping email.");
     }
 
-    return response.success(res, "Event created successfully.", {
+    return response.success(res, "Registration successful", {
       event: userEvent,
     });
   } catch (error) {
