@@ -27,7 +27,6 @@ const userEventSchema = mongoose.Schema({
   },
   category: {
     type: String,
-    enum: ["standard", "premium", "vip"],
   },
   totalSeats: {
     type: Number,

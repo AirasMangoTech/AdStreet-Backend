@@ -93,7 +93,7 @@ exports.addUserEvent = async (req, res) => {
     });
   } catch (error) {
     console.error(`Error creating event: ${error.message}`, error);
-    return response.serverError(res, "Error creating event.");
+    return response.serverError(res, error.message);
   }
 };
 
