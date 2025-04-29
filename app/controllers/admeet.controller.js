@@ -56,6 +56,7 @@ const register = async (req, res) => {
       blogId,
       user_type,
     } = req.body;
+      console.log("🚀 ~ register ~ companyName:", companyName)
 
     let existingUser = await User.findOne({ email });
 
@@ -137,7 +138,7 @@ const getAllRegistrations = async (req, res) => {
     //const registrations = await Registration.find(query);
     const registrations = await Interest.find(query).populate({
       path: "user",
-      select: "name email phone_Number companyName",
+     // select: "name email phone_Number companyName",
     });
     return response.success(res, "Registrations fetched successfully", {
       registrations,

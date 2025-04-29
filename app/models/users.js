@@ -37,6 +37,7 @@ const UserSchema = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
+  companyName: String,
   additional: {
     company_name: {
       type: String,
