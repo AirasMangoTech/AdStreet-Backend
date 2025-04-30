@@ -29,4 +29,9 @@ user_route.put(
 );
 user_route.get("/getWithdrawRequest", [verifyToken], user.getWithdrawRequest);
 user_route.delete("/deleteUser", [verifyToken], user.deleteUser);
+
+user_route.post("/send-otp", user.sendOTP);
+user_route.post("/verify-otp", user.verifyOTP);
+user_route.patch("/reset-password", user.resetPassword);
+
 module.exports = user_route;

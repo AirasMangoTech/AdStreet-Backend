@@ -65,8 +65,8 @@ const verifyOTP = async (req, res, next) => {
       const newOtpCode = GenerateOTP(4);
 
       if (otp) {
-        (otp.code = newOtpCode),
-          (expired_at = new Date(new Date().getTime() + 5 * 60000));
+        otp.code = newOtpCode
+        otp.expired_at = new Date(new Date().getTime() + 5 * 60000);
         await otp.save();
       } else {
         const newOtp = new OTPCode({

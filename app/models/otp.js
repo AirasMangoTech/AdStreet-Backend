@@ -21,8 +21,8 @@ const OTPSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
-    expired_at:{
-        type : Date ,
+    expired_at: {
+      type: Date,
     },
     created_at: {
       type: Date,

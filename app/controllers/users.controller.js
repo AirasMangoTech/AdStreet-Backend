@@ -21,6 +21,8 @@ const {
 } = require("../utils/verifyToken");
 require("dotenv").config();
 const mongoose = require("mongoose");
+const { sendEmail } = require("../utils/sendOTPEmail");
+const OTPCode = require("../models/otp");
 
 const signup = async (req, res) => {
   try {
@@ -639,11 +641,9 @@ const updateWithdrawRequest = async (req, res) => {
         });
       } else {
         const notificationTitle = `Withdraw request rejected`;
-        const notificationDescription = `Your withdraw request of amount ${
-          request.amount + request.platformFee
-        }Rs has been rejected due to the following reason provided by administration: ${
-          request.rejectReason
-        }. Please contact at support@adstreet.com.pk for more details`;
+        const notificationDescription = `Your withdraw request of amount ${request.amount + request.platformFee
+          }Rs has been rejected due to the following reason provided by administration: ${request.rejectReason
+          }. Please contact at support@adstreet.com.pk for more details`;
 
         const notificationData = {
           id: request._id,
@@ -791,6 +791,89 @@ const deleteUser = async (req, res) => {
   }
 };
 
+const sendOTP = async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    // GENERATE OTP
+    const otp = Math.floor(100000 + Math.random() * 900000)
+      .toString()
+      .padStart(4, "0");
+
+    // SEND OTP EMAIL
+    await sendEmail(email, otp);
+
+    await OTPCode.create({
+      code: otp,
+      email,
+      expired_at: new Date(new Date().getTime() + 5 * 60000),
+    });
+
+    res.status(200).json({
+      success: true,
+      message: "OTP sent to email!",
+    });
+  } catch (error) {
+    console.error(`Error sending OTP: ${error.message}`);
+    res.status(500).json({
+      success: false,
+      message: `Failed to send OTP. ${error.message}`,
+    });
+  }
+};
+
+const verifyOTP = async (req, res) => {
+  try {
+    const { email, otp } = req.body;
+
+    if (!email || !otp) {
+      return response.badRequest(res, "Email and OTP are required.");
+    }
+
+    const otpRecord = await OTPCode.findOne({ email, code: otp });
+
+    if (!otpRecord) {
+      return response.badRequest(res, "Invalid OTP.");
+    }
+
+    if (new Date() > otpRecord.expired_at) {
+      return response.badRequest(res, "OTP has expired.");
+    }
+
+    await OTPCode.deleteMany({ email }); // Clear all OTPs for the email after successful verification
+
+    return response.success(res, "OTP verified successfully.");
+  } catch (error) {
+    console.error(`Error verifying OTP: ${error.message}`);
+    return response.serverError(res, `Failed to verify OTP. ${error.message}`);
+  }
+};
+
+const resetPassword = async (req, res) => {
+  try {
+    const { email, password: newPassword } = req.body;
+
+    if (!email || !newPassword) {
+      return response.badRequest(res, "Email and new password are required.");
+    }
+
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return response.notFound(res, "User not found.");
+    }
+
+    const encryptedPassword = await bcrypt.hash(newPassword, await bcrypt.genSalt(10));
+    user.password = encryptedPassword;
+    await user.save();
+
+    return response.success(res, "Password reset successfully.");
+  } catch (error) {
+    console.error(`Error resetting password: ${error.message}`);
+    return response.serverError(res, `Failed to reset password. ${error.message}`);
+  }
+};
+
 module.exports = {
   signup,
   login,
@@ -800,6 +883,9 @@ module.exports = {
   getWalletHistory,
   getUser,
   updateUser,
+  sendOTP,
+  verifyOTP,
+  resetPassword,
   createWithdrawRequest,
   updateWithdrawRequest,
   getWithdrawRequest,
