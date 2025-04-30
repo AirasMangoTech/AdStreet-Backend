@@ -796,9 +796,7 @@ const sendOTP = async (req, res) => {
     const { email } = req.body;
 
     // GENERATE OTP
-    const otp = Math.floor(100000 + Math.random() * 900000)
-      .toString()
-      .padStart(4, "0");
+    const otp = Math.floor(1000 + Math.random() * 9000).toString();
 
     // SEND OTP EMAIL
     await sendEmail(email, otp);
