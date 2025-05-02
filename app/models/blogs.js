@@ -1,5 +1,6 @@
 const mongoose = require("mongoose");
 const { ObjectId } = require("mongodb");
+const Counter = require("./counter");
 
 const blogSchema = new mongoose.Schema({
   title: {
@@ -119,6 +120,20 @@ const blogSchema = new mongoose.Schema({
   logo: {
     type: String,
   },
+  num_id: Number
+});
+
+blogSchema.pre("save", async function (next) {
+  const blogs = this;
+  if (!blogs.num_id && blogs.type.toLowerCase() == "adbook" ) {
+    const counter = await Counter.findOneAndUpdate(
+      { type: blogs.type },
+      { $inc: { seq: 1 } },
+      { new: true, upsert: true }
+    );
+    blogs.num_id = counter.seq;
+  }
+  next();
 });
 
 const Blog = mongoose.model("Blog", blogSchema);

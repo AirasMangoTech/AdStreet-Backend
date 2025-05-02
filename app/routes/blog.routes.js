@@ -28,5 +28,6 @@ blog_router.get("/gettoggleInterest/:blogId", [verifyToken], interest.gettoggleI
 // these routes are for website
 blog_router.get('/getallblogsWEB', blog.getAllBlogsWEB);
 
+blog_router.patch("/updateBlogSequence", [verifyToken], blog.updateBlogSequence)
 
 module.exports = blog_router;

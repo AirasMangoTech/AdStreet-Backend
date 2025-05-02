@@ -102,7 +102,7 @@ const createBlog = async (req, res) => {
 
     const message = isApproved
       ? //? "Blog created and approved successfully"
-        "Your blog has been approved."
+      "Your blog has been approved."
       : "You will be notified once your blog has been approved.";
     return response.success(res, message, { blog });
   } catch (error) {
@@ -492,10 +492,44 @@ const deleteBlog = async (req, res) => {
   }
 };
 
+const updateBlogSequence = async (req, res) => {
+  try {
+    const { blogs } = req.body;
+
+    if (!Array.isArray(blogs) || blogs.length === 0) {
+      return response.badRequest(
+        res,
+        "Blogs array is required and cannot be empty"
+      );
+    }
+
+    const bulkOperations = blogs.map((blogItem) => {
+      if (!blogItem._id || typeof blogItem.sortOrder !== "number") {
+        throw new Error("Each blog must have an _id and a numeric sortOrder");
+      }
+
+      return {
+        updateOne: {
+          filter: { _id: blogItem._id },
+          update: { $set: { num_id: blogItem.sortOrder } },
+        },
+      };
+    });
+
+    await Blog.bulkWrite(bulkOperations);
+
+    return response.success(res, "Blogs sortation updated successfully");
+  } catch (error) {
+    console.error(`Error updating blogs sortation: ${error}`);
+    return response.serverError(res, "Error updating blogs sortation");
+  }
+};
+
 module.exports = {
   createBlog,
   getAllBlogs,
   getAllBlogsWEB,
   updateBlog,
   deleteBlog,
+  updateBlogSequence
 };
