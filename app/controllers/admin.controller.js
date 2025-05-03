@@ -274,7 +274,7 @@ const getAllBlogs = async (req, res) => {
     const blogs = await Blog.find(query)
       .populate("category")
       .populate("blogCategory")
-      .sort({ createdAt: -1 })
+      .sort({ num_id: 1 })
       .skip(skipIndex)
       .limit(limit);
     const totalBlogs = await Blog.countDocuments(query);
