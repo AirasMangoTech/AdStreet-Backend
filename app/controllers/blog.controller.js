@@ -219,6 +219,7 @@ const createBlog = async (req, res) => {
 const getAllBlogs = async (req, res) => {
   try {
     let query = { status: true };
+    let sort = { createdAt: -1 }
 
     const userId = req.user.id;
 
@@ -237,6 +238,7 @@ const getAllBlogs = async (req, res) => {
       query.title = { $regex: new RegExp(req.query.title, "i") };
     }
     if (req.query.type) {
+      req.query.type === "adbook" ? sort = { num_id: 1 } : sort = { createdAt: -1 }
       query.type = { $regex: new RegExp(req.query.type, "i") };
     }
 
@@ -312,7 +314,7 @@ const getAllBlogs = async (req, res) => {
           },
         },
       },
-      { $sort: { createdAt: -1 } },
+      { $sort: sort },
       { $skip: skipIndex },
       { $limit: limit },
       {

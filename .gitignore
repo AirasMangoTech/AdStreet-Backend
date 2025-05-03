@@ -132,3 +132,4 @@ dist
 logs/
 .env
 adstreet-*.json
+playground.js
