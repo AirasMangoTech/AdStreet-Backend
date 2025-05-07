@@ -219,9 +219,9 @@ const getAllProposals = async (req, res) => {
       allProposals.map(async (proposal) => {
         const proposalObj = proposal.toObject();
         const milestone = await Milestone.findOne({
-          ad: proposal.adId._id,
-          employee: proposal.submittedBy._id,
-          employer: proposal.adId.postedBy,
+          ad: proposal.adId?._id,
+          employee: proposal.submittedBy?._id,
+          employer: proposal.adId?.postedBy,
         });
 
         if (milestone) {
