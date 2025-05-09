@@ -6,7 +6,7 @@ const sendRequest = async (url, data) => {
         return response.data;
     } catch (error) {
         console.error('Error:', error.response ? error.response.data : error.message);
-        return error.response ? error.response.data : { message: error.message };
+        throw error.response ? error.response.data : { message: error.message };
     }
 }
 

@@ -21,7 +21,10 @@ const notFound = (res, message, error = null) => {
 };
 
 const serverError = (res, message, error = null) => {
-  const body = message;
+  const body = {
+    statusCode: 500,
+    message
+  };
   if (error) body.error = error;
   res.responseMessage = message.message;
   res.responseDescription = "Server Error";

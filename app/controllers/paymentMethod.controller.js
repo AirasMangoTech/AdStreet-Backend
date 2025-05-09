@@ -124,7 +124,7 @@ const getGatewayToken = async (req, res) => {
     console.log(error);
     return response.serverError(
       res,
-      error.message,
+      error.message || "An error occurred while processing the request",
       "Failed to load Gateway details"
     );
   }
