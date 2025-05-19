@@ -56,7 +56,6 @@ const register = async (req, res) => {
       blogId,
       user_type,
     } = req.body;
-      console.log("🚀 ~ register ~ companyName:", companyName)
 
     let existingUser = await User.findOne({ email });
 

@@ -53,8 +53,16 @@ const getEmailBody = (mailBody, event, username) => {
     .replace("[DAY]", event.eventDetails.dayName)
     .replace("[MONTH]", event.eventDetails.monthName)
     .replace("[DATE]", event.eventDetails.dateNumber)
-    .replace("[START TIME]", event.eventStartTime)
-    .replace("[END TIME]", event.eventEndTime)
+    .replace(
+      "[START TIME]",
+      event.eventStartTime ||
+        new Date(event.additional?.start_time)?.toLocaleTimeString()
+    )
+    .replace(
+      "[END TIME]",
+      event.eventEndTime ||
+        new Date(event.additional?.end_time)?.toLocaleTimeString()
+    )
     .replace("[VENUE]", event.venue);
 
   return body;
