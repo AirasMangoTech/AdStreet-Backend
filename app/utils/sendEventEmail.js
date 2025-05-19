@@ -1,3 +1,4 @@
+const moment = require("moment/moment");
 const { sendEventEmailWithCC } = require("../utils/sendEmail");
 
 const sendEventEmail = async (toEmail, name, event, mailBody) => {
@@ -56,12 +57,12 @@ const getEmailBody = (mailBody, event, username) => {
     .replace(
       "[START TIME]",
       event.eventStartTime ||
-        new Date(event.additional?.start_time)?.toLocaleTimeString()
+        moment(event.additional?.start_time)?.format("hh:mm A")
     )
     .replace(
       "[END TIME]",
       event.eventEndTime ||
-        new Date(event.additional?.end_time)?.toLocaleTimeString()
+        moment(event.additional?.end_time)?.format("hh:mm A")
     )
     .replace("[VENUE]", event.venue);
 
