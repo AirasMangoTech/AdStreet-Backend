@@ -57,12 +57,12 @@ const getEmailBody = (mailBody, event, username) => {
     .replace(
       "[START TIME]",
       event.eventStartTime ||
-        moment(event.additional?.start_time)?.add(5)?.format("hh:mm A")
+        moment(event.additional?.start_time)?.add(5, "hours")?.format("hh:mm A")
     )
     .replace(
       "[END TIME]",
       event.eventEndTime ||
-        moment(event.additional?.end_time)?.add(5)?.format("hh:mm A")
+        moment(event.additional?.end_time)?.add(5, "hours")?.format("hh:mm A")
     )
     .replace("[VENUE]", event.venue);
 
