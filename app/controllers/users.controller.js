@@ -132,7 +132,7 @@ const signup = async (req, res) => {
     await sendOTPEmail(
       email,
       "Welcome to AdStreet!",
-      `Hi ${name},\nWelcome aboard! We’re excited to have you join AdStreet. Get ready to dive in and explore all we have to offer!\nBest,\nThe AdStreet Team\n adstreet.com.pk`
+      `Hi ${name},\n\nWelcome aboard! We’re excited to have you join AdStreet. Get ready to dive in and explore all we have to offer!\n\nBest,\n\nThe AdStreet Team\n\nadstreet.com.pk`
     );
 
     return response.success(res, "Signup Successful", { user: obj, token });
