@@ -4,6 +4,7 @@ const WithdrawRequest = require("../models/withdrawRequest");
 const Notification = require("../models/notifications");
 const Account = require("../models/accounts");
 const sendNotification = require("../utils/sendNotifications");
+const { sendOTPEmail } = require("../utils/sendEmail");
 const { ROLE_IDS } = require("../utils/utility");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
@@ -54,7 +55,6 @@ const signup = async (req, res) => {
     phoneNumber = phoneNumber.trim();
 
     var roleId;
-    console.log(roles);
     switch (roles) {
       case "Brand Company":
         roleId = ROLE_IDS.BRAND_COMPANY;
@@ -128,6 +128,12 @@ const signup = async (req, res) => {
       token: token,
       //fcmToken:  user.fcmToken,
     };
+
+    await sendOTPEmail(
+      email,
+      "Welcome to AdStreet!",
+      `Hi ${name},\nWelcome aboard! We’re excited to have you join AdStreet. Get ready to dive in and explore all we have to offer!\nBest,\nThe AdStreet Team\n adstreet.com.pk`
+    );
 
     return response.success(res, "Signup Successful", { user: obj, token });
   } catch (error) {
@@ -641,9 +647,11 @@ const updateWithdrawRequest = async (req, res) => {
         });
       } else {
         const notificationTitle = `Withdraw request rejected`;
-        const notificationDescription = `Your withdraw request of amount ${request.amount + request.platformFee
-          }Rs has been rejected due to the following reason provided by administration: ${request.rejectReason
-          }. Please contact at support@adstreet.com.pk for more details`;
+        const notificationDescription = `Your withdraw request of amount ${
+          request.amount + request.platformFee
+        }Rs has been rejected due to the following reason provided by administration: ${
+          request.rejectReason
+        }. Please contact at support@adstreet.com.pk for more details`;
 
         const notificationData = {
           id: request._id,
@@ -861,14 +869,20 @@ const resetPassword = async (req, res) => {
       return response.notFound(res, "User not found.");
     }
 
-    const encryptedPassword = await bcrypt.hash(newPassword, await bcrypt.genSalt(10));
+    const encryptedPassword = await bcrypt.hash(
+      newPassword,
+      await bcrypt.genSalt(10)
+    );
     user.password = encryptedPassword;
     await user.save();
 
     return response.success(res, "Password reset successfully.");
   } catch (error) {
     console.error(`Error resetting password: ${error.message}`);
-    return response.serverError(res, `Failed to reset password. ${error.message}`);
+    return response.serverError(
+      res,
+      `Failed to reset password. ${error.message}`
+    );
   }
 };
 
