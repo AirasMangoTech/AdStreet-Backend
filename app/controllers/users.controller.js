@@ -132,7 +132,29 @@ const signup = async (req, res) => {
     await sendOTPEmail(
       email,
       "Welcome to AdStreet!",
-      `Hi ${name},\n\nWelcome aboard! We’re excited to have you join AdStreet. Get ready to dive in and explore all we have to offer!\n\nBest,\n\nThe AdStreet Team\n\nadstreet.com.pk`
+      `Dear ${name},<br><br>
+  Welcome to AdStreet — I’m Syed Saad Hashmi, Founder & CEO, and I’m thrilled to have you with us.<br>
+  You’ve just joined the first-ever marketing & advertising marketplace built from the ground up — in Pakistan, for Pakistan, and now reaching beyond.<br>
+  This is not just an app.<br>
+  It’s a revolution — designed to bring creatives, brands, service providers, agencies, and media platforms together in one powerful ecosystem.<br><br>
+  What You Can Do on AdStreet:<br>
+  🛍 AdBazaar — Buy & sell marketing services, media deals, creative offerings. Think of it as the Daraz of advertising.<br>
+  📡 AdLeaks — Stay updated with the latest industry news, campaigns, and trends.<br>
+  🎓 AdGuru — Access trainings, mentorship, and growth opportunities.<br>
+  🤝 AdMeet — Discover events, networking opportunities, and exclusive community sessions.<br>
+  🧠 ADPRO Services — From pitch support to campaign management — get full-scale marketing help on demand.<br><br>
+  This is the future — and it’s ours.<br>
+  For too long, people have underestimated what Pakistan’s industry can build.<br>
+  But we are not behind.<br>
+  We are bold, talented, fast-moving, and ready to shape the future — not just follow it.<br>
+  With AdStreet, we now have the platform to prove it.<br>
+  And if we move together — this future will bring us collective glory.<br><br>
+  Explore. Connect. Offer. Discover.<br>
+  Let’s make history — as creators, as professionals, and as Pakistanis.<br><br>
+  Welcome to AdStreet. Let’s build what’s next — together.<br><br>
+  Warm regards,<br>
+  Syed Saad Hashmi<br>
+  Founder & CEO – AdStreet`
     );
 
     return response.success(res, "Signup Successful", { user: obj, token });
