@@ -46,6 +46,7 @@ app.use(
       "http://www.adstreet.com.pk",
       "https://www.adstreet.com.pk",
       "https://adstreetweb.surge.sh",
+      "https://admin.adstreet.com.pk/",
     ],
   })
 );
