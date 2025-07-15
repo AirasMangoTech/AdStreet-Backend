@@ -91,7 +91,7 @@ app.get("/ad/:id", (req, res) => {
   const isDesktop = !isMobile;
 
   if (isDesktop) {
-    return res.redirect(webUrl);
+    return res.redirect(playStoreUrl);
   }
 
   let fallbackUrl = isAndroid ? playStoreUrl : isIOS ? appStoreUrl : webUrl;
