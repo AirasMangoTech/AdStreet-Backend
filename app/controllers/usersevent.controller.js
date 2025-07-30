@@ -163,7 +163,7 @@ exports.getAllUserEvents = async (req, res) => {
 
     const userEvents = await UserEvent.find(query)
       .populate("event")
-      .sort({ createdAt: -1 }) // Sort by newest first, then category and name
+      .sort({ _id: -1 }) // Sort by newest first, then category and name
       .skip(skip)
       .limit(limit)
       .select("-__v"); // Exclude version key
