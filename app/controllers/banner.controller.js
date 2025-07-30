@@ -204,6 +204,14 @@ const getAllWebBanners = async (req, res) => {
 const updateBanner = async (req, res) => {
   try {
     const bannerId = req.params.id;
+
+    if (req.body.eventName) {
+      req.body.eventName = req.body.eventName
+        .toLowerCase()
+        .trim()
+        .replace(/\s+/g, "-");
+    }
+    
     const banner = await Banner.findByIdAndUpdate(bannerId, req.body, {
       new: true, //return updated user document
     });
