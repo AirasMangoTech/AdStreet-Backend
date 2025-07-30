@@ -5,8 +5,7 @@ const sendEventEmailWithCC = async (toEmail, subject, body) => {
     const info = await transporter.sendMail({
       from: `"ADSTREET" <connect@adstreet.com.pk>`,
       to: toEmail,
-      cc: "sshashmi@adstreet.com.pk",
-      //cc: 'sajid.mangotech@gmail.com',
+      cc: ["sshashmi@adstreet.com.pk", "hurmat@adstreet.com.pk"],
       subject: subject,
       text: subject,
       html: body,
