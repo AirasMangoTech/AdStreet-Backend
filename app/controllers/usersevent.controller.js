@@ -67,10 +67,7 @@ exports.addUserEvent = async (req, res) => {
         new Date(event.eventStartTime),
         "HH:mm a"
       );
-      eventClone.eventEndTime = format(
-        new Date(event.eventEndTime),
-        "HH:mm a"
-      );
+      eventClone.eventEndTime = format(new Date(event.eventEndTime), "HH:mm a");
       eventClone.eventName = event.title;
       eventClone.venue = event.additional.location;
     }
@@ -126,6 +123,10 @@ exports.getAllUserEvents = async (req, res) => {
       query.book = req.query.book;
     }
 
+    if (req.query.event) {
+      query.event = req.query.event;
+    }
+
     if (req.query.passes_from || req.query.passes_to) {
       query.passes = {};
       if (req.query.passes_from) {
@@ -162,7 +163,7 @@ exports.getAllUserEvents = async (req, res) => {
 
     const userEvents = await UserEvent.find(query)
       .populate("event")
-      .sort({ createdAt: -1}) // Sort by newest first, then category and name
+      .sort({ createdAt: -1 }) // Sort by newest first, then category and name
       .skip(skip)
       .limit(limit)
       .select("-__v"); // Exclude version key
