@@ -44,10 +44,17 @@ const signup = async (req, res) => {
     } = req.body;
 
     // Validate and process inputs
-    if (!email || !phoneNumber || !roles || !fcm_token) {
+    if (!email || !phoneNumber || !roles) {
       return response.badRequest(
         res,
-        "Email, fcmToken, and Phone Number are required"
+        "Email and Phone Number are required"
+      );
+    }
+
+    if (!fcm_token) {
+      return response.badRequest(
+        res,
+        "All fields are required"
       );
     }
 
@@ -84,6 +91,7 @@ const signup = async (req, res) => {
     if (existingUser) {
       return response.badRequest(res, "Email is already registered");
     }
+
     const newUser = new User({
       name,
       email,
@@ -669,11 +677,9 @@ const updateWithdrawRequest = async (req, res) => {
         });
       } else {
         const notificationTitle = `Withdraw request rejected`;
-        const notificationDescription = `Your withdraw request of amount ${
-          request.amount + request.platformFee
-        }Rs has been rejected due to the following reason provided by administration: ${
-          request.rejectReason
-        }. Please contact at support@adstreet.com.pk for more details`;
+        const notificationDescription = `Your withdraw request of amount ${request.amount + request.platformFee
+          }Rs has been rejected due to the following reason provided by administration: ${request.rejectReason
+          }. Please contact at support@adstreet.com.pk for more details`;
 
         const notificationData = {
           id: request._id,
@@ -824,6 +830,15 @@ const deleteUser = async (req, res) => {
 const sendOTP = async (req, res) => {
   try {
     const { email } = req.body;
+
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      res.status(200).json({
+        success: true,
+        message: "OTP sent to email!",
+      });
+    }
 
     // GENERATE OTP
     const otp = Math.floor(1000 + Math.random() * 9000).toString();

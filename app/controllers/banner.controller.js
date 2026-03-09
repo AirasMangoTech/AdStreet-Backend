@@ -239,6 +239,48 @@ const deleteBanner = async (req, res) => {
   }
 };
 
+const getDragonsOfPakistanBanners = async (req, res) => {
+  try {
+    const banners = await Banner.find({
+      eventName: "dragons-of-pakistan",
+      isActive: true
+    })
+      .sort({ createdAt: -1 })
+      .lean();
+
+    return response.success(res, "Banners retrieved successfully", {
+      banners,
+    });
+  } catch (err) {
+    console.error(err);
+    return response.serverError(
+      res,
+      `Error retrieving banners: ${err.message}`
+    );
+  }
+};
+
+const getAdvisionBanners = async (req, res) => {
+  try {
+    const banners = await Banner.find({
+      eventName: "advision",
+      isActive: true
+    })
+      .sort({ createdAt: -1 })
+      .lean();
+
+    return response.success(res, "Banners retrieved successfully", {
+      banners,
+    });
+  } catch (err) {
+    console.error(err);
+    return response.serverError(
+      res,
+      `Error retrieving banners: ${err.message}`
+    );
+  }
+};
+
 module.exports = {
   createBanner,
   getAllBanners,
@@ -246,4 +288,6 @@ module.exports = {
   updateBanner,
   getBanner,
   deleteBanner,
+  getDragonsOfPakistanBanners,
+  getAdvisionBanners,
 };
