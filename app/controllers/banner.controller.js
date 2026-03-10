@@ -1,5 +1,6 @@
 const Banner = require("../models/banner");
 const Blog = require("../models/blogs");
+const UserEvent = require("../models/usersevents");
 const response = require("../utils/responseHelpers");
 const mongoose = require("mongoose");
 
@@ -248,9 +249,51 @@ const getDragonsOfPakistanBanners = async (req, res) => {
       .sort({ createdAt: -1 })
       .lean();
 
-    return response.success(res, "Banners retrieved successfully", {
-      banners,
+      const bannerIds = banners.map(b => b._id);
+
+       const registrations = await UserEvent.aggregate([
+      {
+        $match: {
+          event: { $in: bannerIds }
+        }
+      },
+      {
+        $group: {
+          _id: "$event",
+          totalRegisteredUsers: { $sum: 1 }
+        }
+      }
+    ]);
+
+    const registrationMap = {};
+    registrations.forEach(r => {
+      registrationMap[r._id.toString()] = r.totalRegisteredUsers;
     });
+
+    let userRegistrations = [];
+    if (userId) {
+      userRegistrations = await UserEvent.find({
+        event: { $in: bannerIds },
+        userId
+      }).lean();
+    }
+
+    const userRegisteredMap = {};
+    userRegistrations.forEach(r => {
+      userRegisteredMap[r.event.toString()] = true;
+    });
+
+    const result = banners.map(banner => ({
+      ...banner,
+      totalRegisteredUsers: registrationMap[banner._id.toString()] || 0,
+      isRegistered: userRegisteredMap[banner._id.toString()] || false
+    }));
+
+    return response.success(res, "Banners retrieved successfully", {
+      banners: result
+    });
+
+    
   } catch (err) {
     console.error(err);
     return response.serverError(
@@ -262,6 +305,8 @@ const getDragonsOfPakistanBanners = async (req, res) => {
 
 const getAdvisionBanners = async (req, res) => {
   try {
+    const userId = req.user?.id;
+
     const banners = await Banner.find({
       eventName: "advision",
       isActive: true
@@ -269,9 +314,51 @@ const getAdvisionBanners = async (req, res) => {
       .sort({ createdAt: -1 })
       .lean();
 
-    return response.success(res, "Banners retrieved successfully", {
-      banners,
+    const bannerIds = banners.map(b => b._id);
+
+    const registrations = await UserEvent.aggregate([
+      {
+        $match: {
+          event: { $in: bannerIds }
+        }
+      },
+      {
+        $group: {
+          _id: "$event",
+          totalRegisteredUsers: { $sum: 1 }
+        }
+      }
+    ]);
+
+    const registrationMap = {};
+    registrations.forEach(r => {
+      registrationMap[r._id.toString()] = r.totalRegisteredUsers;
     });
+
+    let userRegistrations = [];
+
+    if (userId) {
+      userRegistrations = await UserEvent.find({
+        event: { $in: bannerIds },
+        userId
+      }).lean();
+    }
+
+    const userRegisteredMap = {};
+    userRegistrations.forEach(r => {
+      userRegisteredMap[r.event.toString()] = true;
+    });
+
+    const result = banners.map(banner => ({
+      ...banner,
+      totalRegisteredUsers: registrationMap[banner._id.toString()] || 0,
+      isRegistered: userRegisteredMap[banner._id.toString()] || false
+    }));
+
+    return response.success(res, "Banners retrieved successfully", {
+      banners: result
+    });
+
   } catch (err) {
     console.error(err);
     return response.serverError(

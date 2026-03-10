@@ -52,8 +52,8 @@ exports.addUserEvent = async (req, res) => {
     }
 
     const event =
-      (await Event.findOne({ eventName })) ||
-      (await Blog.findOne({ type: eventName }));
+      (await Event.findOne({ eventName }).sort({ createdAt: -1 })) ||
+      (await Blog.findOne({ type: eventName }).sort({ createdAt: -1 }));
 
     if (!event) {
       return response.badRequest(res, `No event named "${eventName}" exists.`);
