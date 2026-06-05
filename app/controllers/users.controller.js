@@ -831,14 +831,14 @@ const sendOTP = async (req, res) => {
   try {
     const { email } = req.body;
 
-    const user = await User.findOne({ email });
+    // const user = await User.findOne({ email });
 
-    if (!user) {
-      res.status(200).json({
-        success: true,
-        message: "OTP sent to email!",
-      });
-    }
+    // if (!user) {
+    //   res.status(200).json({
+    //     success: true,
+    //     message: "OTP sent to email!",
+    //   });
+    // }
 
     // GENERATE OTP
     const otp = Math.floor(1000 + Math.random() * 9000).toString();
